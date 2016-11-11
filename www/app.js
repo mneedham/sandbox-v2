@@ -28,8 +28,8 @@ $(document).ready(function() {
         if (err) {
           return alert('There was an error getting the profile: ' + err.message);
         }
-        return show_profile_info(profile);
-      });
+      //  return show_profile_info(profile);
+      //});
     }
   };
 
