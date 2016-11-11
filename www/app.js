@@ -51,7 +51,6 @@ $(document).ready(function() {
 
   var retrieve_show_instances = function() {
     var id_token = localStorage.getItem('id_token');
-    var profile = retrieve_profile();
     $.getJSON("https://ppriuj7e7i.execute-api.us-east-1.amazonaws.com/prod/SandboxGetRunningInstancesForUser?auth0_key=mykey", function(data) {
       show_instances(data);
     }); 
