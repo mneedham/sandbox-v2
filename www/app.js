@@ -20,19 +20,6 @@ $(document).ready(function() {
     logout();
   })
 
-  lock.on("authenticated", function(authResult) {
-    lock.getProfile(authResult.idToken, function(error, profile) {
-      if (error) {
-        // Handle error
-        return;
-      }
-      localStorage.setItem('id_token', authResult.idToken);
-      // Display user information
-      show_profile_info(profile);
-      retrieve_show_instances();
-    });
-  });
-
   //retrieve the profile:
   var retrieve_show_profile = function() {
     var id_token = localStorage.getItem('id_token');
