@@ -20,19 +20,6 @@ $(document).ready(function() {
     logout();
   })
 
-  //retrieve the profile:
-  var retrieve_show_profile = function() {
-    var id_token = localStorage.getItem('id_token');
-    if (id_token) {
-      //lock.getProfile(id_token, function (err, profile) {
-        if (err) {
-          return alert('There was an error getting the profile: ' + err.message);
-        }
-      //  return show_profile_info(profile);
-      //});
-    }
-  };
-
   var show_profile_info = function(profile) {
      $('.nickname').text(profile.nickname);
      $('.btn-login').hide();
