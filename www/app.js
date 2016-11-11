@@ -1,8 +1,9 @@
 $(document).ready(function() {
 
   var listener = function(event) {
-    alert(JSON.stringify(event.data));
     event.source.close();
+    localStorage.setItem('id_token', event.data.profile.user_id)
+    retrieve_show_instances();
   }
  
   if (window.addEventListener){
@@ -44,7 +45,7 @@ $(document).ready(function() {
 
   var retrieve_show_instances = function() {
     var id_token = localStorage.getItem('id_token');
-    $.getJSON("https://ppriuj7e7i.execute-api.us-east-1.amazonaws.com/prod/SandboxGetRunningInstancesForUser?auth0_key=mykey", function(data) {
+    $.getJSON("https://ppriuj7e7i.execute-api.us-east-1.amazonaws.com/prod/SandboxGetRunningInstancesForUser?auth0_key=" + id_token, function(data) {
       show_instances(data);
     }); 
   }
@@ -59,5 +60,5 @@ $(document).ready(function() {
   };
 
   // Display user information
-  retrieve_show_instances();
+  //retrieve_show_instances();
 });
