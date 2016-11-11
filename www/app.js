@@ -1,14 +1,18 @@
 $(document).ready(function() {
-  
-  var lock = new Auth0Lock(AUTH0_CLIENT_ID, AUTH0_DOMAIN, {
-    auth: {
-      params: { scope: 'openid email' } //Details: https://auth0.com/docs/scopes
-    }
-  });
+
+  var listener = function(event) {
+    JSON.stringify(event.data);
+  }
+ 
+  if (window.addEventListener){
+    addEventListener("message", listener, false)
+  } else {
+    attachEvent("onmessage", listener)
+  }
 
   $('.btn-login').click(function(e) {
-    e.preventDefault();
-    lock.show();
+    window.open("https://auth.neo4j.com/index.html",
+                "login");
   });
 
   $('.btn-logout').click(function(e) {
