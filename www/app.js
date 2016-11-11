@@ -26,7 +26,7 @@ $(document).ready(function() {
     });
     pollInterval = setInterval(function (e) {
       win.postMessage('Polling for results', 
-                      "https://auth.neo4j.com/index.html",
+                      "https://auth.neo4j.com/index.html"),
                       6000);
     });
   });
