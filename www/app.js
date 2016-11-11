@@ -1,6 +1,7 @@
 $(document).ready(function() {
 
   var listener = function(event) {
+    $('.btn-login').hide();
     event.source.close();
     localStorage.setItem('id_token', event.data.profile.user_id)
     retrieve_show_instances();
@@ -52,6 +53,12 @@ $(document).ready(function() {
 
   var show_instances = function(instances) {
     alert(JSON.stringify(instances));
+    var iList = $('ul.instances')
+    var li = $('<li/>');
+    var a = $('<a/>')
+      .attr('href', 'http://localhost:7474/')
+      .text(instances.usecase);
+      .appendTo(li);
   }
 
   var logout = function() {
