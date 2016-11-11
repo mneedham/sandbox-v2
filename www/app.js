@@ -30,14 +30,14 @@ $(document).ready(function() {
   });
 
   //retrieve the profile:
-  var retrieve_profile = function() {
+  var retrieve_show_profile = function() {
     var id_token = localStorage.getItem('id_token');
     if (id_token) {
       lock.getProfile(id_token, function (err, profile) {
         if (err) {
           return alert('There was an error getting the profile: ' + err.message);
         }
-        return profile;
+        return show_profile_info(profile);
       });
     }
   };
@@ -49,11 +49,11 @@ $(document).ready(function() {
      $('.btn-logout').show();
   };
 
-  var retrieve_instances = function() {
+  var retrieve_show_instances = function() {
     var id_token = localStorage.getItem('id_token');
     var profile = retrieve_profile();
     $.getJSON("https://ppriuj7e7i.execute-api.us-east-1.amazonaws.com/prod/SandboxGetRunningInstancesForUser?auth0_key=mykey", function(data) {
-      return data;
+      show_instances(data);
     }); 
   }
 
@@ -67,6 +67,6 @@ $(document).ready(function() {
   };
 
   // Display user information
-  show_profile_info(retrieve_profile());
-  show_instances(retrieve_instances());
+  retrieve_show_profile_info();
+  retrieve_show_instances();
 });
