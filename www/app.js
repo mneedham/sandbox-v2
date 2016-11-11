@@ -57,7 +57,7 @@ $(document).ready(function() {
   }
 
   var show_instances = function(instances) {
-    alert(instances);
+    alert(JSON.stringify(instances));
   }
 
   var logout = function() {
