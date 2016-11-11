@@ -1,7 +1,7 @@
 $(document).ready(function() {
 
   var listener = function(event) {
-    JSON.stringify(event.data);
+    alert(JSON.stringify(event.data));
     event.source.close();
   }
  
