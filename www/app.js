@@ -36,8 +36,7 @@ $(document).ready(function() {
         if (err) {
           return alert('There was an error getting the profile: ' + err.message);
         }
-        // Display user information
-        show_profile_info(profile);
+        return profile;
       });
     }
   };
@@ -49,10 +48,20 @@ $(document).ready(function() {
      $('.btn-logout').show();
   };
 
+  var retrieve_instances = function() {
+    var id_token = localStorage.getItem('id_token');
+    var profile = retrieve_profile();
+    $.getJSON("https://ppriuj7e7i.execute-api.us-east-1.amazonaws.com/prod/SandboxGetRunningInstancesForUser?auth0_key=mykey", function(data) {
+      alert(data);
+    }); 
+  }
+
   var logout = function() {
     localStorage.removeItem('id_token');
     window.location.href = "/";
   };
 
-  retrieve_profile();
+  // Display user information
+  show_profile_info(retrieve_profile());
+  show_instances(retrieve_instanaces());
 });
