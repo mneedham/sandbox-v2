@@ -67,6 +67,6 @@ $(document).ready(function() {
   };
 
   // Display user information
-  retrieve_show_profile_info();
+  retrieve_show_profile();
   retrieve_show_instances();
 });
