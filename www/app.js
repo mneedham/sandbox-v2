@@ -11,9 +11,24 @@ $(document).ready(function() {
     attachEvent("onmessage", listener)
   }
 
-  $('.btn-login').click(function(e) {
-    window.open("https://auth.neo4j.com/index.html",
-                "login");
+  var pollInterval;
+
+  $('.btn-login').click(function (e) {
+    win = window.open("https://auth.neo4j.com/index.html",
+                "loginWindow",
+                "location=0,status=0,scrollbars=0, width=1080,height=720");
+    try {
+      win.moveTo(500, 300);
+    } catch (e) {
+    }
+    window.addEventListener('message', function(event) {
+      clearInterval(pollInterval);
+    });
+    pollInterval = setInterval(function (e) {
+      win.postMessage('Polling for results', 
+                      "https://auth.neo4j.com/index.html",
+                      6000);
+    });
   });
 
   $('.btn-logout').click(function(e) {
