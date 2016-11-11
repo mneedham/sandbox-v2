@@ -57,7 +57,7 @@ $(document).ready(function() {
     var li = $('<li/>');
     var a = $('<a/>')
       .attr('href', 'http://localhost:7474/')
-      .text(instances.usecase);
+      .text(instances.usecase)
       .appendTo(li);
   }
 
