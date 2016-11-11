@@ -52,7 +52,7 @@ $(document).ready(function() {
   }
 
   var show_instances = function(instances) {
-    var iList = $('ul.instanceList')
+    var iList = $('#instanceList')
     var li = $('<li/>')
       .appendTo(iList);
     var a = $('<a/>')
