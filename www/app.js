@@ -63,5 +63,5 @@ $(document).ready(function() {
 
   // Display user information
   show_profile_info(retrieve_profile());
-  show_instances(retrieve_instanaces());
+  show_instances(retrieve_instances());
 });
