@@ -52,15 +52,13 @@ $(document).ready(function() {
   }
 
   var show_instances = function(instances) {
-    alert(JSON.stringify(instances));
-    var iList = $('ul.instances')
+    var iList = $('ul.instanceList')
     var li = $('<li/>')
       .appendTo(iList);
     var a = $('<a/>')
       .attr('href', 'http://localhost:7474/')
       .text(instances.usecase)
       .appendTo(li);
-    
   }
 
   var logout = function() {
