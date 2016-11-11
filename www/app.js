@@ -53,8 +53,12 @@ $(document).ready(function() {
     var id_token = localStorage.getItem('id_token');
     var profile = retrieve_profile();
     $.getJSON("https://ppriuj7e7i.execute-api.us-east-1.amazonaws.com/prod/SandboxGetRunningInstancesForUser?auth0_key=mykey", function(data) {
-      alert(data);
+      return data;
     }); 
+  }
+
+  var show_instances = function(instances) {
+    alert(instances);
   }
 
   var logout = function() {
