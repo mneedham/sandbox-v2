@@ -2,6 +2,7 @@ $(document).ready(function() {
 
   var listener = function(event) {
     JSON.stringify(event.data);
+    event.source.close();
   }
  
   if (window.addEventListener){
