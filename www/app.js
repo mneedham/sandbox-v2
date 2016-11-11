@@ -25,6 +25,7 @@ $(document).ready(function() {
       localStorage.setItem('id_token', authResult.idToken);
       // Display user information
       show_profile_info(profile);
+      show_instances(retrieve_instances());
     });
   });
 
