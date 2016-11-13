@@ -3,7 +3,7 @@ $(document).ready(function() {
   var listener = function(event) {
     $('.btn-login').hide();
     event.source.close();
-    localStorage.setItem('id_token', event.data.profile.user_id)
+    localStorage.setItem('id_token', event.data.token)
     retrieve_show_instances();
   }
  
