@@ -63,12 +63,12 @@ $(document).ready(function() {
 
   var show_instances = function(instances) {
     var iList = $('#instanceList')
-    for (var instance in instances) {
+    for (var instanceNum in instances) {
         var li = $('<li/>')
           .appendTo(iList);
         var a = $('<a/>')
           .attr('href', 'http://localhost:7474/')
-          .text(instance.usecase + " - " + instance.taskid)
+          .text(instances[instanceNum].usecase + " - " + instances[instanceNum].taskid)
           .appendTo(li);
     }
   }
