@@ -63,12 +63,14 @@ $(document).ready(function() {
 
   var show_instances = function(instances) {
     var iList = $('#instanceList')
-    var li = $('<li/>')
-      .appendTo(iList);
-    var a = $('<a/>')
-      .attr('href', 'http://localhost:7474/')
-      .text(instances.usecase)
-      .appendTo(li);
+    for (var instance in instances) {
+        var li = $('<li/>')
+          .appendTo(iList);
+        var a = $('<a/>')
+          .attr('href', 'http://localhost:7474/')
+          .text(instances.usecase)
+          .appendTo(li);
+    }
   }
 
   var logout = function() {
