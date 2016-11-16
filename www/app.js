@@ -1,5 +1,7 @@
 $(document).ready(function() {
 
+  var runningSandboxes[];
+
   var listener = function(event) {
     $('.btn-login').hide();
     $('.btn-launch').show();
@@ -40,12 +42,14 @@ $(document).ready(function() {
 
   $('.btn-launch').click(function (e) {
     var id_token = localStorage.getItem('id_token');
+    var rand = Math.floor((Math.random() * 100) + 1);
+
     $.ajax
     ({
       type: "POST",
       url: "https://ppriuj7e7i.execute-api.us-east-1.amazonaws.com/prod/SandboxRunInstance",
       dataType: 'json',
-      data: JSON.stringify({ "usecase": "elections2016" }),
+      data: JSON.stringify({ "usecase": "elections2016-" + String(rand) }),
       contentType: "application/json",
       async: true,
       headers: {
