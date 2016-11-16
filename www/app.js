@@ -107,7 +107,7 @@ $(document).ready(function() {
 
   var logout = function() {
     localStorage.removeItem('id_token');
-    window.location.href = "/";
+    window.location.href = "/sandbox-web/www/";
   };
 
   // Display user information
