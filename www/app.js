@@ -67,6 +67,8 @@ $(document).ready(function() {
   var retrieve_show_instances = function() {
     var id_token = localStorage.getItem('id_token');
     if (id_token) {
+        $('.btn-login').hide();
+        $('.btn-logout').show();
         $.ajax
         ({
           type: "GET",
@@ -80,8 +82,6 @@ $(document).ready(function() {
             show_instances(data);
           }
         });
-        $('.btn-login').hide();
-        $('.btn-logout').show();
         $('.btn-launch').show();
     }
   }
