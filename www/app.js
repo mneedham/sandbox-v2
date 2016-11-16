@@ -80,6 +80,9 @@ $(document).ready(function() {
             show_instances(data);
           }
         });
+        $('.btn-login').hide();
+        $('.btn-logout').show();
+        $('.btn-launch').show();
     }
   }
 
