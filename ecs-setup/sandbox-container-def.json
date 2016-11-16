@@ -1,0 +1,107 @@
+[
+        {
+            "portMappings": [
+                {
+                    "hostPort": 0,
+                    "containerPort": 80
+                }],
+            "hostname": "neo4j-importer",
+            "essential": false,
+            "name": "neo4j-importer",
+            "environment": [
+                {
+                    "name": "NEO4J_AUTH",
+                    "value": "neo4j/ohthegraph"
+                },
+                {
+                    "name": "NEO4J_HOST",
+                    "value": "neo4j"
+                }
+            ],
+            "links": [
+                "neo4j-enterprise-db-only:neo4j"
+            ],
+            "readonlyRootFilesystem": false,
+            "image": "ryguyrg/neo4j-importer:sandbox-v2",
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "neo4j-sandbox",
+                    "awslogs-region": "us-east-1",
+                    "awslogs-stream-prefix": "neo4j-importer"
+                }
+            },
+            "cpu": 256,
+            "memoryReservation": 300
+        },
+        {
+            "memory": 1024,
+            "portMappings": [
+                {
+                    "hostPort": 0,
+                    "containerPort": 7474
+                },
+                {
+                    "hostPort": 0,
+                    "containerPort": 7687
+                },
+                {
+                    "hostPort": 0,
+                    "containerPort": 7473
+                }
+            ],
+            "hostname": "neo4j",
+            "essential": true,
+            "mountPoints": [
+                {
+                    "containerPath": "/conf-base",
+                    "sourceVolume": "neo4j-config",
+                    "readOnly": true
+                },
+                {
+                    "containerPath": "/plugins",
+                    "sourceVolume": "neo4j-plugins",
+                    "readOnly": false
+                },
+                {
+                    "containerPath": "/var/lib/neo4j/extension",
+                    "sourceVolume": "neo4j-extension",
+                    "readOnly": true
+                }
+            ],
+            "name": "neo4j-enterprise-db-only",
+            "ulimits": [
+                {
+                    "softLimit": 403286,
+                    "hardLimit": 403286,
+                    "name": "nofile"
+                }
+            ],
+            "environment": [
+                {
+                    "name": "NEO4J_AUTH",
+                    "value": "neo4j/ohthegraph"
+                },
+		{
+                    "name": "EXTENSION_SCRIPT",
+                    "value": "extension/extension_script.sh"
+                },
+		{
+                    "name": "USECASE",
+                    "value": "base"
+                }
+            ],
+            "readonlyRootFilesystem": false,
+            "image": "neo4j:3.0-enterprise",
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "neo4j-sandbox",
+                    "awslogs-region": "us-east-1",
+                    "awslogs-stream-prefix": "neo4j-db"
+                }
+            },
+            "cpu": 256,
+            "memoryReservation": 512
+        }
+]

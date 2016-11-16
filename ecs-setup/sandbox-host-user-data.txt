@@ -1,0 +1,10 @@
+#!/bin/bash
+yum install -y aws-cli
+aws s3 cp s3://neo4j-twitter-config/config.json /app-config/config.json
+aws s3 cp s3://neo4j-twitter-config/neo4j-config/ /neo4j-config --recursive
+aws s3 cp s3://neo4j-twitter-config/neo4j-plugins/ /neo4j-plugins --recursive
+aws s3 cp s3://neo4j-twitter-config/neo4j-extension/ /neo4j-extension --recursive
+chmod -R 755 /neo4j-extension
+echo ECS_CLUSTER=sandbox-v2 > /etc/ecs/ecs.config
+docker pull ryguyrg/neo4j-importer
+docker pull neo4j:3.0-enterprise

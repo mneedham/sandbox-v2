@@ -1,0 +1,54 @@
+## IAM roles ###
+aws iam create-role --role-name "sandbox-instance-role" --assume-role-policy-document file://sandbox-iam-trust-policy.json
+
+aws iam create-instance-profile --instance-profile-name "sandbox-instance-role"
+aws iam add-role-to-instance-profile --instance-profile-name "sandbox-instance-role" --role-name "sandbox-instance-role"
+
+aws iam attach-role-policy --role-name sandbox-instance-role --policy-arn arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role
+
+aws iam put-role-policy --role-name sandbox-instance-role --policy-name sandbox-instance-default --policy-document file://sandbox-iam.json
+
+aws iam create-role --role-name "ecsServiceRole" --assume-role-policy-document file://sandbox-ecsService-iam-trust-policy.json
+
+aws iam attach-role-policy --role-name ecsServiceRole --policy-arn arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceRole
+
+
+## VPC ###
+aws ec2 create-vpc --cidr-block 10.0.0.0/16
+>>         "VpcId": "vpc-b113fad7",
+aws ec2 create-subnet --vpc-id $VPCID --cidr-block 10.0.1.0/24
+>>         "SubnetId": "subnet-3a3deb06", 
+aws ec2 create-internet-gateway
+>>          "InternetGatewayId": "igw-0dc7776a", 
+aws ec2 attach-internet-gateway --vpc-id $VPCID --internet-gateway-id $GATEWAYID 
+aws ec2 create-route-table --vpc-id ;#ABOVE#;
+>>         "RouteTableId": "rtb-73b2ee15", 
+aws ec2 create-route --route-table-id $ROUTETABLEID --destination-cidr-block 0.0.0.0/0 --gateway-id $GATEWAYID
+aws ec2 describe-subnets --filters "Name=vpc-id,Values=$VPCID" --query 'Subnets[*].{ID:SubnetId,CIDR:CidrBlock}'
+aws ec2 associate-route-table  --subnet-id $SUBNETID --route-table-id $ROUTETABLEID
+>>    "AssociationId": "rtbassoc-fa3b6183"
+
+export SG_SBHOSTS="sbhosts-security-group"
+
+aws ec2 create-security-group --group-name $SG_SBHOSTS --description "Security group for sandbox host machines" --vpc-id $VPCID
+>>    "GroupId": "sg-4b62d536"
+aws ec2 authorize-security-group-ingress --group-id $SGID --protocol tcp --port 22 --cidr 0.0.0.0/0
+aws ec2 authorize-security-group-ingress --group-id $SGID --protocol tcp --port 32768-61000 --cidr 0.0.0.0/0
+
+export SCALING_GRP_NAME='sandbox-hosts'
+export LAUNCH_CFG_NAME='sandbox-hosts'
+export ECS_AMI_ID='ami-a05306b7'
+export SSH_KEY_NAME='devrel'
+
+## Autoscaling ###
+aws autoscaling create-launch-configuration --launch-configuration-name $LAUNCH_CFG_NAME --image-id $ECS_AMI_ID --user-data file://sandbox-host-user-data.txt --instance-type t2.medium --key-name $SSH_KEY_NAME --block-device-mappings "[{\"DeviceName\": \"/dev/xvdcz\",\"Ebs\":{\"DeleteOnTermination\": true, \"VolumeSize\": 22, \"VolumeType\": \"gp2\"}}, {\"DeviceName\": \"/dev/xvda\",\"Ebs\":{\"DeleteOnTermination\": true, \"VolumeSize\": 8, \"VolumeType\": \"gp2\"}}]" --associate-public-ip-address --iam-instance-profile sandbox-instance-role --security-groups $SGID
+
+aws autoscaling create-auto-scaling-group --auto-scaling-group-name $SCALING_GRP_NAME --launch-configuration-name $LAUNCH_CFG_NAME  --min-size=3 --max-size=3 --desired-capacity=3 --vpc-zone-identifier $SUBNETID
+
+## AWS LOGGING ###
+aws logs create-log-group --log-group-name "neo4j-sandbox"
+
+## ECS cluster ###
+aws ecs create-cluster --cluster-name "sandbox-v2"
+
+aws ecs register-task-definition --family "sandbox-with-import" --container-definitions file://sandbox-container-def.json --volumes file://sandbox-volume-def.json

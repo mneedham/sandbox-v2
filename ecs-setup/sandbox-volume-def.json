@@ -1,0 +1,20 @@
+[
+        {
+            "host": {
+                "sourcePath": "/neo4j-plugins"
+            },
+            "name": "neo4j-plugins"
+        },
+        {
+            "host": {
+                "sourcePath": "/neo4j-config"
+            },
+            "name": "neo4j-config"
+        },
+        {
+            "host": {
+                "sourcePath": "/neo4j-extension"
+            },
+            "name": "neo4j-extension"
+        }
+]
