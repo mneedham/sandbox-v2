@@ -54,7 +54,7 @@ $(document).ready(function() {
         show_instances(data);
       }
     });
-  }
+  });
 
   var show_profile_info = function(profile) {
      $('.nickname').text(profile.nickname);
