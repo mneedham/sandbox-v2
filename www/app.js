@@ -52,7 +52,7 @@ $(document).ready(function() {
         "Authorization": id_token 
       },
       success: function (data){
-        show_instances(data);
+        retrieve_show_instances();
       }
     });
   });
