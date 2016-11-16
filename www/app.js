@@ -2,6 +2,7 @@ $(document).ready(function() {
 
   var listener = function(event) {
     $('.btn-login').hide();
+    $('.btn-launch').show();
     event.source.close();
     localStorage.setItem('id_token', event.data.token)
     retrieve_show_instances();
@@ -37,6 +38,24 @@ $(document).ready(function() {
     logout();
   })
 
+  $('.btn-launch').click(function (e) {
+    var id_token = localStorage.getItem('id_token');
+    $.ajax
+    ({
+      type: "POST",
+      url: "https://ppriuj7e7i.execute-api.us-east-1.amazonaws.com/prod/SandboxRunInstance",
+      dataType: 'json',
+      data: { "usecase": "elections2016" },
+      async: true,
+      headers: {
+        "Authorization": id_token 
+      },
+      success: function (data){
+        show_instances(data);
+      }
+    });
+  }
+
   var show_profile_info = function(profile) {
      $('.nickname').text(profile.nickname);
      $('.btn-login').hide();
@@ -71,6 +90,9 @@ $(document).ready(function() {
           .text(instances[instanceNum].usecase)
           .appendTo(li);
     }
+  }
+
+  var launch_instance = function(usecase) {
   }
 
   var logout = function() {
