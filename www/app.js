@@ -66,19 +66,21 @@ $(document).ready(function() {
 
   var retrieve_show_instances = function() {
     var id_token = localStorage.getItem('id_token');
-    $.ajax
-    ({
-      type: "GET",
-      url: "https://ppriuj7e7i.execute-api.us-east-1.amazonaws.com/prod/SandboxGetRunningInstancesForUser",
-      dataType: 'json',
-      async: true,
-      headers: {
-        "Authorization": id_token 
-      },
-      success: function (data){
-        show_instances(data);
-      }
-    });
+    if (id_token) {
+        $.ajax
+        ({
+          type: "GET",
+          url: "https://ppriuj7e7i.execute-api.us-east-1.amazonaws.com/prod/SandboxGetRunningInstancesForUser",
+          dataType: 'json',
+          async: true,
+          headers: {
+            "Authorization": id_token 
+          },
+          success: function (data){
+            show_instances(data);
+          }
+        });
+    }
   }
 
   var show_instances = function(instances) {
@@ -102,5 +104,5 @@ $(document).ready(function() {
   };
 
   // Display user information
-  //retrieve_show_instances();
+  retrieve_show_instances();
 });
