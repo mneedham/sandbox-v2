@@ -1,6 +1,6 @@
 $(document).ready(function() {
 
-  var runningSandboxes[];
+  var runningSandboxes = [];
 
   var listener = function(event) {
     $('.btn-login').hide();
