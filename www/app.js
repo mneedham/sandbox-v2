@@ -67,8 +67,8 @@ $(document).ready(function() {
         var li = $('<li/>')
           .appendTo(iList);
         var a = $('<a/>')
-          .attr('href', 'http://localhost:7474/')
-          .text(instances[instanceNum].usecase + " - " + instances[instanceNum].taskid)
+          .attr('href', 'http://' + instances[instanceNum].ip + ':' + instances[instanceNum].port)
+          .text(instances[instanceNum].usecase)
           .appendTo(li);
     }
   }
