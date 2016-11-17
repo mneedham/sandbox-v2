@@ -91,7 +91,8 @@ $(document).ready(function() {
   }
 
   var show_instances = function(instances) {
-    var iList = $('#instanceList')
+    var oList = $('#instanceList')
+    var iList = $('<ul>')
     for (var instanceNum in instances) {
         var li = $('<li/>')
           .appendTo(iList);
@@ -100,6 +101,7 @@ $(document).ready(function() {
           .text(instances[instanceNum].usecase)
           .appendTo(li);
     }
+    oList.replaceWith(iList);
   }
 
   var launch_instance = function(usecase) {
