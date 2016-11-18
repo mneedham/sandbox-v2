@@ -94,12 +94,18 @@ $(document).ready(function() {
     var oList = $('#instanceList')
     var iList = $('<ul>')
     for (var instanceNum in instances) {
-        var li = $('<li/>')
-          .appendTo(iList);
-        var a = $('<a/>')
-          .attr('href', 'http://' + instances[instanceNum].ip + ':' + instances[instanceNum].port)
-          .text(instances[instanceNum].usecase)
-          .appendTo(li);
+        if(instances[instanceNum].ip) {
+            var li = $('<li/>')
+              .appendTo(iList);
+            var a = $('<a/>')
+              .attr('href', 'http://' + instances[instanceNum].ip + ':' + instances[instanceNum].port)
+              .text(instances[instanceNum].usecase)
+              .appendTo(li);
+        } else {
+            setTimeout(retrieve_show_instances, 3000);
+            var li = $('<li/>').text("Launching: " + instances[instanceNum].usecase)
+              .appendTo(iList);
+        }
     }
     oList.replaceWith(iList);
   }
