@@ -92,7 +92,7 @@ $(document).ready(function() {
 
   var show_instances = function(instances) {
     var oList = $('#instanceList')
-    var iList = $('<ul>')
+    var iList = $('<ul>' {id: 'instanceList'})
     for (var instanceNum in instances) {
         if(instances[instanceNum].ip) {
             var li = $('<li/>')
