@@ -5,6 +5,7 @@ $(document).ready(function() {
   var listener = function(event) {
     $('.btn-login').hide();
     $('.btn-launch').show();
+    $('#logs').show();
     event.source.close();
     localStorage.setItem('id_token', event.data.token)
     retrieve_show_instances();
@@ -73,6 +74,11 @@ $(document).ready(function() {
     if (id_token) {
         $('.btn-login').hide();
         $('.btn-logout').show();
+        $('#logs').show();
+        var editor = CodeMirror.fromTextArea(document.getElementById('logs'), {
+          mode: 'shell',
+          lineNumbers: true
+        });
         $.ajax
         ({
           type: "GET",
@@ -86,9 +92,27 @@ $(document).ready(function() {
             show_instances(data);
           }
         });
+        $.ajax
+        ({
+          type: "GET",
+          url: "https://ppriuj7e7i.execute-api.us-east-1.amazonaws.com/prod/SandboxRetrieveUserLogs",
+          dataType: 'json',
+          async: true,
+          headers: {
+            "Authorization": id_token 
+          },
+          success: function (data){
+            display_logs(data);
+          }
+        });
         $('.btn-launch').show();
     }
   }
+
+  var display_logs = function(data) {
+    logsString = JSON.stringify(data)
+    $('#logs').append(logsString);
+  } 
 
   var show_instances = function(instances) {
     var oList = $('#instanceList')

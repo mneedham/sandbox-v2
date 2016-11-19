@@ -11,6 +11,11 @@
     <script src="auth0-variables.js"></script>
     <script src="app.js"></script>
 
+<link rel=stylesheet href="http://codemirror.net/lib/codemirror.css">
+<link rel=stylesheet href="http://codemirror.net/doc/docs.css">
+<script src="http://codemirror.net/lib/codemirror.js"></script>
+<script src="http://codemirror.net/mode/shell/shell.js"></script>
+
     <meta name="viewport" content="width=device-width, initial-scale=1">
   </head>
   <body>
@@ -21,5 +26,6 @@
     <button type="submit" class="btn-login">Sign In</button>
     <button type="submit" class="btn-launch" style="display:none;">Launch</button>
     <button type="submit" class="btn-logout" style="display:none;">Sign Out</button>
+    <textarea id="logs" style="display:none;"></textarea>
   </body>
 </html>
