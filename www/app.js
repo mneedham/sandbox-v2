@@ -97,22 +97,23 @@ $(document).ready(function() {
           type: "GET",
           url: "https://ppriuj7e7i.execute-api.us-east-1.amazonaws.com/prod/SandboxRetrieveUserLogs",
           data: {"usecase": "us-elections-2016"},
+          context: this,
           dataType: 'json',
           async: true,
           headers: {
             "Authorization": id_token 
           },
           success: function (data){
-            display_logs(data);
+            display_logs(data, this.editor);
           }
         });
         $('.btn-launch').show();
     }
   }
 
-  var display_logs = function(data) {
+  var display_logs = function(data, editor) {
     logsString = JSON.stringify(data)
-    $('#logs').append(logsString);
+    editor.replaceRange(logString, CodeMirror.Pos(editor.lastLine())
   } 
 
   var show_instances = function(instances) {
