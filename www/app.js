@@ -96,6 +96,7 @@ $(document).ready(function() {
         ({
           type: "GET",
           url: "https://ppriuj7e7i.execute-api.us-east-1.amazonaws.com/prod/SandboxRetrieveUserLogs",
+          data: {"usecase": "us-elections-2016"},
           dataType: 'json',
           async: true,
           headers: {
