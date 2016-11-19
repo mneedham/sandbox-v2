@@ -8,3 +8,9 @@ cd ..
 cd Auth0JwtAuthorizor
 zip -r9 ../Auth0JwtAuthorizor.zip *
 cd ..
+cd SandboxMaintainInstances
+zip -r9 ../SandboxMaintainInstances.zip *
+cd ..
+cd SandboxRetrieveUserLogs
+zip -r9 ../SandboxRetrieveUserLogs.zip *
+cd ..

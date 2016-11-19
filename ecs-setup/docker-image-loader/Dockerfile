@@ -6,6 +6,7 @@ RUN apt-get install -y python python-pip
 RUN pip install neo4j-driver
 RUN pip install futures
 RUN pip install retrying
+RUN pip install boto3 
 
 ADD import_data.py /
 RUN chmod +x /import_data.py
