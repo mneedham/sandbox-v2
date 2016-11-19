@@ -112,7 +112,7 @@ $(document).ready(function() {
 
   var display_logs = function(data, editor) {
     for (var eventid in data.events) {
-      editor.replaceRange(data.events[eventid].message, CodeMirror.Pos(editor.lastLine()));
+      editor.replaceRange(data.events[eventid].message + "\n", CodeMirror.Pos(editor.lastLine()));
     }
   } 
 
