@@ -97,14 +97,13 @@ $(document).ready(function() {
           type: "GET",
           url: "https://ppriuj7e7i.execute-api.us-east-1.amazonaws.com/prod/SandboxRetrieveUserLogs",
           data: {"usecase": "us-elections-2016"},
-          context: this,
           dataType: 'json',
           async: true,
           headers: {
             "Authorization": id_token 
           },
           success: function (data){
-            display_logs(data, this.editor);
+            display_logs(data, editor);
           }
         });
         $('.btn-launch').show();
