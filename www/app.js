@@ -97,12 +97,12 @@ $(document).ready(function() {
     }
   }
 
-  var retrieve_logs = function(editor, token) {
+  var retrieve_logs = function(editor, nextToken) {
     var id_token = localStorage.getItem('id_token');
     if (id_token) {
       data = {"usecase": "us-elections-2016"}
-      if (token) {
-        data['token'] = token
+      if (nextToken) {
+        data['nextToken'] = nextToken
       }
       $.ajax
       ({
