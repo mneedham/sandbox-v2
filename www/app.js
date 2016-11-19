@@ -112,7 +112,7 @@ $(document).ready(function() {
 
   var display_logs = function(data, editor) {
     logsString = JSON.stringify(data)
-    editor.replaceRange(logString, CodeMirror.Pos(editor.lastLine()));
+    editor.replaceRange(logsString, CodeMirror.Pos(editor.lastLine()));
   } 
 
   var show_instances = function(instances) {
