@@ -49,7 +49,7 @@ $(document).ready(function() {
       type: "POST",
       url: "https://ppriuj7e7i.execute-api.us-east-1.amazonaws.com/prod/SandboxRunInstance",
       dataType: 'json',
-      data: JSON.stringify({ "usecase": "elections2016-" + String(rand) }),
+      data: JSON.stringify({ "usecase": "us-elections-2016"}),
       contentType: "application/json",
       async: true,
       headers: {
