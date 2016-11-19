@@ -111,8 +111,9 @@ $(document).ready(function() {
   }
 
   var display_logs = function(data, editor) {
-    logsString = JSON.stringify(data)
-    editor.replaceRange(logsString, CodeMirror.Pos(editor.lastLine()));
+    for (var eventid in data.events) {
+      editor.replaceRange(data.events[eventid], CodeMirror.Pos(editor.lastLine()));
+    }
   } 
 
   var show_instances = function(instances) {
