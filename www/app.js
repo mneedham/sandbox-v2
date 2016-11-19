@@ -99,7 +99,7 @@ $(document).ready(function() {
               .appendTo(iList);
             var a = $('<a/>')
               .attr('href', 'http://' + instances[instanceNum].ip + ':' + instances[instanceNum].port)
-              .text(instances[instanceNum].usecase)
+              .text(instances[instanceNum].usecase + " - username: neo4j, password: " + instances[instanceNum].password )
               .appendTo(li);
         } else {
             setTimeout(retrieve_show_instances, 3000);
