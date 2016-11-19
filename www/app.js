@@ -98,6 +98,8 @@ $(document).ready(function() {
   }
 
   var retrieve_logs = function(editor, token) {
+    var id_token = localStorage.getItem('id_token');
+    if (id_token) {
       data = {"usecase": "us-elections-2016"}
       if (token) {
         data['token'] = token
@@ -116,6 +118,9 @@ $(document).ready(function() {
           display_logs(data, editor);
         }
       });
+    } else {
+      return False;
+    }
   }
 
   var display_logs = function(data, editor) {
