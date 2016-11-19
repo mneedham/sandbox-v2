@@ -92,27 +92,38 @@ $(document).ready(function() {
             show_instances(data);
           }
         });
-        $.ajax
-        ({
-          type: "GET",
-          url: "https://ppriuj7e7i.execute-api.us-east-1.amazonaws.com/prod/SandboxRetrieveUserLogs",
-          data: {"usecase": "us-elections-2016"},
-          dataType: 'json',
-          async: true,
-          headers: {
-            "Authorization": id_token 
-          },
-          success: function (data){
-            display_logs(data, editor);
-          }
-        });
+        retrieve_logs(editor, null);
         $('.btn-launch').show();
     }
+  }
+
+  var retrieve_logs = function(editor, token) {
+      data = {"usecase": "us-elections-2016"}
+      if (token) {
+        data['token'] = token
+      }
+      $.ajax
+      ({
+        type: "GET",
+        url: "https://ppriuj7e7i.execute-api.us-east-1.amazonaws.com/prod/SandboxRetrieveUserLogs",
+        data: data,
+        dataType: 'json',
+        async: true,
+        headers: {
+          "Authorization": id_token
+        },
+        success: function (data){
+          display_logs(data, editor);
+        }
+      });
   }
 
   var display_logs = function(data, editor) {
     for (var eventid in data.events) {
       editor.replaceRange(data.events[eventid].message + "\n", CodeMirror.Pos(editor.lastLine()));
+    }
+    if (data.nextForwardToken) {
+      setTimeout(retrieve_logs, 3000, editor, data.nextForwardToken);
     }
   } 
 
