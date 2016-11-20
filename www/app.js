@@ -8,6 +8,7 @@ $(document).ready(function() {
     //$('#logs').show();
     event.source.close();
     localStorage.setItem('id_token', event.data.token)
+    localStorage.setItem('profile', event.data.profile)
     show_profile_info(event.data.profile)
     retrieve_show_instances();
   }
@@ -164,4 +165,5 @@ $(document).ready(function() {
 
   // Display user information
   retrieve_show_instances();
+  show_profile_info();
 });
