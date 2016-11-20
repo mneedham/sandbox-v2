@@ -74,11 +74,13 @@ $(document).ready(function() {
     if (id_token) {
         $('.btn-login').hide();
         $('.btn-logout').show();
-        //$('#logs').show();
+        /*
+        $('#logs').show();
         var editor = CodeMirror.fromTextArea(document.getElementById('logs'), {
           mode: 'shell',
           lineNumbers: true
-        });
+        })$a
+        */;
         $.ajax
         ({
           type: "GET",
