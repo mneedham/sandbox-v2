@@ -8,6 +8,7 @@ $(document).ready(function() {
     //$('#logs').show();
     event.source.close();
     localStorage.setItem('id_token', event.data.token)
+    show_profile_info(event.data.profile)
     retrieve_show_instances();
   }
  
@@ -67,6 +68,7 @@ $(document).ready(function() {
      $('.btn-login').hide();
      $('.avatar').attr('src', profile.picture).show();
      $('.btn-logout').show();
+     $('#welcome').show();
   };
 
   var retrieve_show_instances = function() {
@@ -74,6 +76,7 @@ $(document).ready(function() {
     if (id_token) {
         $('.btn-login').hide();
         $('.btn-logout').show();
+        $('#welcome').show();
         /*
         $('#logs').show();
         var editor = CodeMirror.fromTextArea(document.getElementById('logs'), {
