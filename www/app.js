@@ -144,7 +144,7 @@ $(document).ready(function() {
               .text(instances[instanceNum].usecase + " - username: neo4j, password: " + instances[instanceNum].password )
               .appendTo(li);
         } else {
-            setTimeout(retrieve_show_instances, 3000);
+            setTimeout(retrieve_show_instances, 10000);
             var li = $('<li/>').text("Launching: " + instances[instanceNum].usecase)
               .appendTo(iList);
         }
