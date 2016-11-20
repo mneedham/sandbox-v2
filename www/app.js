@@ -5,7 +5,7 @@ $(document).ready(function() {
   var listener = function(event) {
     $('.btn-login').hide();
     $('.btn-launch').show();
-    $('#logs').show();
+    //$('#logs').show();
     event.source.close();
     localStorage.setItem('id_token', event.data.token)
     retrieve_show_instances();
@@ -74,7 +74,7 @@ $(document).ready(function() {
     if (id_token) {
         $('.btn-login').hide();
         $('.btn-logout').show();
-        $('#logs').show();
+        //$('#logs').show();
         var editor = CodeMirror.fromTextArea(document.getElementById('logs'), {
           mode: 'shell',
           lineNumbers: true
@@ -92,7 +92,7 @@ $(document).ready(function() {
             show_instances(data);
           }
         });
-        retrieve_logs(editor, null);
+        //retrieve_logs(editor, null);
         $('.btn-launch').show();
     }
   }
@@ -150,9 +150,6 @@ $(document).ready(function() {
         }
     }
     oList.replaceWith(iList);
-  }
-
-  var launch_instance = function(usecase) {
   }
 
   var logout = function() {
