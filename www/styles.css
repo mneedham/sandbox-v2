@@ -2,8 +2,8 @@
   list-style-type: none;
 }
 #usecaseList li {
-  background: 'lightblue';
+  background-color: '#008cc1';
 }
 #usecaseList li:nth-child(odd) {
-  background: 'lightgreen';
+  background-color: '#65b144';
 }
