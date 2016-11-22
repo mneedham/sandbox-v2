@@ -183,8 +183,9 @@ $(document).ready(function() {
       var li = $('<li/>')
         .html("<img class=\"usecase-image\" src=\"" + usecases[usecaseNum].logo + "\"><b>" + usecases[usecaseNum].name + "</b><br />" + usecases[usecaseNum].description + '<br /><button type="submit" class="btn-launch" data-usecase="' + usecases[usecaseNum].name + '">Launch Sandbox</button>' )
         .appendTo(uList);
+      ucname = usecases[usecaseNum].name
       window.addEventListener("runningInstance", function (event) {
-        if (event.detail && event.detail.usecase && event.detail.usecase == usecases[usecaseNum].name) {
+        if (event.detail && event.detail.usecase && event.detail.usecase == ucname) {
             li.append("instance<br />");
         }    
       });
