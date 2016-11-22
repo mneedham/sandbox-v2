@@ -48,7 +48,7 @@ $(document).ready(function() {
   $('.btn-launch').click(function (e) {
     var id_token = localStorage.getItem('id_token');
     if (! id_token) {
-      return $('.btn-login').click(e);  
+      return $('.btn-login').trigger(e);  
     }
     var rand = Math.floor((Math.random() * 100) + 1);
 
