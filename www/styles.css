@@ -1,3 +1,9 @@
 #usecaseList {
   list-style-type: none;
 }
+#usecaseList li {
+  background: 'lightblue';
+}
+#usecaseList li:nth-child(odd) {
+  background: 'lightgreen';
+}

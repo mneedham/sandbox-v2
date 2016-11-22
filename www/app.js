@@ -158,7 +158,7 @@ $(document).ready(function() {
     var uList = $('<ul>', {id: 'usecaseList'})
     for (var usecaseNum in usecases) {
       var li = $('<li/>')
-        .text(usecases[usecaseNum].name + " - " + usecases[usecaseNum].description)
+        .html("<b>" + usecases[usecaseNum].name + "</b><br />" + usecases[usecaseNum].description)
         .appendTo(uList);
     }
     oList.replaceWith(uList);
