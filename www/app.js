@@ -187,7 +187,7 @@ $(document).ready(function() {
           .appendTo(uList);
         window.addEventListener("runningInstance", function (event) {
           if (event.detail && event.detail.usecase && event.detail.usecase == ucname) {
-              li.append("<br />usecase");
+              li.append("<br /><a href=\"http://" + event.detail.ip + ":" + event.detail.port + "/\">" + event.detail.ip + "</a>");
           }    
         });
       })(usecases[usecaseNum].name);
@@ -203,7 +203,7 @@ $(document).ready(function() {
     for (var instanceNum in instances) {
         var e = jQuery.Event('runningInstance');
         e.usecase = instances[instanceNum].usecase;
-        window.dispatchEvent(new CustomEvent('runningInstance', {detail: { usecase: instances[instanceNum].usecase}}));
+        window.dispatchEvent(new CustomEvent('runningInstance', {detail: { usecase: instances[instanceNum].usecase, ip: instances[instanceNum].ip, port: instances[instanceNum].port, username: 'neo4j', password: instances[instanceNum.password }}));
 /*
         addEventListener("message", listener, false)
         if(instances[instanceNum].ip) {
