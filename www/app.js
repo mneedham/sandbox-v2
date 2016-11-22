@@ -179,16 +179,18 @@ $(document).ready(function() {
   var show_usecases = function(usecases) {
     var oList = $('#usecaseList')
     var uList = $('<ul>', {id: 'usecaseList'})
-    for (var usecaseNum in usecases) {
-      var li = $('<li/>')
-        .html("<img class=\"usecase-image\" src=\"" + usecases[usecaseNum].logo + "\"><b>" + usecases[usecaseNum].name + "</b><br />" + usecases[usecaseNum].description + '<br /><button type="submit" class="btn-launch" data-usecase="' + usecases[usecaseNum].name + '">Launch Sandbox</button>' )
-        .appendTo(uList);
-      ucname = usecases[usecaseNum].name
-      window.addEventListener("runningInstance", function (event) {
-        if (event.detail && event.detail.usecase && event.detail.usecase == ucname) {
-            li.append("instance<br />");
-        }    
-      });
+    for (var usecaseNum in usecases) {$a
+      (function () {
+        var li = $('<li/>')
+          .html("<img class=\"usecase-image\" src=\"" + usecases[usecaseNum].logo + "\"><b>" + usecases[usecaseNum].name + "</b><br />" + usecases[usecaseNum].description + '<br /><button type="submit" class="btn-launch" data-usecase="' + usecases[usecaseNum].name + '">Launch Sandbox</button>' )
+          .appendTo(uList);
+        ucname = usecases[usecaseNum].name
+        window.addEventListener("runningInstance", (function (event) {
+          if (event.detail && event.detail.usecase && event.detail.usecase == ucname) {
+              li.append("instance<br />");
+          }    
+        });
+      })();
     }
     oList.replaceWith(uList);
     // update buttons
