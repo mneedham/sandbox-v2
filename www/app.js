@@ -201,7 +201,7 @@ $(document).ready(function() {
     for (var instanceNum in instances) {
         var e = jQuery.Event('runningInstance');
         e.usecase = instances[instanceNum].usecase;
-        window.dispatchEvent(new CustomEvent('runningInstance', {usecase: instances[instanceNum].usecase}));
+        window.dispatchEvent(new CustomEvent('runningInstance', {detail: { usecase: instances[instanceNum].usecase}}));
 /*
         addEventListener("message", listener, false)
         if(instances[instanceNum].ip) {
