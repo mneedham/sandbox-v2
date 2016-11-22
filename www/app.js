@@ -37,7 +37,7 @@ $(document).ready(function() {
     window.addEventListener('message', function(event) {
       clearInterval(pollInterval);
       if (targetUsecase) {
-        launchInstance(targetUsecase);
+        window.setTimeout(launchInstance(targetUsecase), 1000);
       }
     });
     pollInterval = setInterval(function (e) {
@@ -53,7 +53,6 @@ $(document).ready(function() {
 
   var launchButtonAction = function() {
     $('.btn-launch').click(function (e) {
-      var id_token = localStorage.getItem('id_token');
       if (! id_token) {
         return $('.btn-login').trigger(e);  
       }
@@ -62,6 +61,7 @@ $(document).ready(function() {
   }
 
   var launchInstance = function(usecase) {
+    var id_token = localStorage.getItem('id_token');
     var rand = Math.floor((Math.random() * 100) + 1);
 
     $.ajax
