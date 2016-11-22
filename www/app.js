@@ -79,8 +79,6 @@ $(document).ready(function() {
         retrieve_show_instances();
       }
     });
-  });
-
   }
 
   var show_profile_info = function(profile) {
