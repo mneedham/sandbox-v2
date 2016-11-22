@@ -191,5 +191,4 @@ $(document).ready(function() {
 
   retrieve_show_usecases();
   retrieve_show_instances();
-  show_profile_info();
 });
