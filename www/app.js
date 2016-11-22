@@ -29,8 +29,16 @@ $(document).ready(function() {
       win.moveTo(500, 300);
     } catch (e) {
     }
+    if (e.target.dataset && e.target.dataset['usecase']) {
+      targetUsecase = e.target.dataset['usecase'];
+    } else {
+      targetUsecase = null;
+    }
     window.addEventListener('message', function(event) {
       clearInterval(pollInterval);
+      if (targetUsecase) {
+        alert(targetUsecase);
+      }
     });
     pollInterval = setInterval(function (e) {
       win.postMessage('Polling for results', 
