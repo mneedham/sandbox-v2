@@ -11,5 +11,7 @@
   background-color: #bfebff;
 }
 .usecase-image {
-  max-height: 50px;
+  max-height: 80px;
+  margin-right: 5px;
+  float: left;
 }
