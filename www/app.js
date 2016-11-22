@@ -158,7 +158,7 @@ $(document).ready(function() {
     var uList = $('<ul>', {id: 'usecaseList'})
     for (var usecaseNum in usecases) {
       var li = $('<li/>')
-        .html("<img class=\"usecase-image\" src=\"" + usecases[usecaseNum].logo + "\"><b>" + usecases[usecaseNum].name + "</b><br />" + usecases[usecaseNum].description)
+        .html("<img class=\"usecase-image\" src=\"" + usecases[usecaseNum].logo + "\"><b>" + usecases[usecaseNum].name + "</b><br />" + usecases[usecaseNum].description + '<br /><button type="submit" class="btn-launch">Launch Sandbox</button>' )
         .appendTo(uList);
     }
     oList.replaceWith(uList);
