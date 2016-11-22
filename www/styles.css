@@ -1,8 +1,10 @@
 #usecaseList {
   list-style-type: none;
+  padding-left: 0px;
 }
 #usecaseList li {
   background-color: #bfffca;
+  padding: 5px;
 }
 #usecaseList li:nth-child(odd) {
   background-color: #bfebff;
