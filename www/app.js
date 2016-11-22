@@ -203,7 +203,7 @@ $(document).ready(function() {
     for (var instanceNum in instances) {
         var e = jQuery.Event('runningInstance');
         e.usecase = instances[instanceNum].usecase;
-        window.dispatchEvent(new CustomEvent('runningInstance', {detail: { usecase: instances[instanceNum].usecase, ip: instances[instanceNum].ip, port: instances[instanceNum].port, username: 'neo4j', password: instances[instanceNum.password }}));
+        window.dispatchEvent(new CustomEvent('runningInstance', {detail: { usecase: instances[instanceNum].usecase, ip: instances[instanceNum].ip, port: instances[instanceNum].port, username: 'neo4j', password: instances[instanceNum].password }}));
 /*
         addEventListener("message", listener, false)
         if(instances[instanceNum].ip) {
