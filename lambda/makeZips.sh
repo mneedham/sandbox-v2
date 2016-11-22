@@ -14,3 +14,6 @@ cd ..
 cd SandboxRetrieveUserLogs
 zip -r9 ../SandboxRetrieveUserLogs.zip *
 cd ..
+cd SandboxGetUsecases
+zip -r9 ../SandboxGetUsecases.zip *
+cd ..

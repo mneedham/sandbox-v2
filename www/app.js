@@ -103,6 +103,22 @@ $(document).ready(function() {
     }
   }
 
+  var retrieve_show_usecases = function() {
+    $.ajax
+    ({
+      type: "GET",
+      url: "https://ppriuj7e7i.execute-api.us-east-1.amazonaws.com/prod/SandboxRetrieveUsecases",
+      data: data,
+      dataType: 'json',
+      async: true,
+      headers: {
+      },
+      success: function (data){
+        show_usecases(data);
+      }
+    });
+  }
+
   var retrieve_logs = function(editor, nextToken) {
     var id_token = localStorage.getItem('id_token');
     if (id_token) {
@@ -138,6 +154,17 @@ $(document).ready(function() {
     }
   } 
 
+  var show_usecases = function(usecases) {
+    var oList = $('#usecasesList')
+    var uList = $('<ul>', {id: 'usecasesList'})
+    for (var usecaseNum in usecases) {
+      var li = $('<li/>')
+        .text(usecases[usecaseNum].name + " - " + usecases[usecaseNum].description)
+        .appendTo(uList);
+    }
+    oList.replaceWith(uList);
+  }
+
   var show_instances = function(instances) {
     var oList = $('#instanceList')
     var iList = $('<ul>', {id: 'instanceList'})
@@ -163,7 +190,7 @@ $(document).ready(function() {
     window.location.href = "/sandbox-web/www/";
   };
 
-  // Display user information
+  retrieve_show_usecases();
   retrieve_show_instances();
   show_profile_info();
 });
