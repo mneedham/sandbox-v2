@@ -14,5 +14,13 @@
 .usecase-image {
   max-height: 80px;
   margin-right: 5px;
+}
+
+.uc-image {
+  width: 100%;
   float: left;
+}
+
+.uc-description {
+  float: right;
 }
