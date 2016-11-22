@@ -193,7 +193,14 @@ $(document).ready(function() {
     var oList = $('#instanceList')
     var iList = $('<ul>', {id: 'instanceList'})
     for (var instanceNum in instances) {
+        var event = new Event('runningInstance');
+        var e = jQuery.Event('runningInstance');
+        e.data = { 'usecase': instances[instanceNum].usecase }
+        jQuery('window').trigger( e );
+/*
+        addEventListener("message", listener, false)
         if(instances[instanceNum].ip) {
+            
             var li = $('<li/>')
               .appendTo(iList);
             var a = $('<a/>')
@@ -205,8 +212,9 @@ $(document).ready(function() {
             var li = $('<li/>').text("Launching: " + instances[instanceNum].usecase)
               .appendTo(iList);
         }
+*/
     }
-    oList.replaceWith(iList);
+    //oList.replaceWith(iList);
   }
 
   var logout = function() {
