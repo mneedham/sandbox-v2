@@ -10,3 +10,6 @@
 #usecaseList li:nth-child(odd) {
   background-color: #bfebff;
 }
+.usecase-image {
+  max-height: 50px;
+}
