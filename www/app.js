@@ -107,7 +107,7 @@ $(document).ready(function() {
     $.ajax
     ({
       type: "GET",
-      url: "https://ppriuj7e7i.execute-api.us-east-1.amazonaws.com/prod/SandboxRetrieveUsecases",
+      url: "https://ppriuj7e7i.execute-api.us-east-1.amazonaws.com/prod/SandboxGetUsecases",
       dataType: 'json',
       async: true,
       headers: {
