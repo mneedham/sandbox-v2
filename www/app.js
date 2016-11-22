@@ -189,7 +189,7 @@ $(document).ready(function() {
         window.addEventListener("runningInstance", function (event) {
           if (event.detail && event.detail.usecase && event.detail.usecase == ucname) {
               $('*[data-usecase="' + ucname + '"]').hide();
-              li.append("<p style=\"align: right\"><br /><a href=\"http://" + event.detail.ip + ":" + event.detail.port + "/\">" + event.detail.ip + "</a></p>");
+              li.append("<div class=\"connection\"><br /><a href=\"http://" + event.detail.ip + ":" + event.detail.port + "/\">" + event.detail.ip + "</a></div>");
           }    
         });
       })(usecases[usecaseNum].name);
