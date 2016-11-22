@@ -183,7 +183,8 @@ $(document).ready(function() {
       (function (ucname) {
         var usecase = usecases[usecaseNum]
         var li = $('<li/>')
-          .html("<img class=\"usecase-image\" src=\"" + usecase.logo + "\"><b>" + usecase.name + "</b><br />" + usecase.description + '<br /><button type="submit" class="btn-launch" data-usecase="' + usecase.name + '">Launch Sandbox</button>' )
+          .attr('id', 'usecase:' + ucname)
+          .html("<div class=\"uc-img\"><img class=\"usecase-image\" src=\"" + usecase.logo + "\"></div><div class=\"uc-description\"><b>" + usecase.name + "</b><br />" + usecase.description + '<br /><button type="submit" class="btn-launch" data-usecase="' + usecase.name + '">Launch Sandbox</button></div>' )
           .appendTo(uList);
         window.addEventListener("runningInstance", function (event) {
           if (event.detail && event.detail.usecase && event.detail.usecase == ucname) {
