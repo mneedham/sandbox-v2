@@ -6,6 +6,7 @@
 #usecaseList li {
   background-color: #bfffca;
   padding: 5px;
+  min-height: 90px;
 }
 #usecaseList li:nth-child(odd) {
   background-color: #bfebff;
