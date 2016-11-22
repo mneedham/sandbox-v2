@@ -19,8 +19,9 @@
 .uc-image {
   width: 100%;
   float: left;
+  display: inline;
 }
 
 .uc-description {
-  float: right;
+  display: inline;
 }
