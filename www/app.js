@@ -58,7 +58,7 @@ $(document).ready(function() {
         return $('.btn-login').trigger(e);  
       }
       return launchInstance('us-elections-foo');
-    };
+    });
   }
 
   var launchInstance = function(usecase) {
