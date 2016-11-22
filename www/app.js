@@ -184,7 +184,6 @@ $(document).ready(function() {
         .html("<img class=\"usecase-image\" src=\"" + usecases[usecaseNum].logo + "\"><b>" + usecases[usecaseNum].name + "</b><br />" + usecases[usecaseNum].description + '<br /><button type="submit" class="btn-launch" data-usecase="' + usecases[usecaseNum].name + '">Launch Sandbox</button>' )
         .appendTo(uList);
       $('body').on("runningInstance", function (event) {
-        alert(event);
         if (event.usecase && event.usecase == usecases[usecaseNum].name) {
             li.html.append("instance<br />");
         }    
