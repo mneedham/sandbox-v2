@@ -183,6 +183,11 @@ $(document).ready(function() {
       var li = $('<li/>')
         .html("<img class=\"usecase-image\" src=\"" + usecases[usecaseNum].logo + "\"><b>" + usecases[usecaseNum].name + "</b><br />" + usecases[usecaseNum].description + '<br /><button type="submit" class="btn-launch" data-usecase="' + usecases[usecaseNum].name + '">Launch Sandbox</button>' )
         .appendTo(uList);
+      window.addEventListener("runningInstance", function (event) {
+        if (event.usecase && event.usecase == usecases[usecaseNum].name) {
+            li.html.append("instance<br />");
+        }    
+      });
     }
     oList.replaceWith(uList);
     // update buttons
@@ -193,9 +198,8 @@ $(document).ready(function() {
     var oList = $('#instanceList')
     var iList = $('<ul>', {id: 'instanceList'})
     for (var instanceNum in instances) {
-        var event = new Event('runningInstance');
         var e = jQuery.Event('runningInstance');
-        e.data = { 'usecase': instances[instanceNum].usecase }
+        e.usecase = instances[instanceNum].usecase;
         jQuery('window').trigger( e );
 /*
         addEventListener("message", listener, false)
