@@ -43,6 +43,8 @@ $(document).ready(function() {
     logout();
   })
 
+  var btn-launch-pop = function() {
+
   $('.btn-launch').click(function (e) {
     var id_token = localStorage.getItem('id_token');
     if (! id_token) {
@@ -66,6 +68,8 @@ $(document).ready(function() {
       }
     });
   });
+
+  }
 
   var show_profile_info = function(profile) {
      $('.nickname').text(profile.nickname);
@@ -165,6 +169,8 @@ $(document).ready(function() {
         .appendTo(uList);
     }
     oList.replaceWith(uList);
+    // update buttons
+    btn-launch-pop();
   }
 
   var show_instances = function(instances) {
