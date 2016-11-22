@@ -53,6 +53,7 @@ $(document).ready(function() {
 
   var launchButtonAction = function() {
     $('.btn-launch').click(function (e) {
+      var id_token = localStorage.getItem('id_token');
       if (! id_token) {
         return $('.btn-login').trigger(e);  
       }
