@@ -183,7 +183,7 @@ $(document).ready(function() {
       var li = $('<li/>')
         .html("<img class=\"usecase-image\" src=\"" + usecases[usecaseNum].logo + "\"><b>" + usecases[usecaseNum].name + "</b><br />" + usecases[usecaseNum].description + '<br /><button type="submit" class="btn-launch" data-usecase="' + usecases[usecaseNum].name + '">Launch Sandbox</button>' )
         .appendTo(uList);
-      $('window').on("runningInstance", function (event) {
+      $('body').on("runningInstance", function (event) {
         alert(event);
         if (event.usecase && event.usecase == usecases[usecaseNum].name) {
             li.html.append("instance<br />");
@@ -201,7 +201,7 @@ $(document).ready(function() {
     for (var instanceNum in instances) {
         var e = jQuery.Event('runningInstance');
         e.usecase = instances[instanceNum].usecase;
-        $('window').trigger( e );
+        $('body').trigger( e );
 /*
         addEventListener("message", listener, false)
         if(instances[instanceNum].ip) {
