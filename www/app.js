@@ -183,7 +183,7 @@ $(document).ready(function() {
       var li = $('<li/>')
         .html("<img class=\"usecase-image\" src=\"" + usecases[usecaseNum].logo + "\"><b>" + usecases[usecaseNum].name + "</b><br />" + usecases[usecaseNum].description + '<br /><button type="submit" class="btn-launch" data-usecase="' + usecases[usecaseNum].name + '">Launch Sandbox</button>' )
         .appendTo(uList);
-      $('body').addEventListener("runningInstance", function (event) {
+      window.addEventListener("runningInstance", function (event) {
         if (event.usecase && event.usecase == usecases[usecaseNum].name) {
             li.append("instance<br />");
         }    
