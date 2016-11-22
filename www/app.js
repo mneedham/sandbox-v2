@@ -57,7 +57,12 @@ $(document).ready(function() {
       if (! id_token) {
         return $('.btn-login').trigger(e);  
       }
-      return launchInstance('us-elections-foo');
+      $('.btn-launch').hide();  
+      if (e.target.dataset && e.target.dataset['usecase']) {
+        return launchInstance(e.target.dataset['usecase']);
+      } else {
+        return launchInstance('us-elections-foo');
+      }
     });
   }
 
