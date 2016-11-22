@@ -43,7 +43,7 @@ $(document).ready(function() {
     logout();
   })
 
-  var btn-launch-pop = function() {
+  var launchButtonAction = function() {
 
   $('.btn-launch').click(function (e) {
     var id_token = localStorage.getItem('id_token');
@@ -170,7 +170,7 @@ $(document).ready(function() {
     }
     oList.replaceWith(uList);
     // update buttons
-    btn-launch-pop();
+    launchButtonAction();
   }
 
   var show_instances = function(instances) {
