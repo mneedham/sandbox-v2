@@ -108,7 +108,6 @@ $(document).ready(function() {
     ({
       type: "GET",
       url: "https://ppriuj7e7i.execute-api.us-east-1.amazonaws.com/prod/SandboxRetrieveUsecases",
-      data: data,
       dataType: 'json',
       async: true,
       headers: {
@@ -155,8 +154,8 @@ $(document).ready(function() {
   } 
 
   var show_usecases = function(usecases) {
-    var oList = $('#usecasesList')
-    var uList = $('<ul>', {id: 'usecasesList'})
+    var oList = $('#usecaseList')
+    var uList = $('<ul>', {id: 'usecaseList'})
     for (var usecaseNum in usecases) {
       var li = $('<li/>')
         .text(usecases[usecaseNum].name + " - " + usecases[usecaseNum].description)
