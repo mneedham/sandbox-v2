@@ -37,7 +37,7 @@ $(document).ready(function() {
     window.addEventListener('message', function(event) {
       clearInterval(pollInterval);
       if (targetUsecase) {
-        alert(targetUsecase);
+        launchInstance(targetUsecase);
       }
     });
     pollInterval = setInterval(function (e) {
@@ -58,6 +58,10 @@ $(document).ready(function() {
     if (! id_token) {
       return $('.btn-login').trigger(e);  
     }
+    return launchInstance('us-elections-foo');
+  };
+
+  var launchInstance = function(usecase) {
     var rand = Math.floor((Math.random() * 100) + 1);
 
     $.ajax
@@ -65,7 +69,7 @@ $(document).ready(function() {
       type: "POST",
       url: "https://ppriuj7e7i.execute-api.us-east-1.amazonaws.com/prod/SandboxRunInstance",
       dataType: 'json',
-      data: JSON.stringify({ "usecase": "us-elections-2016"}),
+      data: JSON.stringify({ "usecase": usecase}),
       contentType: "application/json",
       async: true,
       headers: {
