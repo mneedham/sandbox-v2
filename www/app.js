@@ -185,7 +185,7 @@ $(document).ready(function() {
         .appendTo(uList);
       $('body').on("runningInstance", function (event) {
         if (event.usecase && event.usecase == usecases[usecaseNum].name) {
-            li.html.append("instance<br />");
+            li.append("instance<br />");
         }    
       });
     }
