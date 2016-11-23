@@ -292,7 +292,10 @@
               if(currentConnections.length == 0) {
                 divConnectionInfo.appendTo(divUsecaseConnections);
               } else {
-                currentConnections.replaceWith(divConnectionInfo);
+                // only replace if pending item.  TODO, preempt earlier to prevent dom build
+                if (currentConnections.data('sandboxStatus') == 'pending'){
+                  currentConnections.replaceWith(divConnectionInfo);
+                }
               }
           }    
         });
