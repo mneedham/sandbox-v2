@@ -47,7 +47,7 @@
 
   var launchButtonAction = function() {
     $('.btn-launch').click(function (e) {
-      this.hide();
+      //this.hide();
       //$('.btn-launch').hide();  
       var id_token = localStorage.getItem('id_token');
       if (! id_token) {
