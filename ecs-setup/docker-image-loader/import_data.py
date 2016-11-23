@@ -29,9 +29,9 @@ def import_data():
   session = get_db_session()
   s3 = boto3.client('s3')
   response = s3.get_object(Bucket='neo4j-sandbox-import-scripts',Key='%s.cyp' % (USECASE))
-  queries = response['Body'].read()
+  queriesString = response['Body'].read()
   
-  query = queries.split(";\n")
+  queries  = queriesString.split(";\n")
   for query in queries:
     print("###### Executing query:\n%s" % (query))
     results = session.run(query, parameters={})

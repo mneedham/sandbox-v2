@@ -54,6 +54,7 @@
         return $('.btn-login').trigger(e);  
       }
       if (e.target.dataset && e.target.dataset['usecase']) {
+        $( this ).hide();
         return launchInstance(e.target.dataset['usecase']);
       } else {
         return launchInstance('us-elections-foo');
@@ -202,7 +203,7 @@
           .attr('type', 'submit')
           .attr('class', 'btn-launch')
           .attr('data-usecase', usecase.name)
-          .text('Launch Sandbox')
+          .text('Get Sandbox')
           .appendTo(paraUsecaseLaunchButton);
         var divUsecaseConnections = $('<div/>')
           .attr('class', 'connectionsList')
@@ -265,7 +266,7 @@
                         .append($('<textarea/>')
                           .attr('id', `logs-${event.detail.sandboxId}`)
                           .attr('value',"")
-                          .text("loading...\n")
+                          .text(`loading... for task ${event.detail.taskId}\n`)
                           ))
                       .tabs({
                         activate: function(event, ui) {
@@ -318,7 +319,7 @@
         var e = jQuery.Event('runningInstance');
         e.usecase = instances[instanceNum].usecase;
         if(instances[instanceNum].ip) {
-          window.dispatchEvent(new CustomEvent('runningInstance', {detail: { usecase: instances[instanceNum].usecase, modelImage: instances[instanceNum].modelImage, sandboxId: instances[instanceNum].sandboxId, ip: instances[instanceNum].ip, port: instances[instanceNum].port, username: 'neo4j', password: instances[instanceNum].password }}));
+          window.dispatchEvent(new CustomEvent('runningInstance', {detail: { usecase: instances[instanceNum].usecase, modelImage: instances[instanceNum].modelImage, sandboxId: instances[instanceNum].sandboxId, ip: instances[instanceNum].ip, port: instances[instanceNum].port, username: 'neo4j', password: instances[instanceNum].password, taskId: instances[instanceNum].taskid }}));
         } else {
           window.dispatchEvent(new CustomEvent('startingInstance', {detail: { usecase: instances[instanceNum].usecase, sandboxId: instances[instanceNum].sandboxId } }));
           setTimeout(retrieve_show_instances, 5000);
@@ -328,6 +329,7 @@
 
   var logout = function() {
     localStorage.removeItem('id_token');
+    localStorage.removeItem('profile');
     window.location.href = window.location.href;
   };
 
