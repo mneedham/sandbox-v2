@@ -4,16 +4,18 @@
   var pollInterval;
 
   var listener = function(event) {
-    $('.btn-login').hide();
-    $('.btn-launch').show();
-    //$('#logs').show();
-    event.source.close();
-    localStorage.setItem('id_token', event.data.token)
-    localStorage.setItem('profile', JSON.stringify(event.data.profile))
-    show_profile_info(event.data.profile)
-    retrieve_show_instances();
+    if (event.origin == "https://auth.neo4j.com/index.html") {
+      $('.btn-login').hide();
+      $('.btn-launch').show();
+      //$('#logs').show();
+      event.source.close();
+      localStorage.setItem('id_token', event.data.token)
+      localStorage.setItem('profile', JSON.stringify(event.data.profile))
+      show_profile_info(event.data.profile)
+      retrieve_show_instances();
+    }
   }
- 
+   
   if (window.addEventListener){
     addEventListener("message", listener, false)
   } else {
