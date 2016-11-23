@@ -229,6 +229,10 @@
                             .text('Connection Info')))
                         .append($('<li/>')
                           .append($('<a/>')
+                            .attr('href','#tabs-datamodel')
+                            .text('Data Model')))
+                        .append($('<li/>')
+                          .append($('<a/>')
                             .attr('href','#tabs-code')
                             .text('Code')))
                         .append($('<li/>')
@@ -246,6 +250,11 @@
                         .append($('<p/>')
                           .html(`username: ${event.detail.username}<br />` +
                                 `password: ${event.detail.password}`)))
+                      .append($('<div/>')
+                        .attr('id','tabs-datamodel')
+                        .append($('<img/>')
+                          .attr('src', event.detail.modelImage)
+                          .attr('width', '100%')))
                       .append($('<div/>')
                         .attr('id','tabs-code')
                         .append($('<p/>')
@@ -304,7 +313,7 @@
         var e = jQuery.Event('runningInstance');
         e.usecase = instances[instanceNum].usecase;
         if(instances[instanceNum].ip) {
-          window.dispatchEvent(new CustomEvent('runningInstance', {detail: { usecase: instances[instanceNum].usecase, sandboxId: instances[instanceNum].sandboxId, ip: instances[instanceNum].ip, port: instances[instanceNum].port, username: 'neo4j', password: instances[instanceNum].password }}));
+          window.dispatchEvent(new CustomEvent('runningInstance', {detail: { usecase: instances[instanceNum].usecase, modelImage: instances[instanceNum].modelImage, sandboxId: instances[instanceNum].sandboxId, ip: instances[instanceNum].ip, port: instances[instanceNum].port, username: 'neo4j', password: instances[instanceNum].password }}));
         } else {
           window.dispatchEvent(new CustomEvent('startingInstance', {detail: { usecase: instances[instanceNum].usecase, sandboxId: instances[instanceNum].sandboxId } }));
           setTimeout(retrieve_show_instances, 5000);
