@@ -295,10 +295,14 @@
         window.addEventListener("startingInstance", function (event) {
           if (event.detail && event.detail.usecase && event.detail.usecase == ucname) {
               $('*[data-usecase="' + ucname + '"]').hide();
-              $('<div/>')
-                  .attr('data-sandboxid', event.detail.sandboxId)
-                  .text("Starting instance for this usecase.  Give me a few seconds please")
-                  .appendTo(divUsecaseConnections);
+              var currentConnections = 
+                divUsecaseConnections.find(`*[data-sandboxid="${event.detail.sandboxId}"]`)
+              if(currentConnections.length == 0) {
+                $('<div/>')
+                    .attr('data-sandboxid', event.detail.sandboxId)
+                    .text("Starting instance for this usecase.  Give me a few seconds please")
+                    .appendTo(divUsecaseConnections);
+              }
           }    
         });
       })(usecases[usecaseNum].name);
