@@ -4,7 +4,7 @@
   var pollInterval;
 
   var listener = function(event) {
-    if (event.origin == "https://auth.neo4j.com/index.html") {
+    if (event.origin == "https://auth.neo4j.com") {
       $('.btn-login').hide();
       $('.btn-launch').show();
       //$('#logs').show();
