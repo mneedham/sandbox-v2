@@ -23,6 +23,9 @@
 }
 */
 
+.connectionInfoItem {
+  margin-bottom: 10px;
+}
 .connectionsList {
   list-style-type: none;
   padding-left: 0px;

@@ -9,7 +9,7 @@
     //$('#logs').show();
     event.source.close();
     localStorage.setItem('id_token', event.data.token)
-    localStorage.setItem('profile', event.data.profile)
+    localStorage.setItem('profile', JSON.stringify(event.data.profile))
     show_profile_info(event.data.profile)
     retrieve_show_instances();
   }
@@ -135,10 +135,10 @@
     });
   }
 
-  var retrieve_logs = function(editor, nextToken) {
+  var retrieve_logs = function(editor, sbid, nextToken) {
     var id_token = localStorage.getItem('id_token');
     if (id_token) {
-      data = {"usecase": "us-elections-2016"}
+      data = {"sbid": sbid}
       if (nextToken) {
         data['nextToken'] = nextToken
       }
@@ -165,9 +165,9 @@
     for (var eventid in data.events) {
       editor.replaceRange(data.events[eventid].message + "\n", CodeMirror.Pos(editor.lastLine()));
     }
-    if (data.nextForwardToken) {
-      setTimeout(retrieve_logs, 3000, editor, data.nextForwardToken);
-    }
+/*    if (data.nextForwardToken) {
+      setTimeout(retrieve_logs, 10000, editor, data.nextForwardToken);
+    }*/
   } 
 
   var show_usecases = function(usecases) {
@@ -211,11 +211,13 @@
           .appendTo(divUsecase);
 
         window.addEventListener("runningInstance", function (event) {
+          var sandboxId = event.detail.sandboxId;
           if (event.detail && event.detail.usecase && event.detail.usecase == ucname) {
               $('*[data-usecase="' + ucname + '"]').hide();
               var currentConnections = 
                 divUsecaseConnections.find(`*[data-sandboxid="${event.detail.sandboxId}"]`)
               var divConnectionInfo = $('<div/>')
+                  .attr('class', 'connectionInfoItem')
                   .attr('data-connectioninfo', `${event.detail.ip}:${event.detail.port}`)
                   .attr('data-sandboxid', event.detail.sandboxId)
                   .append(
@@ -250,8 +252,25 @@
                           .text('Code samples here')))
                       .append($('<div/>')
                         .attr('id','tabs-logs')
-                        .append($('<p/>')
-                          .text('Logs here'))).tabs());
+                        .append($('<textarea/>')
+                          .attr('id', `logs-${event.detail.sandboxId}`)
+                          .attr('value',"")
+                          .text("loading...\n")
+                          ))
+                      .tabs({
+                        activate: function(event, ui) {
+                          if (ui.newTab[0].outerText == "Logs") {
+                            if (! ui.newPanel[0].lastChild.CodeMirror) {
+                              var editor = CodeMirror.fromTextArea(
+                                ui.newPanel[0].firstChild, {
+                                mode: 'shell',
+                                lineNumbers: true
+                              })
+                              retrieve_logs(editor, sandboxId, null);
+                            }
+                          }
+                        }
+                      }));
                     /*
                     $('<a/>')
                       .attr('href', `http://${event.detail.ip}:${event.detail.port}/`)
@@ -306,6 +325,14 @@ $(document).ready(function() {
     e.preventDefault();
     logout();
   })
+  var profile = localStorage.getItem('profile');
+  if (profile) {
+    try {
+      show_profile_info(JSON.parse(profile))    
+    } catch (err) {
+
+    }
+  }
   retrieve_show_usecases();
   retrieve_show_instances();
 });
