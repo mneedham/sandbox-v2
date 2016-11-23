@@ -304,6 +304,7 @@
               if(currentConnections.length == 0) {
                 $('<div/>')
                     .attr('data-sandboxid', event.detail.sandboxId)
+                    .attr('data-sandbox-status', 'pending')
                     .text("Starting instance for this usecase.  Give me a few seconds please")
                     .appendTo(divUsecaseConnections);
               }
