@@ -3,6 +3,16 @@
   padding-left: 0px;
   width: 700px;
 }
+.usecaseListItem {
+  background-color: #bfffca;
+  padding: 5px;
+  min-height: 80px;
+}
+#usecaseList .usecaseListItem:nth-child(odd) {
+  background-color: #bfebff;
+}
+
+/*
 #usecaseList li {
   background-color: #bfffca;
   padding: 5px;
@@ -11,17 +21,32 @@
 #usecaseList li:nth-child(odd) {
   background-color: #bfebff;
 }
-.usecase-image {
+*/
+
+.connectionsList {
+  list-style-type: none;
+  padding-left: 0px;
+}
+.connectionsList li {
+  padding: 5px !important;
+  min-height: 0px !important;
+}
+.connectionsList li:nth-child(odd) {
+}
+.usecase-div-image {
   max-height: 80px;
   margin-right: 5px;
 }
 
-.uc-img {
-  height: 100%;
+.usecase-img {
+  width: 100px;
   float: left;
-  display: inline;
 }
 
-.uc-description {
-  display: inline;
+.usecase-div-description {
+  margin-left: 110px;
+}
+
+.clear {
+  clear: both;
 }

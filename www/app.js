@@ -1,6 +1,7 @@
-$(document).ready(function() {
+  const API_PATH = "https://ppriuj7e7i.execute-api.us-east-1.amazonaws.com/prod"
+  const AUTH_URL = "https://auth.neo4j.com/index.html"
 
-  var runningSandboxes = [];
+  var pollInterval;
 
   var listener = function(event) {
     $('.btn-login').hide();
@@ -19,10 +20,8 @@ $(document).ready(function() {
     attachEvent("onmessage", listener)
   }
 
-  var pollInterval;
-
-  $('.btn-login').click(function (e) {
-    win = window.open("https://auth.neo4j.com/index.html",
+  var loginButtonAction = function(e) {
+    win = window.open(AUTH_URL,
                 "loginWindow",
                 "location=0,status=0,scrollbars=0, width=1080,height=720");
     try {
@@ -42,14 +41,9 @@ $(document).ready(function() {
     });
     pollInterval = setInterval(function (e) {
       win.postMessage('Polling for results', 
-                      "https://auth.neo4j.com/index.html")
+                      AUTH_URL)
       }, 6000);
-  });
-
-  $('.btn-logout').click(function(e) {
-    e.preventDefault();
-    logout();
-  })
+  }
 
   var launchButtonAction = function() {
     $('.btn-launch').click(function (e) {
@@ -73,7 +67,7 @@ $(document).ready(function() {
     $.ajax
     ({
       type: "POST",
-      url: "https://ppriuj7e7i.execute-api.us-east-1.amazonaws.com/prod/SandboxRunInstance",
+      url: `${API_PATH}/SandboxRunInstance`,
       dataType: 'json',
       data: JSON.stringify({ "usecase": usecase}),
       contentType: "application/json",
@@ -111,7 +105,7 @@ $(document).ready(function() {
         $.ajax
         ({
           type: "GET",
-          url: "https://ppriuj7e7i.execute-api.us-east-1.amazonaws.com/prod/SandboxGetRunningInstancesForUser",
+          url: `${API_PATH}/SandboxGetRunningInstancesForUser`,
           dataType: 'json',
           async: true,
           headers: {
@@ -122,7 +116,7 @@ $(document).ready(function() {
           }
         });
         //retrieve_logs(editor, null);
-        $('.btn-launch').show();
+        //$('.btn-launch').show();
     }
   }
 
@@ -130,7 +124,7 @@ $(document).ready(function() {
     $.ajax
     ({
       type: "GET",
-      url: "https://ppriuj7e7i.execute-api.us-east-1.amazonaws.com/prod/SandboxGetUsecases",
+      url: `${API_PATH}/SandboxGetUsecases`,
       dataType: 'json',
       async: true,
       headers: {
@@ -151,7 +145,7 @@ $(document).ready(function() {
       $.ajax
       ({
         type: "GET",
-        url: "https://ppriuj7e7i.execute-api.us-east-1.amazonaws.com/prod/SandboxRetrieveUserLogs",
+        url: `${API_PATH}/SandboxRetrieveUserLogs`,
         data: data,
         dataType: 'json',
         async: true,
@@ -183,13 +177,100 @@ $(document).ready(function() {
       (function (ucname) {
         var usecase = usecases[usecaseNum]
         var li = $('<li/>')
-          .attr('id', 'usecase:' + ucname)
-          .html("<div class=\"uc-img\"><img class=\"usecase-image\" src=\"" + usecase.logo + "\"></div><div class=\"uc-description\"><b>" + usecase.name + "</b><br />" + usecase.description + '<br /><button type="submit" class="btn-launch" data-usecase="' + usecase.name + '">Launch Sandbox</button></div>' )
+          .attr('class', 'usecaseListItem')
           .appendTo(uList);
+        var divUsecase = $('<div/>')
+          .appendTo(li)
+          .attr('id', 'usecase:' + ucname);
+        var divUsecaseImage = $('<div/>')
+          .attr('class', 'usecase-div-image')
+          .appendTo(divUsecase);
+        var imgUsecaseImage = $('<img/>')
+          .attr('class', 'usecase-img')
+          .attr('src', usecase.logo)
+          .appendTo(divUsecaseImage);
+        var divUsecaseDescription = $('<div/>')
+          .attr('class', 'usecase-div-description')
+          .appendTo(divUsecase);
+        var paraUsecaseDescription = $('<p/>')
+          .text(`${usecase.name} - ${usecase.description}`)
+          .appendTo(divUsecaseDescription);
+        var paraUsecaseLaunchButton = $('<p/>')
+          .appendTo(divUsecaseDescription);
+        var buttonUsecaseLaunch = $('<button/>')
+          .attr('type', 'submit')
+          .attr('class', 'btn-launch')
+          .attr('data-usecase', usecase.name)
+          .text('Launch Sandbox')
+          .appendTo(paraUsecaseLaunchButton);
+        var divUsecaseConnections = $('<div/>')
+          .attr('class', 'connectionsList')
+          .appendTo(divUsecaseDescription);
+        var divUsecaseClear = $('<div/>')
+          .attr('class', 'clear')
+          .appendTo(divUsecase);
+
         window.addEventListener("runningInstance", function (event) {
           if (event.detail && event.detail.usecase && event.detail.usecase == ucname) {
               $('*[data-usecase="' + ucname + '"]').hide();
-              li.append("<div class=\"connection\"><br /><a href=\"http://" + event.detail.ip + ":" + event.detail.port + "/\">" + event.detail.ip + "</a></div>");
+              var currentConnections = 
+                divUsecaseConnections.find(`*[data-sandboxid="${event.detail.sandboxId}"]`)
+              var divConnectionInfo = $('<div/>')
+                  .attr('data-connectioninfo', `${event.detail.ip}:${event.detail.port}`)
+                  .attr('data-sandboxid', event.detail.sandboxId)
+                  .append(
+                    $('<div/>')
+                      .append($('<ul/>')
+                        .append($('<li/>')
+                          .append($('<a/>')
+                            .attr('href','#tabs-connection-info')
+                            .text('Connection Info')))
+                        .append($('<li/>')
+                          .append($('<a/>')
+                            .attr('href','#tabs-code')
+                            .text('Code')))
+                        .append($('<li/>')
+                          .append($('<a/>')
+                            .attr('href','#tabs-logs')
+                            .text('Logs'))))
+                      .append($('<div/>')
+                        .attr('id','tabs-connection-info')
+                        .append($('<p/>')
+                          .text('Neo4j Browser: ')
+                          .append($('<a/>')
+                            .attr('href', `http://${event.detail.ip}:${event.detail.port}/`)
+                            .text(`http://${event.detail.ip}:${event.detail.port}/`)
+                          ))
+                        .append($('<p/>')
+                          .html(`username: ${event.detail.username}<br />` +
+                                `password: ${event.detail.password}`)))
+                      .append($('<div/>')
+                        .attr('id','tabs-code')
+                        .append($('<p/>')
+                          .text('Code samples here')))
+                      .append($('<div/>')
+                        .attr('id','tabs-logs')
+                        .append($('<p/>')
+                          .text('Logs here'))).tabs());
+                    /*
+                    $('<a/>')
+                      .attr('href', `http://${event.detail.ip}:${event.detail.port}/`)
+                      .text(`http://${event.detail.ip}:${event.detail.port}/`)
+                    );*/
+              if(currentConnections.length == 0) {
+                divConnectionInfo.appendTo(divUsecaseConnections);
+              } else {
+                currentConnections.replaceWith(divConnectionInfo);
+              }
+          }    
+        });
+        window.addEventListener("startingInstance", function (event) {
+          if (event.detail && event.detail.usecase && event.detail.usecase == ucname) {
+              $('*[data-usecase="' + ucname + '"]').hide();
+              $('<div/>')
+                  .attr('data-sandboxid', event.detail.sandboxId)
+                  .text("Starting instance for this usecase.  Give me a few seconds please")
+                  .appendTo(divUsecaseConnections);
           }    
         });
       })(usecases[usecaseNum].name);
@@ -200,37 +281,32 @@ $(document).ready(function() {
   }
 
   var show_instances = function(instances) {
-    var oList = $('#instanceList')
-    var iList = $('<ul>', {id: 'instanceList'})
     for (var instanceNum in instances) {
         var e = jQuery.Event('runningInstance');
         e.usecase = instances[instanceNum].usecase;
-        window.dispatchEvent(new CustomEvent('runningInstance', {detail: { usecase: instances[instanceNum].usecase, ip: instances[instanceNum].ip, port: instances[instanceNum].port, username: 'neo4j', password: instances[instanceNum].password }}));
-/*
-        addEventListener("message", listener, false)
         if(instances[instanceNum].ip) {
-            
-            var li = $('<li/>')
-              .appendTo(iList);
-            var a = $('<a/>')
-              .attr('href', 'http://' + instances[instanceNum].ip + ':' + instances[instanceNum].port)
-              .text(instances[instanceNum].usecase + " - username: neo4j, password: " + instances[instanceNum].password )
-              .appendTo(li);
+          window.dispatchEvent(new CustomEvent('runningInstance', {detail: { usecase: instances[instanceNum].usecase, sandboxId: instances[instanceNum].sandboxId, ip: instances[instanceNum].ip, port: instances[instanceNum].port, username: 'neo4j', password: instances[instanceNum].password }}));
         } else {
-            setTimeout(retrieve_show_instances, 10000);
-            var li = $('<li/>').text("Launching: " + instances[instanceNum].usecase)
-              .appendTo(iList);
+          window.dispatchEvent(new CustomEvent('startingInstance', {detail: { usecase: instances[instanceNum].usecase, sandboxId: instances[instanceNum].sandboxId } }));
+          setTimeout(retrieve_show_instances, 5000);
         }
-*/
     }
-    //oList.replaceWith(iList);
   }
 
   var logout = function() {
     localStorage.removeItem('id_token');
-    window.location.href = "/sandbox-web/www/";
+    window.location.href = window.location.href;
   };
 
+$(document).ready(function() {
+  $('.btn-login').click(function (e) {
+    loginButtonAction(e);
+  });
+  $('.btn-logout').click(function(e) {
+    e.preventDefault();
+    logout();
+  })
   retrieve_show_usecases();
   retrieve_show_instances();
 });
+
