@@ -154,6 +154,9 @@
         },
         success: function (data){
           console.log(data);
+        },
+        error: function (data, statusText, errorThrown){
+          console.log(data);
         }
       });
     }
