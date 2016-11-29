@@ -160,6 +160,7 @@
           }
         });
       })(language, usecase);
+    }
   }
 
   var retrieve_logs = function(editor, sbid, nextToken) {
