@@ -1,6 +1,6 @@
   const API_PATH = "https://ppriuj7e7i.execute-api.us-east-1.amazonaws.com/prod";
   const AUTH_URL = "https://auth.neo4j.com/index.html";
-  const CODE_SNIPPETS_PATH = "https://s3.amazonaws.com/neo4j-sandbox-code-snippets/";
+  const CODE_SNIPPETS_PATH = "https://s3.amazonaws.com/neo4j-sandbox-code-snippets";
 
   var pollInterval;
 
