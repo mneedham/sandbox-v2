@@ -159,6 +159,7 @@
               $( `<li><a href="#tab-code-${language}">${language}</a></li>` ).appendTo( ul );
               var div = $( `<div id="tab-code-${language}"/ >`);
               var textarea = $('<textarea/>');
+              textarea.text(data);
               textarea.appendTo(div);
               div.appendTo( tabs );
               var editor = CodeMirror.fromTextArea(
