@@ -283,8 +283,10 @@
                           .attr('width', '100%')))
                       .append($('<div/>')
                         .attr('id','tabs-code')
-                        .append($('<p/>')
-                          .text('Code samples here')))
+                        .append($('<div/>')).
+			  .attr('id', `tabs-code-${event.detail.usecase}`)
+			  .append($('<ul />'))
+			.tabs())
                       .append($('<div/>')
                         .attr('id','tabs-logs')
                         .append($('<textarea/>')
