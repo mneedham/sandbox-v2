@@ -163,7 +163,7 @@
               textarea.appendTo(div);
               div.appendTo( tabs );
               var editor = CodeMirror.fromTextArea(
-                  textarea, {
+                  textarea[0], {
                   mode: 'shell',
                   lineNumbers: true
               });
