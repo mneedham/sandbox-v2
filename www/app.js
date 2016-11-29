@@ -329,7 +329,7 @@
                     );*/
               if(currentConnections.length == 0) {
                 divConnectionInfo.appendTo(divUsecaseConnections);
-                retrieve_show_code_snippets(event.detail.usecase, divConnectionInfo.find(`.tabs-code-${event.detail.usecase}`));
+                retrieve_show_code_snippets(event.detail.usecase, divConnectionInfo.find(`.tabs-code-${event.detail.usecase}`)[0]);
               } else {
                 // only replace if pending item.  TODO, preempt earlier to prevent dom build
                 if (currentConnections.data('sandboxStatus') == 'pending'){
