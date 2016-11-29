@@ -152,9 +152,11 @@
         async: true,
         headers: {
         },
-        success: function (data){
+        success: (function (data){
           console.log(data);
-        }
+          console.log(language);
+          console.log(usecase);
+        })(language, usecase)
       });
     }
   }
@@ -286,7 +288,8 @@
                         .append($('<div/>')
 			  .attr('id', `tabs-code-${event.detail.usecase}`)
 			  .append($('<ul />')))
-			.tabs())
+			.tabs()
+                        .hide())
                       .append($('<div/>')
                         .attr('id','tabs-logs')
                         .append($('<textarea/>')
