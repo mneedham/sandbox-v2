@@ -156,8 +156,8 @@
           success: function (data) {
               var tabs = $(`#tabs-code-${usecase}`);
               var ul = tabs.find( "ul" );
-              $( `<li><a href='#tab-code-${language}'>${language}</a></li>` ).appendTo( ul );
-              $( `<div id='tab-code-${language}'><p>${data}</p></div>` ).appendTo( tabs );
+              $( `<li><a href="#tab-code-${language}">${language}</a></li>` ).appendTo( ul );
+              $( `<div id="tab-code-${language}"><p>${data}</p></div>` ).appendTo( tabs );
           }
         });
       })(language, usecase);
