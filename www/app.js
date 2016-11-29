@@ -154,9 +154,10 @@
           headers: {
           },
           success: function (data) {
-              console.log(data);
-              console.log(language);
-              console.log(usecase);
+              var tabs = $(`#tabs-code-${usecase}`);
+              var ul = tabs.find( "ul" );
+              $( `<li><a href='#tab-code-${language}'>${language}</a></li>` ).appendTo( ul );
+              $( `<div id='tab-code-${language}'><p>${data}</p></div>` ).appendTo( tabs );
           }
         });
       })(language, usecase);
@@ -291,7 +292,6 @@
 			  .attr('id', `tabs-code-${event.detail.usecase}`)
 			  .append($('<ul />')))
 			.tabs()
-                        .hide())
                       .append($('<div/>')
                         .attr('id','tabs-logs')
                         .append($('<textarea/>')
