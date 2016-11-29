@@ -148,14 +148,11 @@
       ({
         type: "GET",
         url: `${CODE_SNIPPETS_PATH}/${usecase}.${language}.txt`,
-        dataType: 'text/plain',
+        dataType: 'text',
         async: true,
         headers: {
         },
         success: function (data){
-          console.log(data);
-        },
-        error: function (data, statusText, errorThrown){
           console.log(data);
         }
       });
