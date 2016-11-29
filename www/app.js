@@ -291,7 +291,7 @@
                         .append($('<div/>')
 			  .attr('id', `tabs-code-${event.detail.usecase}`)
 			  .append($('<ul />')))
-			.tabs()
+			.tabs())
                       .append($('<div/>')
                         .attr('id','tabs-logs')
                         .append($('<textarea/>')
