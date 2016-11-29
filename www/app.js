@@ -167,7 +167,7 @@
                   mode: 'shell',
                   lineNumbers: true
               });
-              ul.tabs( "refresh" );
+              //ul.tabs( "refresh" );
           }
         });
       })(language, usecase, tabjq);
