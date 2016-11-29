@@ -153,11 +153,11 @@
         headers: {
         },
         success: function (data) {
-          (function(data, language, usecase){
+          return (function(language, usecase){
             console.log(data);
             console.log(language);
             console.log(usecase);
-          })(data, language, usecase);
+          })(language, usecase);
         }
       });
     }
