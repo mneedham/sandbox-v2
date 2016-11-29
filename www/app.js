@@ -140,11 +140,11 @@
     });
   }
 
-  var retrieve_show_code_snippets = function(usecase) {
+  var retrieve_show_code_snippets = function(usecase, tabDiv) {
     var languages = ['php', 'py', 'java', 'js'];
     for (var langId in languages) {
       language = languages[langId];
-      (function(language, usecase) {
+      (function(language, usecase, tabDiv) {
         $.ajax
         ({
           type: "GET",
@@ -154,14 +154,14 @@
           headers: {
           },
           success: function (data) {
-              var tabs = $(`.tabs-code-${usecase}`);
+              var tabs = tabDiv;
               var ul = tabs.find( "ul" );
               $( `<li><a href="#tab-code-${language}">${language}</a></li>` ).appendTo( ul );
               $( `<div id="tab-code-${language}"><p>${data}</p></div>` ).appendTo( tabs );
               tabs.tabs( "refresh" );
           }
         });
-      })(language, usecase);
+      })(language, usecase, tabDiv);
     }
   }
 
@@ -320,7 +320,7 @@
                     );*/
               if(currentConnections.length == 0) {
                 divConnectionInfo.appendTo(divUsecaseConnections);
-                retrieve_show_code_snippets(event.detail.usecase);
+                retrieve_show_code_snippets(event.detail.usecase, divConnectionInfo.find(`.tabs-code-${event.detail.usecase}`));
               } else {
                 // only replace if pending item.  TODO, preempt earlier to prevent dom build
                 if (currentConnections.data('sandboxStatus') == 'pending'){
