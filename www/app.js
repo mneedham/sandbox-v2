@@ -283,7 +283,7 @@
                           .attr('width', '100%')))
                       .append($('<div/>')
                         .attr('id','tabs-code')
-                        .append($('<div/>').
+                        .append($('<div/>')
 			  .attr('id', `tabs-code-${event.detail.usecase}`)
 			  .append($('<ul />')))
 			.tabs())
