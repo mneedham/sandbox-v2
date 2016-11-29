@@ -152,11 +152,13 @@
         async: true,
         headers: {
         },
-        success: (function (data){
-          console.log(data);
-          console.log(language);
-          console.log(usecase);
-        })(language, usecase)
+        success: function (data) {
+          return function(data, language, usecase){
+            console.log(data);
+            console.log(language);
+            console.log(usecase);
+          };
+        }
       });
     }
   }
