@@ -158,6 +158,7 @@
               var ul = tabs.find( "ul" );
               $( `<li><a href="#tab-code-${language}">${language}</a></li>` ).appendTo( ul );
               $( `<div id="tab-code-${language}"><p>${data}</p></div>` ).appendTo( tabs );
+              tabs.tabs( "refresh" );
           }
         });
       })(language, usecase);
