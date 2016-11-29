@@ -157,7 +157,15 @@
               var tabs = tabDiv;
               var ul = tabs.find( "ul" );
               $( `<li><a href="#tab-code-${language}">${language}</a></li>` ).appendTo( ul );
-              $( `<div id="tab-code-${language}"><p>${data}</p></div>` ).appendTo( tabs );
+              var div = $( `<div id="tab-code-${language}"/ >`);
+              var textarea = $('<textarea/>');
+              textarea.appendTo(div);
+              div.appendTo( tabs );
+              var editor = CodeMirror.fromTextArea(
+                  textarea, {
+                  mode: 'shell',
+                  lineNumbers: true
+              });
               tabs.tabs( "refresh" );
           }
         });
