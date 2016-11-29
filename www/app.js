@@ -200,7 +200,7 @@
     for (var usecaseNum in usecases) {
       (function (ucname) {
         var usecase = usecases[usecaseNum]
-        retrieve_show_code_snippets(usecase);
+        retrieve_show_code_snippets(usecase.name);
         var li = $('<li/>')
           .attr('class', 'usecaseListItem')
           .appendTo(uList);
