@@ -206,7 +206,6 @@
     for (var usecaseNum in usecases) {
       (function (ucname) {
         var usecase = usecases[usecaseNum]
-        retrieve_show_code_snippets(usecase.name);
         var li = $('<li/>')
           .attr('class', 'usecaseListItem')
           .appendTo(uList);
@@ -321,6 +320,7 @@
                     );*/
               if(currentConnections.length == 0) {
                 divConnectionInfo.appendTo(divUsecaseConnections);
+                retrieve_show_code_snippets(event.detail.usecase);
               } else {
                 // only replace if pending item.  TODO, preempt earlier to prevent dom build
                 if (currentConnections.data('sandboxStatus') == 'pending'){
