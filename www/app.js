@@ -144,24 +144,22 @@
     var languages = ['php', 'py', 'java', 'js'];
     for (var langId in languages) {
       language = languages[langId];
-      $.ajax
-      ({
-        type: "GET",
-        url: `${CODE_SNIPPETS_PATH}/${usecase}.${language}.txt`,
-        dataType: 'text',
-        async: true,
-        headers: {
-        },
-        success: (function (data) {
-          return (function(language, usecase){
-            console.log(data);
-            console.log(language);
-            console.log(usecase);
-          })(language, usecase);
-        }
-      )(data);
-      }
-    }
+      (function(language, usecase) {
+        $.ajax
+        ({
+          type: "GET",
+          url: `${CODE_SNIPPETS_PATH}/${usecase}.${language}.txt`,
+          dataType: 'text',
+          async: true,
+          headers: {
+          },
+          success: function (data) {
+              console.log(data);
+              console.log(language);
+              console.log(usecase);
+          }
+        });
+      })(language, usecase);
   }
 
   var retrieve_logs = function(editor, sbid, nextToken) {
