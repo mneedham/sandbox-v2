@@ -1,5 +1,6 @@
-  const API_PATH = "https://ppriuj7e7i.execute-api.us-east-1.amazonaws.com/prod"
-  const AUTH_URL = "https://auth.neo4j.com/index.html"
+  const API_PATH = "https://ppriuj7e7i.execute-api.us-east-1.amazonaws.com/prod";
+  const AUTH_URL = "https://auth.neo4j.com/index.html";
+  const CODE_SNIPPETS_PATH = "https://s3.amazonaws.com/neo4j-sandbox-code-snippets/";
 
   var pollInterval;
 
@@ -139,6 +140,25 @@
     });
   }
 
+  var retrieve_show_code_snippets = function(usecase) {
+    var languages = ['php', 'py', 'java', 'js'];
+    for (var langId in languages) {
+      language = languages[langId];
+      $.ajax
+      ({
+        type: "GET",
+        url: `${CODE_SNIPPETS_PATH}/${usecase}.${language}.txt`,
+        dataType: 'text/plain',
+        async: true,
+        headers: {
+        },
+        success: function (data){
+          alert(data);
+        }
+      });
+    }
+  }
+
   var retrieve_logs = function(editor, sbid, nextToken) {
     var id_token = localStorage.getItem('id_token');
     if (id_token) {
@@ -180,6 +200,7 @@
     for (var usecaseNum in usecases) {
       (function (ucname) {
         var usecase = usecases[usecaseNum]
+        retrieve_show_code_snippets(usecase);
         var li = $('<li/>')
           .attr('class', 'usecaseListItem')
           .appendTo(uList);
@@ -249,6 +270,7 @@
                           .text('Neo4j Browser: ')
                           .append($('<a/>')
                             .attr('href', `http://${event.detail.ip}:${event.detail.port}/`)
+                            .attr('target', '_blank')
                             .text(`http://${event.detail.ip}:${event.detail.port}/`)
                           ))
                         .append($('<p/>')
