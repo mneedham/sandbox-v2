@@ -360,9 +360,9 @@ $('.tabs-code').resizable({
                 // only replace if pending item.  TODO, preempt earlier to prevent dom build
                 if (currentConnections.data('sandboxStatus') == 'pending'){
                   currentConnections.replaceWith(divConnectionInfo);
-		  $('.connectionInfoItemTabContainer').tabs("refresh");
-		  $('.tabs-code').tabs("refresh");
                 }
+		$('.connectionInfoItemTabContainer').tabs("refresh");
+		$('.tabs-code').tabs("refresh");
               }
           }    
         });
