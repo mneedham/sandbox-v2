@@ -25,6 +25,7 @@
 
 .connectionInfoItem {
   margin-bottom: 10px;
+  min-height: 100px;
 }
 .connectionsList {
   list-style-type: none;
