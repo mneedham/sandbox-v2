@@ -163,11 +163,13 @@
               .text(data)
               .appendTo(div);
               div.appendTo( tabs );
+/*
               var editor = CodeMirror.fromTextArea(
                   textarea[0], {
                   mode: 'shell',
                   lineNumbers: true
               });
+*/
               tabs.tabs( "refresh" );
           }
         });
