@@ -354,7 +354,7 @@ $('.tabs-code').resizable({
 $('.connectionInfoItemTabContainer').tabs("refresh");
 $('.tabs-code').tabs("refresh");
                 divConnectionInfo.appendTo(divUsecaseConnections);
-                retrieve_show_code_snippets(event.detail.usecase, event.detail.username, event.detail.password, event.detail.ip, event.detail.port, divConnectionInfo.find(`.tabs-code-${event.detail.usecase}`));
+                retrieve_show_code_snippets(event.detail.usecase, event.detail.username, event.detail.password, event.detail.ip, event.detail.boltPort, divConnectionInfo.find(`.tabs-code-${event.detail.usecase}`));
               } else {
                 // only replace if pending item.  TODO, preempt earlier to prevent dom build
                 if (currentConnections.data('sandboxStatus') == 'pending'){
@@ -389,7 +389,7 @@ $('.tabs-code').tabs("refresh");
         var e = jQuery.Event('runningInstance');
         e.usecase = instances[instanceNum].usecase;
         if(instances[instanceNum].ip) {
-          window.dispatchEvent(new CustomEvent('runningInstance', {detail: { usecase: instances[instanceNum].usecase, modelImage: instances[instanceNum].modelImage, sandboxId: instances[instanceNum].sandboxId, ip: instances[instanceNum].ip, port: instances[instanceNum].port, username: 'neo4j', password: instances[instanceNum].password, taskId: instances[instanceNum].taskid }}));
+          window.dispatchEvent(new CustomEvent('runningInstance', {detail: { usecase: instances[instanceNum].usecase, modelImage: instances[instanceNum].modelImage, sandboxId: instances[instanceNum].sandboxId, ip: instances[instanceNum].ip, boltPort: instances[instanceNum].boltPort, port: instances[instanceNum].port, username: 'neo4j', password: instances[instanceNum].password, taskId: instances[instanceNum].taskid }}));
         } else {
           window.dispatchEvent(new CustomEvent('startingInstance', {detail: { usecase: instances[instanceNum].usecase, sandboxId: instances[instanceNum].sandboxId } }));
           setTimeout(retrieve_show_instances, 5000);
