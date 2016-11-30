@@ -333,6 +333,10 @@
                       .text(`http://${event.detail.ip}:${event.detail.port}/`)
                     );*/
               if(currentConnections.length == 0) {
+$('#connectionInfoItem').resizable({
+         handles: 's',
+         alsoResize: '.ui-tabs-panel'
+     });
                 divConnectionInfo.appendTo(divUsecaseConnections);
                 retrieve_show_code_snippets(event.detail.usecase, divConnectionInfo.find(`.tabs-code-${event.detail.usecase}`));
               } else {
