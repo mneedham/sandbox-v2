@@ -25,7 +25,7 @@
 
 .connectionInfoItem {
   margin-bottom: 10px;
-  min-height: 400px;
+  height: 400px;
 }
 .connectionsList {
   list-style-type: none;
@@ -52,7 +52,7 @@
 }
 
 .connectInfoItemTabContainer {
-  min-height: 350px; 
+  height: 300px; 
 }
 
 .clear {
