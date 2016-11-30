@@ -140,11 +140,11 @@
     });
   }
 
-  var retrieve_show_code_snippets = function(usecase, username, password, ip, port, tabjq) {
+  var retrieve_show_code_snippets = function(usecase, username, password, ip, httpPort, boltPort, tabjq) {
     var languages = ['php', 'py', 'java', 'js'];
     for (var langId in languages) {
       language = languages[langId];
-      (function(language, usecase, username, password, ip, port, tabjq) {
+      (function(language, usecase, username, password, ip, httpPort, boltPort, tabjq) {
         $.ajax
         ({
           type: "GET",
@@ -156,10 +156,11 @@
           success: function (data) {
               var tabs = tabjq.tabs({heightStyle: "fill"});
               var ul = tabs.find( "ul" );
-              var code = data.replace("USERNAME", username)
-                .replace("PASSWORD", password)
-                .replace("IPADDR", ip)
-                .replace("PORT", port);
+              var code = data.replace("<USERNAME>", username)
+                .replace("<PASSWORD>", password)
+                .replace("<HOST>", ip)
+                .replace("<HTTPPORT>", httpPort)
+                .replace("<BOLTPORT>", boltPort)
               $( `<li><a href="#tab-code-${language}">${language}</a></li>` ).appendTo( ul );
               var div = $( `<div id="tab-code-${language}"/ >`);
               var textarea = $('<textarea/>')
@@ -178,7 +179,7 @@
               tabs.tabs({ active: 0 });
           }
         });
-      })(language, usecase, username, password, ip, port, tabjq);
+      })(language, usecase, username, password, ip, httpPort, boltPort, tabjq);
     }
   }
 
@@ -354,7 +355,7 @@ $('.tabs-code').resizable({
 $('.connectionInfoItemTabContainer').tabs("refresh");
 $('.tabs-code').tabs("refresh");
                 divConnectionInfo.appendTo(divUsecaseConnections);
-                retrieve_show_code_snippets(event.detail.usecase, event.detail.username, event.detail.password, event.detail.ip, event.detail.boltPort, divConnectionInfo.find(`.tabs-code-${event.detail.usecase}`));
+                retrieve_show_code_snippets(event.detail.usecase, event.detail.username, event.detail.password, event.detail.ip, event.detail.port, event.detail.boltPort, divConnectionInfo.find(`.tabs-code-${event.detail.usecase}`));
               } else {
                 // only replace if pending item.  TODO, preempt earlier to prevent dom build
                 if (currentConnections.data('sandboxStatus') == 'pending'){
