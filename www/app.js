@@ -154,7 +154,7 @@
           headers: {
           },
           success: function (data) {
-              var tabs = tabjq;
+              var tabs = tabjq.tabs();
               var ul = tabs.find( "ul" );
               $( `<li><a href="#tab-code-${language}">${language}</a></li>` ).appendTo( ul );
               var div = $( `<div id="tab-code-${language}"/ >`);
@@ -167,7 +167,7 @@
                   mode: 'shell',
                   lineNumbers: true
               });
-              //ul.tabs( "refresh" );
+              tabs.tabs( "refresh" );
           }
         });
       })(language, usecase, tabjq);
