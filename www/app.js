@@ -159,9 +159,10 @@
               var ul = tabs.find( "ul" );
               $( `<li><a href="#tab-code-${language}">${language}</a></li>` ).appendTo( ul );
               var div = $( `<div id="tab-code-${language}"/ >`);
-              var textarea = $('<textarea/>');
-              textarea.text(data);
-              textarea.appendTo(div);
+              var textarea = $('<textarea/>')
+              .attr('class', 'code-textarea')
+              .text(data);
+              .appendTo(div);
               div.appendTo( tabs );
               var editor = CodeMirror.fromTextArea(
                   textarea[0], {

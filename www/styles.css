@@ -62,3 +62,7 @@
 .clear {
   clear: both;
 }
+
+.code-textarea {
+  height: 100%;
+}
