@@ -13,6 +13,7 @@ DB_HOST = os.environ["DB_HOST"]
 DB_CREDS_BUCKET = os.environ["DB_CREDS_BUCKET"]
 DB_CREDS_OBJECT = os.environ["DB_CREDS_OBJECT"]
 SANDBOX_TASK_DEFINITION = os.environ["SANDBOX_TASK_DEFINITION"]
+SANDBOX_CLUSTER_NAME = os.environ["SANDBOX_CLUSTER_NAME"]
 
 
 class MyEncoder(json.JSONEncoder):
@@ -21,6 +22,10 @@ class MyEncoder(json.JSONEncoder):
             return int(time.mktime(obj.timetuple()))
 
         return json.JSONEncoder.default(self, obj)
+
+def encrypt_user_creds(password):
+    kms = boto3.client('kms')
+    return base64.b64encode( (kms.encrypt(KeyId='alias/sandbox-neo4j-usercreds', Plaintext=password))['CiphertextBlob']  )
 
 def get_db_creds():
     global db_creds
@@ -77,26 +82,27 @@ def check_sandbox_exists(user, usecase):
         return True
     return False
 
-def add_sandbox_to_db(user, usecase, taskid):
+def add_sandbox_to_db(user, usecase, taskid, password):
     session = get_db_session()
     
     query = """
+    MATCH (uc:Usecase {name: {usecase}})
     MERGE
       (u:User {auth0_key: {auth0_key}})
     CREATE (u)-[:IS_ALLOCATED]->(s:Sandbox)
     SET
       s.running=True,
       s.usecase={usecase},
-      s.taskid={taskid}
+      s.taskid={taskid},
+      s.password={password}
+    CREATE (s)-[:IS_INSTANCE_OF]->(uc)
     RETURN s
     """
     results = session.run(query,
-      parameters={"auth0_key": user, "usecase": usecase, "taskid": taskid})
+      parameters={"auth0_key": user, "usecase": usecase, "taskid": taskid, "password": password})
     
 def lambda_handler(event, context):
-    global SANDBOX_TASK_DEFINITION
-    
-    print("Received event: " + json.dumps(event, indent=2, cls=MyEncoder))
+    global SANDBOX_TASK_DEFINITION, SANDBOX_CLUSTER_NAME
     event_json = json.loads(event["body"])
     usecase = event_json["usecase"]
     user = event['requestContext']['authorizer']['principalId']
@@ -105,7 +111,7 @@ def lambda_handler(event, context):
         userDbPassword = get_generated_password()
         client = boto3.client('ecs')
         response = client.run_task(
-            cluster='sandbox-v2',
+            cluster=SANDBOX_CLUSTER_NAME,
             taskDefinition=SANDBOX_TASK_DEFINITION,
             overrides={"containerOverrides": [{
                 "name": "neo4j-enterprise-db-only",
@@ -130,9 +136,9 @@ def lambda_handler(event, context):
                     ]
             }
             ]},
-            startedBy='lambda:SandboxRunInstance(user: "%s",usecase: "%s")' % (user, usecase)
+            startedBy=('SB("%s","%s")' % (user, usecase))[:36]
         )
-        add_sandbox_to_db(user, usecase, response['tasks'][0]['taskArn'])
+        add_sandbox_to_db(user, usecase, response['tasks'][0]['taskArn'], encrypt_user_creds(userDbPassword))
 
         response_body = json.dumps( { "status": "PENDING",
                           "taskArn": response['tasks'][0]['taskArn'],
@@ -150,3 +156,4 @@ def lambda_handler(event, context):
         response_body = json.dumps( {"errorString": "Sandbox already exists for user: %s and usecase %s"  % (user, usecase) })
 
         return { "statusCode": response_statusCode, "headers": { "Content-type": response_contentType, "Access-Control-Allow-Origin": "*" }, "body": response_body }
+

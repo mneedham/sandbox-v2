@@ -341,6 +341,8 @@
                       .attr('href', `http://${event.detail.ip}:${event.detail.port}/`)
                       .text(`http://${event.detail.ip}:${event.detail.port}/`)
                     );*/
+$('.connectionInfoItemTabContainer').tabs("refresh");
+$('.tabs-code').tabs("refresh");
               if(currentConnections.length == 0) {
 /*
 $('.connectionInfoItem').resizable({
@@ -352,8 +354,6 @@ $('.tabs-code').resizable({
          alsoResize: '.ui-tabs-panel'
      });
 */
-$('.connectionInfoItemTabContainer').tabs("refresh");
-$('.tabs-code').tabs("refresh");
                 divConnectionInfo.appendTo(divUsecaseConnections);
                 retrieve_show_code_snippets(event.detail.usecase, event.detail.username, event.detail.password, event.detail.ip, event.detail.port, event.detail.boltPort, divConnectionInfo.find(`.tabs-code-${event.detail.usecase}`));
               } else {
