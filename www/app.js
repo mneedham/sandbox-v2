@@ -310,6 +310,7 @@
                           .text(`loading... for task ${event.detail.taskId}\n`)
                           ))
                       .tabs({
+                        heightStyle: "auto",
                         activate: function(event, ui) {
                           if (ui.newTab[0].outerText == "Logs") {
                             if (! ui.newPanel[0].lastChild.CodeMirror) {
