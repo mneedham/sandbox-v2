@@ -2,7 +2,6 @@
   const AUTH_URL = "https://auth.neo4j.com/index.html";
   const CODE_SNIPPETS_PATH = "https://s3.amazonaws.com/neo4j-sandbox-code-snippets";
 
-
   var pollInterval;
 
   var listener = function(event) {

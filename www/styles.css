@@ -6,7 +6,7 @@
 .usecaseListItem {
   background-color: #bfffca;
   padding: 5px;
-  min-height: 80px;
+  min-height: 300px;
 }
 #usecaseList .usecaseListItem:nth-child(odd) {
   background-color: #bfebff;
