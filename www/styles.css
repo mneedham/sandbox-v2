@@ -6,7 +6,7 @@
 .usecaseListItem {
   background-color: #bfffca;
   padding: 5px;
-  min-height: 300px;
+  min-height: 80px;
 }
 #usecaseList .usecaseListItem:nth-child(odd) {
   background-color: #bfebff;
@@ -25,7 +25,7 @@
 
 .connectionInfoItem {
   margin-bottom: 10px;
-  min-height: 100px;
+  min-height: 350px;
 }
 .connectionsList {
   list-style-type: none;
