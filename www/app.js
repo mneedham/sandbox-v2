@@ -361,9 +361,9 @@ $('.tabs-code').resizable({
                 if (currentConnections.data('sandboxStatus') == 'pending'){
                   currentConnections.replaceWith(divConnectionInfo);
                 }
-		$('.connectionInfoItemTabContainer').tabs("refresh");
-		$('.tabs-code').tabs("refresh");
               }
+              $('.connectionInfoItemTabContainer').tabs("refresh");
+	      $('.tabs-code').tabs("refresh");
           }    
         });
         window.addEventListener("startingInstance", function (event) {
@@ -378,6 +378,8 @@ $('.tabs-code').resizable({
                     .text("Starting instance for this usecase.  Give me a few seconds please")
                     .appendTo(divUsecaseConnections);
               }
+	      $('.connectionInfoItemTabContainer').tabs("refresh");
+	     $('.tabs-code').tabs("refresh");
           }    
         });
       })(usecases[usecaseNum].name);
