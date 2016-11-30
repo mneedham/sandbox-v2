@@ -301,7 +301,7 @@
                         .append($('<div/>')
 			  .attr('class', `tabs-code-${event.detail.usecase}`)
 			  .append($('<ul />')))
-			.tabs())
+			.tabs({heightStyle: "fill"}))
                       .append($('<div/>')
                         .attr('id','tabs-logs')
                         .append($('<textarea/>')
