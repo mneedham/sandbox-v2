@@ -59,6 +59,10 @@
   height: 100%; 
 }
 
+.tabs-code div {
+  height: 100%; 
+}
+
 .clear {
   clear: both;
 }
