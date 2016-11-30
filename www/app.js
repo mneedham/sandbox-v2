@@ -332,10 +332,6 @@
                       .attr('href', `http://${event.detail.ip}:${event.detail.port}/`)
                       .text(`http://${event.detail.ip}:${event.detail.port}/`)
                     );*/
-                   $('#connectionInfoItemTabContainer').resizable({
-         handles: 's',
-         alsoResize: '.ui-tabs-panel'
-     });
               if(currentConnections.length == 0) {
                 divConnectionInfo.appendTo(divUsecaseConnections);
                 retrieve_show_code_snippets(event.detail.usecase, divConnectionInfo.find(`.tabs-code-${event.detail.usecase}`));
