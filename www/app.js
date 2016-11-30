@@ -171,6 +171,7 @@
               });
 */
               tabs.tabs( "refresh" );
+              tabs.tabs({ active: 0 });
           }
         });
       })(language, usecase, tabjq);
