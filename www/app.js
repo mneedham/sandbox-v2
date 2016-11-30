@@ -140,11 +140,11 @@
     });
   }
 
-  var retrieve_show_code_snippets = function(usecase, tabjq) {
+  var retrieve_show_code_snippets = function(usecase, username, password, tabjq) {
     var languages = ['php', 'py', 'java', 'js'];
     for (var langId in languages) {
       language = languages[langId];
-      (function(language, usecase, tabjq) {
+      (function(language, usecase, username, password, ip, port, tabjq) {
         $.ajax
         ({
           type: "GET",
@@ -156,11 +156,15 @@
           success: function (data) {
               var tabs = tabjq.tabs({heightStyle: "fill"});
               var ul = tabs.find( "ul" );
+              var code = data.replace("USERNAME", username)
+                .replace("PASSWORD", password)
+                .replace("IPADDR", ip)
+                .replace("PORT", port);
               $( `<li><a href="#tab-code-${language}">${language}</a></li>` ).appendTo( ul );
               var div = $( `<div id="tab-code-${language}"/ >`);
               var textarea = $('<textarea/>')
               .attr('class', 'code-textarea')
-              .text(data)
+              .text(code)
               .appendTo(div);
               div.appendTo( tabs );
 /*
@@ -174,7 +178,7 @@
               tabs.tabs({ active: 0 });
           }
         });
-      })(language, usecase, tabjq);
+      })(language, usecase, username, password, ip, port, tabjq);
     }
   }
 
@@ -350,7 +354,7 @@ $('.tabs-code').resizable({
 $('.connectionInfoItemTabContainer').tabs("refresh");
 $('.tabs-code').tabs("refresh");
                 divConnectionInfo.appendTo(divUsecaseConnections);
-                retrieve_show_code_snippets(event.detail.usecase, divConnectionInfo.find(`.tabs-code-${event.detail.usecase}`));
+                retrieve_show_code_snippets(event.detail.usecase, event.detail.username, event.detail.password, event.detail.ip, event.detail.port, divConnectionInfo.find(`.tabs-code-${event.detail.usecase}`));
               } else {
                 // only replace if pending item.  TODO, preempt earlier to prevent dom build
                 if (currentConnections.data('sandboxStatus') == 'pending'){
