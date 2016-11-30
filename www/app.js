@@ -262,6 +262,7 @@
                   .attr('data-sandboxid', event.detail.sandboxId)
                   .append(
                     $('<div/>')
+                      .attr('class', 'connectInfoItemTabContainer')
                       .append($('<ul/>')
                         .append($('<li/>')
                           .append($('<a/>')

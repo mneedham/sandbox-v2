@@ -51,6 +51,10 @@
   margin-left: 110px;
 }
 
+.connectInfoItemTabContainer {
+  min-height: 350px; 
+}
+
 .clear {
   clear: both;
 }
