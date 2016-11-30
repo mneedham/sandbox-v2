@@ -154,7 +154,7 @@
           headers: {
           },
           success: function (data) {
-              var tabs = tabjq.tabs({heightStyle: "auto"});
+              var tabs = tabjq.tabs({heightStyle: "fill"});
               var ul = tabs.find( "ul" );
               $( `<li><a href="#tab-code-${language}">${language}</a></li>` ).appendTo( ul );
               var div = $( `<div id="tab-code-${language}"/ >`);
@@ -311,7 +311,7 @@
                           .text(`loading... for task ${event.detail.taskId}\n`)
                           ))
                       .tabs({
-                        heightStyle: "auto",
+                        heightStyle: "fill",
                         activate: function(event, ui) {
                           if (ui.newTab[0].outerText == "Logs") {
                             if (! ui.newPanel[0].lastChild.CodeMirror) {
