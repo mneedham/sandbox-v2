@@ -2,7 +2,6 @@
   const AUTH_URL = "https://auth.neo4j.com/index.html";
   const CODE_SNIPPETS_PATH = "https://s3.amazonaws.com/neo4j-sandbox-code-snippets";
 
-
   var pollInterval;
 
   var listener = function(event) {
@@ -299,10 +298,11 @@
                           .attr('width', '100%')))
                       .append($('<div/>')
                         .attr('id','tabs-code')
+                        .attr('class','tabs-code')
                         .append($('<div/>')
 			  .attr('class', `tabs-code-${event.detail.usecase}`)
 			  .append($('<ul />')))
-			.tabs({heightStyle: "auto"}))
+			.tabs({heightStyle: "fill"}))
                       .append($('<div/>')
                         .attr('id','tabs-logs')
                         .append($('<textarea/>')
