@@ -325,6 +325,7 @@
                                 mode: 'shell',
                                 lineNumbers: true
                               })
+    			      editor.setValue('Loading...');
                               retrieve_logs(editor, sandboxId, null);
                             }
                           }
