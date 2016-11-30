@@ -160,7 +160,7 @@
               var div = $( `<div id="tab-code-${language}"/ >`);
               var textarea = $('<textarea/>')
               .attr('class', 'code-textarea')
-              .text(data);
+              .text(data)
               .appendTo(div);
               div.appendTo( tabs );
               var editor = CodeMirror.fromTextArea(
