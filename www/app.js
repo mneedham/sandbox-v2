@@ -140,7 +140,7 @@
     });
   }
 
-  var retrieve_show_code_snippets = function(usecase, username, password, tabjq) {
+  var retrieve_show_code_snippets = function(usecase, username, password, ip, port, tabjq) {
     var languages = ['php', 'py', 'java', 'js'];
     for (var langId in languages) {
       language = languages[langId];
