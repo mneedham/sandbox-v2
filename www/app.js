@@ -155,7 +155,7 @@
           headers: {
           },
           success: function (data) {
-              var tabs = tabjq.tabs({heightStyle: "fill"});
+              var tabs = tabjq.tabs({heightStyle: "auto"});
               var ul = tabs.find( "ul" );
               $( `<li><a href="#tab-code-${language}">${language}</a></li>` ).appendTo( ul );
               var div = $( `<div id="tab-code-${language}"/ >`);
@@ -282,6 +282,7 @@
                             .text('Logs'))))
                       .append($('<div/>')
                         .attr('id','tabs-connection-info')
+                        .attr('class','tabs-connection-info')
                         .append($('<p/>')
                           .text('Neo4j Browser: ')
                           .append($('<a/>')
@@ -303,7 +304,7 @@
                         .append($('<div/>')
 			  .attr('class', `tabs-code-${event.detail.usecase}`)
 			  .append($('<ul />')))
-			.tabs({heightStyle: "fill"}))
+			.tabs({heightStyle: "auto"}))
                       .append($('<div/>')
                         .attr('id','tabs-logs')
                         .append($('<textarea/>')
@@ -312,7 +313,7 @@
                           .text(`loading... for task ${event.detail.taskId}\n`)
                           ))
                       .tabs({
-                        heightStyle: "fill",
+                        heightStyle: "auto",
                         activate: function(event, ui) {
                           if (ui.newTab[0].outerText == "Logs") {
                             if (! ui.newPanel[0].lastChild.CodeMirror) {
