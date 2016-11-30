@@ -155,7 +155,7 @@
           headers: {
           },
           success: function (data) {
-              var tabs = tabjq.tabs();
+              var tabs = tabjq.tabs({heightStyle: "auto"});
               var ul = tabs.find( "ul" );
               $( `<li><a href="#tab-code-${language}">${language}</a></li>` ).appendTo( ul );
               var div = $( `<div id="tab-code-${language}"/ >`);
@@ -301,7 +301,7 @@
                         .append($('<div/>')
 			  .attr('class', `tabs-code-${event.detail.usecase}`)
 			  .append($('<ul />')))
-			.tabs({heightStyle: "fill"}))
+			.tabs({heightStyle: "auto"}))
                       .append($('<div/>')
                         .attr('id','tabs-logs')
                         .append($('<textarea/>')
