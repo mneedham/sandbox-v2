@@ -99,6 +99,7 @@ def lambda_handler(event, context):
     policy.stage = apiGatewayArnTmp[1]
 #    policy.denyAllMethods()
     policy.allowMethod(HttpVerb.GET, 'SandboxGetRunningInstancesForUser')
+    policy.allowMethod(HttpVerb.GET, 'SandboxRetrieveUserLogs')
     policy.allowMethod(HttpVerb.POST, 'SandboxRunInstance')
 
 

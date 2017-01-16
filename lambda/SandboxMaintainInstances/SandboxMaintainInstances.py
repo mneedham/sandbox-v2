@@ -5,8 +5,16 @@ import boto3
 import datetime
 import time
 import base64
+import os
+
+SANDBOX_CLUSTER_NAME = os.environ["SANDBOX_CLUSTER_NAME"]
+ECS_AUTO_SCALING_GROUP_NAME = os.environ["ECS_AUTO_SCALING_GROUP_NAME"]
+MEMORY_PER_TASK = int(os.environ["MEMORY_PER_TASK"])
+TASKS_AVAILABLE = int(os.environ["TASKS_AVAILABLE"])
+
 
 db_creds = None
+glob_session = None
 
 class MyEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -34,10 +42,83 @@ def get_db_creds():
         return db_creds
 
 def get_db_session():
-    creds = get_db_creds()
-    driver = GraphDatabase.driver("bolt://ec2-54-159-226-240.compute-1.amazonaws.com", auth=basic_auth(creds['user'], creds['password']), encrypted=False)
-    session = driver.session()
-    return session
+    global glob_session
+    
+    if (not glob_session) or (not glob_session.healthy):
+        creds = get_db_creds()
+        driver = GraphDatabase.driver("bolt://ec2-54-159-226-240.compute-1.amazonaws.com", auth=basic_auth(creds['user'], creds['password']), encrypted=False)
+        glob_session = driver.session()
+    return glob_session
+
+def check_utilization():
+  global SANDBOX_CLUSTER_NAME, ECS_AUTO_SCALING_GROUP_NAME
+  instances = []
+
+  ecs = boto3.client('ecs')
+  autos = boto3.client('autoscaling')
+
+  response = ecs.list_container_instances(
+    cluster=SANDBOX_CLUSTER_NAME,
+    maxResults=100)
+  container_instances = response['containerInstanceArns']
+  response = ecs.describe_container_instances(
+    cluster=SANDBOX_CLUSTER_NAME,
+    containerInstances=container_instances)
+  for instance in response['containerInstances']:
+    remaining_memory = 0
+    registered_memory = 0
+    for resource in instance['remainingResources']:
+      if resource['name'] == 'MEMORY':
+        remaining_memory = remaining_memory + resource['integerValue']
+    for resource in instance['registeredResources']:
+      if resource['name'] == 'MEMORY':
+        registered_memory = registered_memory + resource['integerValue']
+    instance_description = {
+        'arn': instance['containerInstanceArn'],
+        'ec2instance': instance['ec2InstanceId'],
+        'remaining_memory': remaining_memory,
+        'registered_memory': registered_memory,
+        'status': instance['status'],
+        'runningTasks': instance['runningTasksCount'] }
+    instances.append(instance_description)
+
+  total_remaining_memory = 0
+  pending_instances = False
+  for instance in instances:
+    total_remaining_memory = total_remaining_memory + instance['remaining_memory']
+
+  print('TOTAL REMAINING MEMORY: %d' % total_remaining_memory)
+
+  if total_remaining_memory < (MEMORY_PER_TASK * TASKS_AVAILABLE):
+    print('NEED MORE INSTANCES')
+
+    asg = autos.describe_auto_scaling_groups(
+      AutoScalingGroupNames=[ECS_AUTO_SCALING_GROUP_NAME]
+    )
+    capacity = asg['AutoScalingGroups'][0]['DesiredCapacity']
+   
+    autos.set_desired_capacity(
+      AutoScalingGroupName=ECS_AUTO_SCALING_GROUP_NAME,
+      DesiredCapacity = capacity + 1,
+      HonorCooldown = True
+    )
+    asg = autos.describe_auto_scaling_groups(
+      AutoScalingGroupNames=[ECS_AUTO_SCALING_GROUP_NAME]
+    )
+    capacity = asg['AutoScalingGroups'][0]['DesiredCapacity']
+    pp.pprint(capacity)
+  elif total_remaining_memory > (2 * (MEMORY_PER_TASK * TASKS_AVAILABLE)):
+    print('ATTEMPTING TO TERMINATE INSTANCES')
+    terminated_instance = False
+    for instance in instances:
+      if instance['runningTasks'] == 0 and not terminated_instance and (total_remaining_memory - instance['registered_memory']) > (MEMORY_PER_TASK * TASKS_AVAILABLE):
+        print('TERMINATING INSTANCE: %s' % instance['ec2instance'])
+        autos.terminate_instance_in_auto_scaling_group(
+          InstanceId=instance['ec2instance'],
+          ShouldDecrementDesiredCapacity=True)
+        terminated_instance = True
+  else:
+    print('DO NOT NEED MORE INSTANCES')
 
 def get_task_list():
     client = boto3.client('ecs')
@@ -106,19 +187,21 @@ def get_task_info(taskArray):
     return containersAndPorts
 
 def set_tasks_not_running(tasks):
-    session = get_db_session()
-    
-    instances_update = """
-    UNWIND {tasks} AS t
-    WITH t
-    MATCH 
-      (s:Sandbox)
-    WHERE 
-      s.taskid = t
-    SET
-      s.running = False
-    """
-    results = session.run(instances_update, parameters={"tasks": list(tasks)})
+    if len(tasks) > 0:
+        session = get_db_session()
+        
+        instances_update = """
+        UNWIND {tasks} AS t
+        WITH t
+        MATCH 
+          (s:Sandbox)
+        WHERE 
+          s.taskid = t
+        SET
+          s.running = False
+        """
+        print("Tasks length: %s" % (len(tasks)))
+        results = session.run(instances_update, parameters={"tasks": list(tasks)})
     
 def stop_tasks(tasks, reason):
     client = boto3.client('ecs')
@@ -164,7 +247,7 @@ def lambda_handler(event, context):
     statusCode = 200
     contentType = 'application/json'
     
-    results = session.run(instances_query, parameters={})
+    results = session.run(instances_query)
     resultjson = []
     tasks = []
     allTasksInDb = set()
@@ -176,6 +259,9 @@ def lambda_handler(event, context):
           tasks.append(record["taskid"])
       resultjson.append(record)
 
+    if session.healthy:
+        session.close()
+    
     allTasksRunning = set(get_task_list())
 
     print('TASKS IN DB, BUT NOT RUNNING')
@@ -190,8 +276,14 @@ def lambda_handler(event, context):
         taskInfo = get_task_info(tasks)
         if len(taskInfo) > 0:
             update_db(taskInfo.values())
+            
+    check_utilization()
 
 
     ## Find all tasks and ensure that they're marked as running in DB
   
+    if session.healthy:
+        session.close()
+    
     return True
+
