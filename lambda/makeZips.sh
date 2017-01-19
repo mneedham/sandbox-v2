@@ -17,3 +17,6 @@ cd ..
 cd SandboxGetUsecases
 zip -r9 ../SandboxGetUsecases.zip *
 cd ..
+cd SandboxSendEmails
+zip -r9 ../SandboxSendEmails.zip *
+cd ..

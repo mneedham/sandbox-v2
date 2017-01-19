@@ -186,6 +186,23 @@ def get_task_info(taskArray):
 
     return containersAndPorts
 
+def mark_tasks_for_email():
+    session = get_db_session()
+
+    instances_update = """
+    MATCH 
+      (s:Sandbox)
+    WHERE 
+      s.running = True
+      AND
+      NOT EXISTS (s.sendEmailReminderOne)
+      AND
+      s.expires < (timestamp() + 1000 * 60 * 60 * 24 * 3)
+    SET
+      s.sendEmailReminderOne='Q'
+    """
+    results = session.run(instances_update)
+
 def set_tasks_not_running(tasks):
     if len(tasks) > 0:
         session = get_db_session()
@@ -228,9 +245,40 @@ def update_db(containersAndPorts):
     """
     
     results = session.run(instances_update, parameters={"containers": containersAndPorts})
-    
+   
+def get_expired_tasks_set():
+    session = get_db_session()
+   
+    ## Find all instances and make sure they have IPs if available 
+    instances_query = """
+    MATCH 
+      (u:User)-[:IS_ALLOCATED]-(s:Sandbox)
+    WHERE 
+      s.running=True
+      AND
+      timestamp() > s.expires
+    RETURN 
+      u.name AS name, s.taskid AS taskid, s.usecase AS usecase, s.ip AS ip, s.port AS port
+    """
 
-def lambda_handler(event, context):
+    results = session.run(instances_query)
+    resultjson = []
+    tasks = []
+    expiredTasksInDb = set()
+
+    for record in results:
+      record = dict((el[0], el[1]) for el in record.items())
+      expiredTasksInDb.add(record["taskid"])
+      if not record["ip"]:
+          tasks.append(record["taskid"])
+      resultjson.append(record)
+
+    if session.healthy:
+        session.close()
+    
+    return expiredTasksInDb
+
+def get_tasks_in_db_set():
     session = get_db_session()
    
     ## Find all instances and make sure they have IPs if available 
@@ -243,10 +291,6 @@ def lambda_handler(event, context):
       u.name AS name, s.taskid AS taskid, s.usecase AS usecase, s.ip AS ip, s.port AS port
     """
 
-    body = ""
-    statusCode = 200
-    contentType = 'application/json'
-    
     results = session.run(instances_query)
     resultjson = []
     tasks = []
@@ -262,7 +306,24 @@ def lambda_handler(event, context):
     if session.healthy:
         session.close()
     
+
+    return {'allTasksInDb': allTasksInDb,
+            'tasksWithoutIp': tasks}
+
+
+
+def lambda_handler(event, context):
+    body = ""
+    statusCode = 200
+    contentType = 'application/json'
+
+    tasks = get_tasks_in_db_set()
+    allTasksInDb = tasks['allTasksInDb']
+    tasksWithoutIp = tasks['tasksWithoutIp']
+
     allTasksRunning = set(get_task_list())
+
+    expiredTasksInDb = get_expired_tasks_set()
 
     print('TASKS IN DB, BUT NOT RUNNING')
     print( allTasksInDb - allTasksRunning )
@@ -271,19 +332,21 @@ def lambda_handler(event, context):
     print('TASKS RUNNING, BUT NOT IN DB')
     print( allTasksRunning - allTasksInDb )
     stop_tasks( allTasksRunning - allTasksInDb, 'Task running but not in DB' )
+
+    print('EXPIRED TASKS RUNNING')
+    print( expiredTasksInDb )
+    stop_tasks( expiredTasksInDb, 'Task running in DB but past expiration in DB' )
+
+    print('MARKING TASKS FOR EMAIL REMINDER ONE')
+    mark_tasks_for_email()
     
-    if len(tasks) > 0:
+    if len(tasksWithoutIp) > 0:
         taskInfo = get_task_info(tasks)
         if len(taskInfo) > 0:
             update_db(taskInfo.values())
             
     check_utilization()
 
-
-    ## Find all tasks and ensure that they're marked as running in DB
   
-    if session.healthy:
-        session.close()
-    
     return True
 
