@@ -20,3 +20,6 @@ cd ..
 cd SandboxSendEmails
 zip -r9 ../SandboxSendEmails.zip *
 cd ..
+cd SandboxGetInstanceByHashKey
+zip -r9 ../SandboxGetInstanceByHashKey.zip *
+cd ..

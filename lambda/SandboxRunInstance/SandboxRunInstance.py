@@ -7,6 +7,10 @@ import base64
 import os
 from random_words import RandomWords
 from neo4j.v1 import GraphDatabase, basic_auth
+import random
+import sys
+import hashlib
+
 
 db_creds = None
 DB_HOST = os.environ["DB_HOST"]
@@ -82,7 +86,7 @@ def check_sandbox_exists(user, usecase):
         return True
     return False
 
-def add_sandbox_to_db(user, usecase, taskid, password):
+def add_sandbox_to_db(user, usecase, taskid, password, sandboxHashKey):
     session = get_db_session()
     
     query = """
@@ -94,12 +98,13 @@ def add_sandbox_to_db(user, usecase, taskid, password):
       s.running=True,
       s.usecase={usecase},
       s.taskid={taskid},
-      s.password={password}
+      s.password={password},
+      s.sandbox_hash_key={sandboxHashKey}
     CREATE (s)-[:IS_INSTANCE_OF]->(uc)
     RETURN s
     """
     results = session.run(query,
-      parameters={"auth0_key": user, "usecase": usecase, "taskid": taskid, "password": password})
+      parameters={"auth0_key": user, "usecase": usecase, "taskid": taskid, "password": password, "sandboxHashKey": sandboxHashKey})
     
 def lambda_handler(event, context):
     global SANDBOX_TASK_DEFINITION, SANDBOX_CLUSTER_NAME
@@ -109,6 +114,14 @@ def lambda_handler(event, context):
     
     if not check_sandbox_exists(user, usecase):
         userDbPassword = get_generated_password()
+
+        # note: this isn't meant to generate a secure random number,
+        # just a key used for later lookup
+        randomNumber = random.SystemRandom().randint(0, sys.maxint)
+        md5 = hashlib.md5()
+        md5.update("%s-%s" % (userDbPassword, randomNumber))
+        sandboxHashKey = md5.hexdigest()
+
         client = boto3.client('ecs')
         response = client.run_task(
             cluster=SANDBOX_CLUSTER_NAME,
@@ -122,7 +135,9 @@ def lambda_handler(event, context):
                         { "name": "EXTENSION_SCRIPT",
                           "value": "extension/extension_script.sh"},
                         { "name": "NEO4J_AUTH",
-                          "value": "neo4j/%s" % (userDbPassword)}
+                          "value": "neo4j/%s" % (userDbPassword)},
+                        { "name": "SANDBOX_HASHKEY",
+                          "value": "%s" % (sandboxHashKey)}
                     ]
             },
             {
@@ -138,7 +153,7 @@ def lambda_handler(event, context):
             ]},
             startedBy=('SB("%s","%s")' % (user, usecase))[:36]
         )
-        add_sandbox_to_db(user, usecase, response['tasks'][0]['taskArn'], encrypt_user_creds(userDbPassword))
+        add_sandbox_to_db(user, usecase, response['tasks'][0]['taskArn'], encrypt_user_creds(userDbPassword), sandboxHashKey)
 
         response_body = json.dumps( { "status": "PENDING",
                           "taskArn": response['tasks'][0]['taskArn'],
