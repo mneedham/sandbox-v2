@@ -119,11 +119,10 @@
           success: function (data){
             show_instances(data);
           },
-          statusCode: {
-            401: function (jqXHR, textStatus, errorThrown) {
+          fail: function (jqXHR, textStatus, errorThrown) {
+                 alert(jqXHR.status);
                  alert(textStatus);
             }
-          }
         });
         //retrieve_logs(editor, null);
         //$('.btn-launch').show();
