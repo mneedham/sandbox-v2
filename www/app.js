@@ -95,7 +95,7 @@
      $('#welcome').show();
   };
 
-  var retrieve_show_instances = function() {
+  var retrieve_show_instances = function(retry=true) {
     var id_token = localStorage.getItem('id_token');
     if (id_token) {
         $('.btn-login').hide();
@@ -125,6 +125,7 @@
                when throwing 401, so status details missing. 
                Assume errors are auth failures. */
               // Refresh token
+            if (retry) {
               $.ajax
               ({
                 type: "POST",
@@ -139,9 +140,10 @@
                     "api_type": "app" }),
                 success: function (data){
                   localStorage.setItem('id_token', data.id_token);
-                  retrieve_show_instances(); 
+                  retrieve_show_instances(false); 
                 }
               });
+            }
           }
         });
         //retrieve_logs(editor, null);
