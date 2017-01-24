@@ -12,6 +12,7 @@
       event.source.close();
       localStorage.setItem('id_token', event.data.token)
       localStorage.setItem('profile', JSON.stringify(event.data.profile))
+      localStorage.setItem('refresh_token', event.data.refreshToken)
       show_profile_info(event.data.profile)
       retrieve_show_instances();
     }
@@ -120,10 +121,25 @@
             show_instances(data);
           },
           error: function (jqXHR, textStatus, errorThrown) {
-                 alert(jqXHR.status);
-                 alert(textStatus);
-                 alert(errorThrown);
-            }
+            /* CORS headers unavailable from AWS API Gateway
+               when throwing 401, so status details missing. 
+               Assume errors are auth failures. */
+              // Refresh token
+              $.ajax
+              ({
+                type: "POST",
+                url: "https://neo4j-sync.auth0.com/delegation",
+                dataType: 'json',
+                async: true,
+                data: JSON.stringify(
+                  { "client_id": "OEWOmp34xybu0efvGQ8eM4zNTNUTJJOB',
+                    "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
+                    "refresh_token": localStorage.getItem('refresh_token'),
+                    "api_type": "app" }),
+                success: function (data){
+                  alert(data);
+                }
+              )}
         });
         //retrieve_logs(editor, null);
         //$('.btn-launch').show();
