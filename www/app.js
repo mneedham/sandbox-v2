@@ -138,7 +138,7 @@
                     "refresh_token": localStorage.getItem('refresh_token'),
                     "api_type": "app" }),
                 success: function (data){
-                  localStorage.setItem('id_token', data.responseJSON.id_token);
+                  localStorage.setItem('id_token', data.id_token);
                   retrieve_show_instances(); 
                 }
               });
