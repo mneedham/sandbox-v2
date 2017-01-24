@@ -132,7 +132,7 @@
                 dataType: 'json',
                 async: true,
                 data: JSON.stringify(
-                  { "client_id": "OEWOmp34xybu0efvGQ8eM4zNTNUTJJOB',
+                  { "client_id": "OEWOmp34xybu0efvGQ8eM4zNTNUTJJOB",
                     "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
                     "refresh_token": localStorage.getItem('refresh_token'),
                     "api_type": "app" }),
