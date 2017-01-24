@@ -138,7 +138,8 @@
                     "refresh_token": localStorage.getItem('refresh_token'),
                     "api_type": "app" }),
                 success: function (data){
-                  alert(data);
+                  localStorage.setItem('id_token', data.responseJSON.id_token);
+                  retrieve_show_instances(); 
                 }
               });
           }
