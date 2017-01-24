@@ -129,6 +129,7 @@
               ({
                 type: "POST",
                 url: "https://neo4j-sync.auth0.com/delegation",
+                contentType: "application/json",
                 dataType: 'json',
                 async: true,
                 data: JSON.stringify(
