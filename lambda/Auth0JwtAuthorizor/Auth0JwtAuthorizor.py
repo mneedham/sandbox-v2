@@ -1,23 +1,42 @@
 from __future__ import print_function
 import json
+import os
 import jwt
 import base64
 import re
 import urllib2
 import boto3
 from neo4j.v1 import GraphDatabase, basic_auth, constants
+import logging
 
 creds = {}
 
+db_creds = None
+glob_session = None
+DB_HOST = os.environ["DB_HOST"]
+CREDS_BUCKET = os.environ["CREDS_BUCKET"]
+
+if 'LOGGING_LEVEL' in os.environ:
+  LOGGING_LEVEL = int(os.environ["LOGGING_LEVEL"])
+else:
+  LOGGING_LEVEL = 30
+
+class MyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, datetime.datetime):
+            return int(time.mktime(obj.timetuple()))
+
+        return json.JSONEncoder.default(self, obj)
+
 def get_creds(credName):
-    global creds
+    global creds, CREDS_BUCKET
 
     if credName in creds:
         return creds[credName]
     else:
         s3 = boto3.client('s3')
         kms = boto3.client('kms')
-        response = s3.get_object(Bucket='devrel-lambda-config',Key="%s.enc.cfg" % (credName))
+        response = s3.get_object(Bucket=CREDS_BUCKET,Key="%s.enc.cfg" % (credName))
         contents = response['Body'].read()
 
         encryptedData = base64.b64decode(contents)
@@ -26,11 +45,20 @@ def get_creds(credName):
         creds[credName] = json.loads(decryptedData)
         return creds[credName]
 
-def get_db_session():
-    creds = get_creds('neo4j')
 
-    driver = GraphDatabase.driver("bolt://ec2-54-159-226-240.compute-1.amazonaws.com", auth=basic_auth(creds['user'], creds['password']), encrypted=False)
-    session = driver.session()
+def get_db_creds():
+    return get_creds('neo4j')
+
+def get_db_session():
+    global glob_session
+
+    if glob_session and glob_session.healthy:
+        session = glob_session
+    else:
+        creds = get_db_creds()
+        driver = GraphDatabase.driver("bolt://%s" % (DB_HOST), auth=basic_auth(creds['user'], creds['password']), encrypted=False)
+        session = driver.session()
+        glob_session = session
     return session
 
 
@@ -61,8 +89,6 @@ def add_update_user(user, jwt):
     if 'description' in profile:
         description = profile['description']
 
-    session = get_db_session()
-    
     query = """
     MERGE
       (u:User {auth0_key: {auth0_key}})
@@ -73,35 +99,50 @@ def add_update_user(user, jwt):
     RETURN u
     """
     results = session.run(query,
-      parameters={"auth0_key": user, "name": name, "picture": picture, "description": description})
-      
-    print(profile)
+      parameters={"auth0_key": user, "name": name, "picture": picture, "description": description}).consume()
+    
+    if session.healthy: 
+        session.close() 
+
+    return results
 
 
 def lambda_handler(event, context):
+    global LOGGING_LEVEL
+
+    logger = logging.getLogger()
+    logger.setLevel(LOGGING_LEVEL)
+
     creds = get_creds('auth0')
     secret = base64.b64decode(creds['auth0_secret'])
     encoded = event['authorizationToken']
-    decoded = jwt.decode(encoded, secret, algorithms=['HS256'], audience=creds['auth0_audience'])
+
+    # TODO Handle expired signatures 
+    # https://console.aws.amazon.com/cloudwatch/home?region=us-east-1#logEventViewer:group=/aws/lambda/Auth0JwtAuthorizor;stream=2017/01/23/%5B$LATEST%5D04afd1c304614be18654a7972aa6e935
+
+    try:
+      decoded = jwt.decode(encoded, secret, algorithms=['HS256'], audience=creds['auth0_audience'])
     
-    if re.search("SandboxRunInstance$", event['methodArn']):
-        add_update_user(decoded['sub'], encoded)    
+      if re.search("SandboxRunInstance$", event['methodArn']):
+          add_update_user(decoded['sub'], encoded)    
 
-    tmp = event['methodArn'].split(':')
-    apiGatewayArnTmp = tmp[5].split('/')
-    awsAccountId = tmp[4]
+      tmp = event['methodArn'].split(':')
+      apiGatewayArnTmp = tmp[5].split('/')
+      awsAccountId = tmp[4]
 
-    principalId = decoded['sub']
+      principalId = decoded['sub']
 
-    policy = AuthPolicy(principalId, awsAccountId)
-    policy.restApiId = apiGatewayArnTmp[0]
-    policy.region = tmp[3]
-    policy.stage = apiGatewayArnTmp[1]
+      policy = AuthPolicy(principalId, awsAccountId)
+      policy.restApiId = apiGatewayArnTmp[0]
+      policy.region = tmp[3]
+      policy.stage = apiGatewayArnTmp[1]
 #    policy.denyAllMethods()
-    policy.allowMethod(HttpVerb.GET, 'SandboxGetRunningInstancesForUser')
-    policy.allowMethod(HttpVerb.GET, 'SandboxRetrieveUserLogs')
-    policy.allowMethod(HttpVerb.POST, 'SandboxRunInstance')
-
+      policy.allowMethod(HttpVerb.GET, 'SandboxGetRunningInstancesForUser')
+      policy.allowMethod(HttpVerb.GET, 'SandboxRetrieveUserLogs')
+      policy.allowMethod(HttpVerb.POST, 'SandboxRunInstance')
+    except jwt.ExpiredSignatureError:
+      logger.error('JWT token denied because expired')
+      raise Exception('Unauthorized')
 
     # Finally, build the policy and exit the function using return
     return policy.build()

@@ -44,12 +44,15 @@ def get_db_creds():
         return db_creds
 
 def get_db_session():
-    global DB_HOST
+    global DB_HOST, glob_session
 
-    creds = get_db_creds()
-    driver = GraphDatabase.driver("bolt://%s" % (DB_HOST), auth=basic_auth(creds['user'], creds['password']), encrypted=False)
-    session = driver.session()
-
+    if glob_session and glob_session.healthy:
+        session = glob_session
+    else:
+        creds = get_db_creds()
+        driver = GraphDatabase.driver("bolt://%s" % (DB_HOST), auth=basic_auth(creds['user'], creds['password']), encrypted=False)
+        session = driver.session()
+        glob_session = session
     return session
 
 def get_sandboxes_for_email_reminderone():
@@ -73,6 +76,9 @@ def get_sandboxes_for_email_reminderone():
       record = dict((el[0], el[1]) for el in record.items())
       sandboxes.append(record)
 
+    if session.healthy:
+        session.close()
+
     return sandboxes
 
 def set_sandboxes_email_status_reminderone(sandbox_ids, status):
@@ -86,7 +92,13 @@ def set_sandboxes_email_status_reminderone(sandbox_ids, status):
     SET
       s.sendEmailReminderOne={status}
     """
-    results = session.run(instances_update_query, parameters={"sandbox_ids": list(sandbox_ids), "status": status})
+    results = session.run(instances_update_query, parameters={"sandbox_ids": list(sandbox_ids), "status": status}).consume()
+
+    if session.healthy:
+        session.close()
+
+    return results
+
 
 
 def send_email_reminderone(sandboxes):

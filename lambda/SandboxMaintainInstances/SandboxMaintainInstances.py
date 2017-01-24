@@ -12,6 +12,9 @@ ECS_AUTO_SCALING_GROUP_NAME = os.environ["ECS_AUTO_SCALING_GROUP_NAME"]
 MEMORY_PER_TASK = int(os.environ["MEMORY_PER_TASK"])
 TASKS_AVAILABLE = int(os.environ["TASKS_AVAILABLE"])
 
+DB_HOST = os.environ["DB_HOST"]
+DB_CREDS_BUCKET = os.environ["DB_CREDS_BUCKET"]
+DB_CREDS_OBJECT = os.environ["DB_CREDS_OBJECT"]
 
 db_creds = None
 glob_session = None
@@ -25,16 +28,16 @@ class MyEncoder(json.JSONEncoder):
 
 
 def get_db_creds():
-    global db_creds
-    
+    global db_creds, DB_CREDS_BUCKET, DB_CREDS_OBJECT
+
     if db_creds:
         return db_creds
     else:
         s3 = boto3.client('s3')
         kms = boto3.client('kms')
-        response = s3.get_object(Bucket='devrel-lambda-config',Key='neo4j.enc.cfg')
+        response = s3.get_object(Bucket=DB_CREDS_BUCKET,Key=DB_CREDS_OBJECT)
         contents = response['Body'].read()
-    
+
         encryptedData = base64.b64decode(contents)
         decryptedResponse = kms.decrypt(CiphertextBlob = encryptedData)
         decryptedData = decryptedResponse['Plaintext']
@@ -43,12 +46,16 @@ def get_db_creds():
 
 def get_db_session():
     global glob_session
-    
-    if (not glob_session) or (not glob_session.healthy):
+
+    if glob_session and glob_session.healthy:
+        session = glob_session
+    else:
         creds = get_db_creds()
-        driver = GraphDatabase.driver("bolt://ec2-54-159-226-240.compute-1.amazonaws.com", auth=basic_auth(creds['user'], creds['password']), encrypted=False)
-        glob_session = driver.session()
-    return glob_session
+        driver = GraphDatabase.driver("bolt://%s" % (DB_HOST), auth=basic_auth(creds['user'], creds['password']), encrypted=False)
+        session = driver.session()
+        glob_session = session
+    return session
+
 
 def check_utilization():
   global SANDBOX_CLUSTER_NAME, ECS_AUTO_SCALING_GROUP_NAME
@@ -201,7 +208,9 @@ def mark_tasks_for_email():
     SET
       s.sendEmailReminderOne='Q'
     """
-    results = session.run(instances_update)
+    results = session.run(instances_update).consume()
+
+    return results
 
 def set_tasks_not_running(tasks):
     if len(tasks) > 0:
@@ -218,7 +227,10 @@ def set_tasks_not_running(tasks):
           s.running = False
         """
         print("Tasks length: %s" % (len(tasks)))
-        results = session.run(instances_update, parameters={"tasks": list(tasks)})
+        results = session.run(instances_update, parameters={"tasks": list(tasks)}).consume()
+        return results
+    else:
+        return False
     
 def stop_tasks(tasks, reason):
     client = boto3.client('ecs')
@@ -244,7 +256,8 @@ def update_db(containersAndPorts):
       s.port = c.port
     """
     
-    results = session.run(instances_update, parameters={"containers": containersAndPorts})
+    results = session.run(instances_update, parameters={"containers": containersAndPorts}).consume()
+    return results
    
 def get_expired_tasks_set():
     session = get_db_session()
@@ -273,9 +286,6 @@ def get_expired_tasks_set():
           tasks.append(record["taskid"])
       resultjson.append(record)
 
-    if session.healthy:
-        session.close()
-    
     return expiredTasksInDb
 
 def get_tasks_in_db_set():
@@ -302,10 +312,6 @@ def get_tasks_in_db_set():
       if not record["ip"]:
           tasks.append(record["taskid"])
       resultjson.append(record)
-
-    if session.healthy:
-        session.close()
-    
 
     return {'allTasksInDb': allTasksInDb,
             'tasksWithoutIp': tasks}
@@ -347,6 +353,9 @@ def lambda_handler(event, context):
             
     check_utilization()
 
-  
+    session = get_db_session() 
+    if session.healthy:
+        session.close()
+ 
     return True
 

@@ -118,6 +118,9 @@
           },
           success: function (data){
             show_instances(data);
+          },
+          error: function (jqXHR, textStatus, errorThrown) {
+              alert(textStatus);
           }
         });
         //retrieve_logs(editor, null);

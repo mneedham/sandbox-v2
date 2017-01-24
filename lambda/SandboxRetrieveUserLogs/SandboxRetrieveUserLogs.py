@@ -6,6 +6,7 @@ import base64
 from neo4j.v1 import GraphDatabase, basic_auth
 
 db_creds = None
+glob_session = None
 DB_HOST = os.environ["DB_HOST"]
 DB_CREDS_BUCKET = os.environ["DB_CREDS_BUCKET"]
 DB_CREDS_OBJECT = os.environ["DB_CREDS_OBJECT"]
@@ -16,12 +17,11 @@ class MyEncoder(json.JSONEncoder):
             return int(time.mktime(obj.timetuple()))
 
         return json.JSONEncoder.default(self, obj)
-        
+
+
 def get_db_creds():
-    global db_creds
-    global DB_CREDS_BUCKET
-    global DB_CREDS_OBJECT
-    
+    global db_creds, DB_CREDS_BUCKET, DB_CREDS_OBJECT
+
     if db_creds:
         return db_creds
     else:
@@ -29,19 +29,23 @@ def get_db_creds():
         kms = boto3.client('kms')
         response = s3.get_object(Bucket=DB_CREDS_BUCKET,Key=DB_CREDS_OBJECT)
         contents = response['Body'].read()
-    
+
         encryptedData = base64.b64decode(contents)
         decryptedResponse = kms.decrypt(CiphertextBlob = encryptedData)
         decryptedData = decryptedResponse['Plaintext']
         db_creds = json.loads(decryptedData)
         return db_creds
-        
+
 def get_db_session():
-    global DB_HOST
-    
-    creds = get_db_creds()
-    driver = GraphDatabase.driver("bolt://%s" % (DB_HOST), auth=basic_auth(creds['user'], creds['password']), encrypted=False)
-    session = driver.session()
+    global glob_session
+
+    if glob_session and glob_session.healthy:
+        session = glob_session
+    else:
+        creds = get_db_creds()
+        driver = GraphDatabase.driver("bolt://%s" % (DB_HOST), auth=basic_auth(creds['user'], creds['password']), encrypted=False)
+        session = driver.session()
+        glob_session = session
     return session
 
 def get_sandbox_by_id(user, sbid):
@@ -64,7 +68,8 @@ def get_sandbox_by_id(user, sbid):
     record = None
     for record in results:
         record = dict((el[0], el[1]) for el in record.items())
-    session.close()
+    if session.healthy:
+        session.close()
     if record:
         return record
     else:
@@ -90,7 +95,8 @@ def get_sandbox_by_usecase(user, usecase):
     record = None
     for record in results:
         record = dict((el[0], el[1]) for el in record.items())
-    session.close()
+    if session.healthy:
+        session.close()
     if record:
         return record
     else:
