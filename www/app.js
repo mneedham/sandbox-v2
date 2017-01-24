@@ -140,6 +140,7 @@
                   alert(data);
                 }
               });
+          }
         });
         //retrieve_logs(editor, null);
         //$('.btn-launch').show();
