@@ -119,9 +119,10 @@
           success: function (data){
             show_instances(data);
           },
-          fail: function (jqXHR, textStatus, errorThrown) {
+          error: function (jqXHR, textStatus, errorThrown) {
                  alert(jqXHR.status);
                  alert(textStatus);
+                 alert(errorThrown);
             }
         });
         //retrieve_logs(editor, null);
