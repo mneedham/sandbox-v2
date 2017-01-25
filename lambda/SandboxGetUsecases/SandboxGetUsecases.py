@@ -5,8 +5,16 @@ import boto3
 import datetime
 import time
 import base64
+import os
+import logging
 
 db_creds = None
+glob_session = None
+DB_HOST = os.environ["DB_HOST"]
+DB_CREDS_BUCKET = os.environ["DB_CREDS_BUCKET"]
+DB_CREDS_OBJECT = os.environ["DB_CREDS_OBJECT"]
+LOGGING_LEVEL = int(os.environ["LOGGING_LEVEL"])
+
 
 class MyEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -17,14 +25,14 @@ class MyEncoder(json.JSONEncoder):
 
 
 def get_db_creds():
-    global db_creds
+    global db_creds, DB_CREDS_BUCKET, DB_CREDS_OBJECT
     
     if db_creds:
         return db_creds
     else:
         s3 = boto3.client('s3')
         kms = boto3.client('kms')
-        response = s3.get_object(Bucket='devrel-lambda-config',Key='neo4j.enc.cfg')
+        response = s3.get_object(Bucket=DB_CREDS_BUCKET,Key=DB_CREDS_OBJECT)
         contents = response['Body'].read()
     
         encryptedData = base64.b64decode(contents)
@@ -34,12 +42,23 @@ def get_db_creds():
         return db_creds
 
 def get_db_session():
-    creds = get_db_creds()
-    driver = GraphDatabase.driver("bolt://ec2-54-159-226-240.compute-1.amazonaws.com", auth=basic_auth(creds['user'], creds['password']), encrypted=False)
-    session = driver.session()
+    global DB_HOST, glob_session
+
+    if glob_session and glob_session.healthy:
+        session = glob_session
+    else:
+        creds = get_db_creds()
+        driver = GraphDatabase.driver("bolt://%s" % (DB_HOST), auth=basic_auth(creds['user'], creds['password']), encrypted=False)
+        session = driver.session()
+        glob_session = session
     return session
-    
+
 def lambda_handler(event, context):
+    global LOGGING_LEVEL
+    
+    logger = logging.getLogger()
+    logger.setLevel(LOGGING_LEVEL)
+    
     session = get_db_session()
     
     usecases_query = """
@@ -63,5 +82,8 @@ def lambda_handler(event, context):
       resultjson.append(record)
     
     body = json.dumps(resultjson)
-    
+  
+    if session.healthy: 
+        session.close() 
+
     return { "statusCode": statusCode, "headers": { "Content-type": contentType, "Access-Control-Allow-Origin": "*" }, "body": body }

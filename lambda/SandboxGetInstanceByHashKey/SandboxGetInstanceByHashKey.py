@@ -8,6 +8,7 @@ import base64
 import os
 
 db_creds = None
+glob_session = None
 DB_HOST = os.environ["DB_HOST"]
 DB_CREDS_BUCKET = os.environ["DB_CREDS_BUCKET"]
 DB_CREDS_OBJECT = os.environ["DB_CREDS_OBJECT"]
@@ -38,11 +39,17 @@ def get_db_creds():
         return db_creds
 
 def get_db_session():
-    creds = get_db_creds()
-    driver = GraphDatabase.driver("bolt://%s" % (DB_HOST), auth=basic_auth(creds['user'], creds['password']), encrypted=False)
-    session = driver.session()
+    global glob_session
+
+    if glob_session and glob_session.healthy:
+        session = glob_session
+    else:
+        creds = get_db_creds()
+        driver = GraphDatabase.driver("bolt://%s" % (DB_HOST), auth=basic_auth(creds['user'], creds['password']), encrypted=False)
+        session = driver.session()
+        glob_session = session
     return session
-    
+
 def get_task_info(taskArray):
     client = boto3.client('ecs')
     response = client.describe_tasks(
@@ -133,6 +140,10 @@ def update_db(sandbox_hash_key, containersAndPorts):
     print(containersAndPorts)
  
     results = session.run(instances_update, parameters={"sandbox_hash_key": sandbox_hash_key, "containers": containersAndPorts})
+
+    if session.healthy:
+        session.close()
+
     return results
     
 
@@ -183,6 +194,9 @@ def lambda_handler(event, context):
       print('final record to be returned:')
       print(record)
       body = '%s:%s' % (record['ip'], record['boltPort'])
+
+    if session.healthy:
+        session.close()
 
     return { "statusCode": statusCode, "headers": { "Content-type": contentType, "Access-Control-Allow-Origin": "*" }, "body": body }
  

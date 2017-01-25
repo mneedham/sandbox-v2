@@ -10,14 +10,18 @@ from neo4j.v1 import GraphDatabase, basic_auth
 import random
 import sys
 import hashlib
+import logging
 
 
 db_creds = None
+glob_session = None
+
 DB_HOST = os.environ["DB_HOST"]
 DB_CREDS_BUCKET = os.environ["DB_CREDS_BUCKET"]
 DB_CREDS_OBJECT = os.environ["DB_CREDS_OBJECT"]
 SANDBOX_TASK_DEFINITION = os.environ["SANDBOX_TASK_DEFINITION"]
 SANDBOX_CLUSTER_NAME = os.environ["SANDBOX_CLUSTER_NAME"]
+LOGGING_LEVEL = int(os.environ["LOGGING_LEVEL"])
 
 
 class MyEncoder(json.JSONEncoder):
@@ -51,11 +55,15 @@ def get_db_creds():
         return db_creds
         
 def get_db_session():
-    global DB_HOST
-    
-    creds = get_db_creds()
-    driver = GraphDatabase.driver("bolt://%s" % (DB_HOST), auth=basic_auth(creds['user'], creds['password']), encrypted=False)
-    session = driver.session()
+    global DB_HOST, glob_session
+
+    if glob_session and glob_session.healthy:
+        session = glob_session
+    else:
+        creds = get_db_creds()
+        driver = GraphDatabase.driver("bolt://%s" % (DB_HOST), auth=basic_auth(creds['user'], creds['password']), encrypted=False)
+        session = driver.session()
+        glob_session = session
     return session
 
 def get_generated_password():
@@ -66,6 +74,8 @@ def get_generated_password():
 
 
 def check_sandbox_exists(user, usecase):
+    result = False
+
     session = get_db_session()
     
     query = """
@@ -83,8 +93,11 @@ def check_sandbox_exists(user, usecase):
     results = session.run(query, 
       parameters={"auth0_key": user, "usecase": usecase})
     for record in results:
-        return True
-    return False
+        result = True
+    if session.healthy:
+        session.close()
+
+    return result
 
 def add_sandbox_to_db(user, usecase, taskid, password, sandboxHashKey):
     session = get_db_session()
@@ -104,16 +117,34 @@ def add_sandbox_to_db(user, usecase, taskid, password, sandboxHashKey):
     RETURN s
     """
     results = session.run(query,
-      parameters={"auth0_key": user, "usecase": usecase, "taskid": taskid, "password": password, "sandboxHashKey": sandboxHashKey})
+      parameters={"auth0_key": user, "usecase": usecase, "taskid": taskid, "password": password, "sandboxHashKey": sandboxHashKey}).consume()
+
+    if session.healthy:
+        session.close()
+
+    return results
     
 def lambda_handler(event, context):
-    global SANDBOX_TASK_DEFINITION, SANDBOX_CLUSTER_NAME
+    global SANDBOX_TASK_DEFINITION, SANDBOX_CLUSTER_NAME, LOGGING_LEVEL
+    
+    logger = logging.getLogger()
+    
+    logger.setLevel(LOGGING_LEVEL)
+    
+    logger.debug('Starting lambda_handler')
+    
     event_json = json.loads(event["body"])
     usecase = event_json["usecase"]
     user = event['requestContext']['authorizer']['principalId']
     
+    logger.debug('Checking to see if sandbox exists')
+
     if not check_sandbox_exists(user, usecase):
+        logger.debug('Generating password')
+
         userDbPassword = get_generated_password()
+        
+        logger.debug('Generating hashkey')
 
         # note: this isn't meant to generate a secure random number,
         # just a key used for later lookup
@@ -122,6 +153,7 @@ def lambda_handler(event, context):
         md5.update("%s-%s" % (userDbPassword, randomNumber))
         sandboxHashKey = md5.hexdigest()
 
+        logger.debug('Running Task on ECS')
         client = boto3.client('ecs')
         response = client.run_task(
             cluster=SANDBOX_CLUSTER_NAME,
@@ -153,6 +185,7 @@ def lambda_handler(event, context):
             ]},
             startedBy=('SB("%s","%s")' % (user, usecase))[:36]
         )
+        logger.debug('Adding sandbox to database')
         add_sandbox_to_db(user, usecase, response['tasks'][0]['taskArn'], encrypt_user_creds(userDbPassword), sandboxHashKey)
 
         response_body = json.dumps( { "status": "PENDING",
@@ -166,9 +199,10 @@ def lambda_handler(event, context):
         return { "statusCode": response_statusCode, "headers": { "Content-type": response_contentType, "Access-Control-Allow-Origin": "*" }, "body": response_body }
         
     else:
+        logger.error('Sandbox already exists for user: %s and usecase %s' % (user, usecase))
+
         response_statusCode = 400
         response_contentType = 'application/json'
         response_body = json.dumps( {"errorString": "Sandbox already exists for user: %s and usecase %s"  % (user, usecase) })
 
         return { "statusCode": response_statusCode, "headers": { "Content-type": response_contentType, "Access-Control-Allow-Origin": "*" }, "body": response_body }
-
