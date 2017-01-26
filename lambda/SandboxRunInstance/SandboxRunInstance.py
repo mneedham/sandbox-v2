@@ -112,7 +112,8 @@ def add_sandbox_to_db(user, usecase, taskid, password, sandboxHashKey):
       s.usecase={usecase},
       s.taskid={taskid},
       s.password={password},
-      s.sandbox_hash_key={sandboxHashKey}
+      s.sandbox_hash_key={sandboxHashKey},
+      s.expires=(timestamp() + 1000 * 60 * 60 * 24 * 7)
     CREATE (s)-[:IS_INSTANCE_OF]->(uc)
     RETURN s
     """

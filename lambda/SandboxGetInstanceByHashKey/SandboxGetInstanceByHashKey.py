@@ -4,51 +4,7 @@ from neo4j.v1 import GraphDatabase, basic_auth, constants
 import boto3
 import datetime
 import time
-import base64
-import os
-
-db_creds = None
-glob_session = None
-DB_HOST = os.environ["DB_HOST"]
-DB_CREDS_BUCKET = os.environ["DB_CREDS_BUCKET"]
-DB_CREDS_OBJECT = os.environ["DB_CREDS_OBJECT"]
-
-class MyEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, datetime.datetime):
-            return int(time.mktime(obj.timetuple()))
-
-        return json.JSONEncoder.default(self, obj)
-
-
-def get_db_creds():
-    global db_creds, DB_CREDS_BUCKET, DB_CREDS_OBJECT
-    
-    if db_creds:
-        return db_creds
-    else:
-        s3 = boto3.client('s3')
-        kms = boto3.client('kms')
-        response = s3.get_object(Bucket=DB_CREDS_BUCKET,Key=DB_CREDS_OBJECT)
-        contents = response['Body'].read()
-    
-        encryptedData = base64.b64decode(contents)
-        decryptedResponse = kms.decrypt(CiphertextBlob = encryptedData)
-        decryptedData = decryptedResponse['Plaintext']
-        db_creds = json.loads(decryptedData)
-        return db_creds
-
-def get_db_session():
-    global glob_session
-
-    if glob_session and glob_session.healthy:
-        session = glob_session
-    else:
-        creds = get_db_creds()
-        driver = GraphDatabase.driver("bolt://%s" % (DB_HOST), auth=basic_auth(creds['user'], creds['password']), encrypted=False)
-        session = driver.session()
-        glob_session = session
-    return session
+import sblambda
 
 def get_task_info(taskArray):
     client = boto3.client('ecs')
@@ -95,7 +51,7 @@ def get_task_info(taskArray):
         ec2Client = boto3.client('ec2')
         ec2Instances = ec2Client.describe_instances(InstanceIds=instanceMapping.keys())
 
-        print("All instances: %s" % json.dumps(instanceMapping.keys(), indent=2, cls=MyEncoder ))
+        print("All instances: %s" % json.dumps(instanceMapping.keys(), indent=2, cls=sblambda.MyEncoder ))
         print("Number of instances returned: %s" % len(ec2Instances['Reservations'][0]['Instances']))
 
         for reservation in ec2Instances['Reservations']:
@@ -117,7 +73,7 @@ def get_task_info(taskArray):
     return containersAndPorts
 
 def update_db(sandbox_hash_key, containersAndPorts):
-    session = get_db_session()
+    session = sblambda.get_db_session()
     
     instances_update = """
     UNWIND {containers} AS c
@@ -149,7 +105,7 @@ def update_db(sandbox_hash_key, containersAndPorts):
 
 def lambda_handler(event, context):
     sandbox_hash_key = event['queryStringParameters']['sandboxHashKey']
-    session = get_db_session()
+    session = sblambda.get_db_session()
     
     instances_query = """
     MATCH 

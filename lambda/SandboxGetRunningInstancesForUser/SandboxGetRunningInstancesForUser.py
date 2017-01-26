@@ -4,51 +4,9 @@ from neo4j.v1 import GraphDatabase, basic_auth, constants
 import boto3
 import datetime
 import time
-import base64
 import os
+import sblambda
 
-db_creds = None
-glob_session = None
-DB_HOST = os.environ["DB_HOST"]
-DB_CREDS_BUCKET = os.environ["DB_CREDS_BUCKET"]
-DB_CREDS_OBJECT = os.environ["DB_CREDS_OBJECT"]
-
-class MyEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, datetime.datetime):
-            return int(time.mktime(obj.timetuple()))
-
-        return json.JSONEncoder.default(self, obj)
-
-
-def get_db_creds():
-    global db_creds, DB_CREDS_BUCKET, DB_CREDS_OBJECT
-    
-    if db_creds:
-        return db_creds
-    else:
-        s3 = boto3.client('s3')
-        kms = boto3.client('kms')
-        response = s3.get_object(Bucket=DB_CREDS_BUCKET,Key=DB_CREDS_OBJECT)
-        contents = response['Body'].read()
-    
-        encryptedData = base64.b64decode(contents)
-        decryptedResponse = kms.decrypt(CiphertextBlob = encryptedData)
-        decryptedData = decryptedResponse['Plaintext']
-        db_creds = json.loads(decryptedData)
-        return db_creds
-
-def get_db_session():
-    global glob_session
-
-    if glob_session and glob_session.healthy:
-        session = glob_session
-    else:
-        creds = get_db_creds()
-        driver = GraphDatabase.driver("bolt://%s" % (DB_HOST), auth=basic_auth(creds['user'], creds['password']), encrypted=False)
-        session = driver.session()
-        glob_session = session
-    return session
     
 def get_task_info(taskArray):
     client = boto3.client('ecs')
@@ -95,7 +53,7 @@ def get_task_info(taskArray):
         ec2Client = boto3.client('ec2')
         ec2Instances = ec2Client.describe_instances(InstanceIds=instanceMapping.keys())
 
-        print("All instances: %s" % json.dumps(instanceMapping.keys(), indent=2, cls=MyEncoder ))
+        print("All instances: %s" % json.dumps(instanceMapping.keys(), indent=2, cls=sblambda.MyEncoder ))
         print("Number of instances returned: %s" % len(ec2Instances['Reservations'][0]['Instances']))
 
         for reservation in ec2Instances['Reservations']:
@@ -117,7 +75,7 @@ def get_task_info(taskArray):
     return containersAndPorts
 
 def update_db(auth0_key, containersAndPorts):
-    session = get_db_session()
+    session = sblambda.get_db_session()
     
     instances_update = """
     UNWIND {containers} AS c
@@ -140,16 +98,10 @@ def update_db(auth0_key, containersAndPorts):
         session.close()
     return results 
 
-def decrypt_user_creds(encryptedPassword):
-    kms = boto3.client('kms')
-    binaryPassword = base64.b64decode(encryptedPassword)
-    return (kms.decrypt(CiphertextBlob=binaryPassword))['Plaintext']
-
-
 def lambda_handler(event, context):
     auth0_key = event['requestContext']['authorizer']['principalId']
     
-    session = get_db_session()
+    session = sblambda.get_db_session()
     
     instances_query = """
     MATCH 
@@ -162,6 +114,7 @@ def lambda_handler(event, context):
       u.name AS name, s.taskid AS taskid, s.usecase AS usecase, s.ip AS ip, s.port AS port,
       s.boltPort AS boltPort,
       s.password AS password,
+      s.expires AS expires,
       id(s) AS sandboxId,
       uc.model_image AS modelImage
     """
@@ -189,7 +142,7 @@ def lambda_handler(event, context):
     for record in results:
       record = dict((el[0], el[1]) for el in record.items())
       if record["password"]:
-          record["password"] = decrypt_user_creds(record["password"])
+          record["password"] = sblambda.decrypt_user_creds(record["password"])
       resultjson.append(record)
 
     # TODO update IPs from taskinfo
