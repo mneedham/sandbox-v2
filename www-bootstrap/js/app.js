@@ -169,7 +169,7 @@
     } else {
       console.log('Timeout setting for: ' + (time * 2));
       window.setTimeout( 
-              check_for_instances_and_usecases()
+              check_for_instances_and_usecases(time*2)
               ,time * 2);
     }
   }
@@ -484,7 +484,8 @@ $('.tabs-code').resizable({
       sandboxDiv = $("#sandbox_template").clone();
       sandboxDiv
       .removeAttr('id')
-      .attr('data-sandboxid', instance.sandboxId);
+      .attr('data-sandboxid', instance.sandboxId)
+      .attr('data-sandboxhashkey', instance.sandboxHashKey);
       sandboxDiv.find('.navbar-brand').text(instance.usecase);
 
       sandboxDiv.find('.connection a').click(update_sandbox_panel('connection', instance.sandboxId));
@@ -573,7 +574,7 @@ $('.tabs-code').resizable({
 
       $('#usecaseList').find('col-md-4').empty();
       /* always show blank sandbox for testing TODO remove */
-      if ((! ucname in activeUsecases)) {
+      if (! (ucname in activeUsecases)) {
         columnNum = (availableForLaunchCount % 3 ) + 1;
         panelDiv = $('<div/>').attr('class', 'panel panel-primary')
           .append(
@@ -594,6 +595,9 @@ $('.tabs-code').resizable({
     }
     $("#sandboxListContainer").show();
     $("#usecaseListContainer").show();
+    if (availableForLaunchCount > 0) {
+      $('#usecaseListAlert').hide();
+    }
     $('#identityContainer').show();
   }
 
