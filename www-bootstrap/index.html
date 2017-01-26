@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-    <title>Bootstrap 101 Template</title>
+    <title>Neo4j Sandbox</title>
 
     <!-- Bootstrap -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
@@ -21,15 +21,15 @@
 
     <!-- jquery tabs for code -->
     <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 
-<script src="cm/lib/codemirror.js"></script>
-<link rel="stylesheet" href="cm/lib/codemirror.css">
-<script src="cm/mode/javascript/javascript.js"></script>
-<script src="cm/mode/python/python.js"></script>
-<script src="cm/mode/php/php.js"></script>
-<script src="cm/mode/java/java.js"></script>
-<script src="js/cm-autorefresh.js"></script>
+    <!-- codemirror -->
+    <script src="cm/lib/codemirror.js"></script>
+    <link rel="stylesheet" href="cm/lib/codemirror.css">
+    <script src="cm/mode/javascript/javascript.js"></script>
+    <script src="cm/mode/python/python.js"></script>
+    <script src="cm/mode/php/php.js"></script>
+    <script src="cm/mode/java/java.js"></script>
+    <script src="js/cm-autorefresh.js"></script>
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -87,7 +87,14 @@
         </div>
       </div>
 
-    <div class="row" id="sandboxListContainer" style="display: none">
+    <div class="row" id="identityContainer" style="display: none;">
+      <h2 id="identityGreeting">Greetings</h2>
+      <p>
+        Welcome to the Neo4j Sandbox.  If you have any questions or problems, feel free to reach out to us at <a href="mailto:devrel@neo4j.com">devrel@neo4j.com</a>.
+      </p>
+    </div>
+
+    <div class="row" id="sandboxListContainer" style="display: none;">
       <h3>Your Current Sandboxes</h3>
       <div id="sandboxList" style="padding-top: 20px;">
       </div>
@@ -110,7 +117,7 @@
           </div>
           <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
-              <li class="active connection"><a href="#">Connection Info</a></li>
+              <li class="active connection"><a href="#">Sandbox Info</a></li>
               <li class="datamodel"><a href="#">Data Model</a></li>
               <li class="code"><a href="#">Code</a></li>
               <li class="dropdown">
@@ -125,16 +132,20 @@
       </nav>
       </div>
       <div class="panel-body" style="min-height: 200px">
-        <div class="connection"></div>
-        <div class="datamodel" style="display: none">datamodel</div>
-        <div class="code" style="display: none">code</div>
+        <div class="panel-body-content">
+          <div class="connection"></div>
+          <div class="datamodel" style="display: none"></div>
+          <div class="code" style="display: none"></div>
+        </div>
+        <div class="panel-body-alerts">
+        </div>
       </div>
      
       </div>
     </div>
 
 
-    <div class="row" id="usecaseListContainer" style="Display: none">
+    <div class="row" id="usecaseListContainer" style="display: none">
       <h3>Launch a New Sandbox</h3>
       <div id="usecaseList" style="padding-top: 20px;">
         <div class="row" style="width: 100%">
@@ -146,12 +157,54 @@
           </div>
         </div>
       </div>
+      <div id="usecaseListAlert" class="alert alert-custom alert-info">
+          <strong>Notice:</strong> There are no sandboxes available for launch.  Only one sandbox per usecase per user can be launched.
+      </div>
     </div>
 
-    
+
+<div class="modal fade" tabindex="-1" role="dialog" id="modalExtendSandbox">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Extend Neo4j Sandboxes for 7 days</h4>
+      </div>
+      <div class="modal-body">
+          <p>
+            Would you like to extend your Neo4j Sandboxes?  Provide the following information and we'll extend them by 7 days.<br />
+            <form>
+              <div class="form-group">
+                <label for="extendSandboxInputCompany">Company</label>
+                <input type="text" class="form-control" id="extendSandboxInputCompany" aria-describedby="extendSandboxInputCompanyHelp" placeholder="Enter company name">
+              </div>
+              <div class="form-group">
+                <label for="extendSandboxInputIndustry">Industry</label>
+                <select class="form-control" id="extendSandboxInputIndustry">
+                    <option>Energy</option>
+                    <option>Technology</option>
+                    <option>Financial Services</option>
+                    <option>Consumer Products</option>
+                    <option>Manufacturing</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="extendSandboxInputReason">Why are you interested in Neo4j?</label>
+                <textarea class="form-control" id="extendSandboxInputReason" rows="3"></textarea>
+              </div>
+            </form>
+          </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Extend</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
 
       <footer class="footer">
-        <p>Privacy Policy and Terms of Service</p>
+        <p><a href="//neo4j.com/privacy">Privacy Policy</a> and <a href="//neo4j.com/terms">Terms</a></p>
       </footer>
 
     </div> <!-- /container -->
@@ -166,5 +219,6 @@
     <script src="js/bootstrap.min.js"></script>
     <!-- Load applicatino code -->
     <script src="js/app.js"></script>
+
   </body>
 </html>

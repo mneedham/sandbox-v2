@@ -6,6 +6,7 @@
   var usecases = false;
   var runningInstances = false;
   var editors = {};
+  var identityName = '';
 
   var listener = function(event) {
     if (event.origin == "https://auth.neo4j.com") {
@@ -18,7 +19,30 @@
       localStorage.setItem('profile', JSON.stringify(event.data.profile))
       show_profile_info(event.data.profile)
       retrieve_update_instances();
+      updateIdentity();
     }
+  }
+
+  var updateIdentity = function() {
+    var profile = JSON.parse(localStorage.getItem('profile'));
+    if('given_name' in profile) {
+      identityName = profile['given_name'];
+    } else if('name' in profile) {
+      identityName = profile['name'];
+    } else if('nickname' in profile) {
+      identityName = profile['nickname'];
+    } else if('email' in profile) {
+      identityName = profile['email'];
+    } 
+    $('#identityGreeting').text("Greetings " + identityName).show();
+  }
+
+  var getTimeDiff = function(time1, time2) {
+    var hourDiff = time2 - time1;
+    var diffDays = Math.floor(hourDiff / 86400000);
+    var diffHrs = Math.floor((hourDiff % 86400000) / 3600000);
+    var diffMins = Math.floor(((hourDiff % 86400000) % 3600000) / 60000);
+    return {"days": diffDays, "hours": diffHrs, "mins": diffMins};
   }
    
   if (window.addEventListener){
@@ -143,6 +167,7 @@
     if (runningInstances && usecases) {
       update_instances(runningInstances, usecases);
     } else {
+      console.log('Timeout setting for: ' + (time * 2));
       window.setTimeout( 
               check_for_instances_and_usecases()
               ,time * 2);
@@ -463,29 +488,74 @@ $('.tabs-code').resizable({
       sandboxDiv.find('.navbar-brand').text(instance.usecase);
 
       sandboxDiv.find('.connection a').click(update_sandbox_panel('connection', instance.sandboxId));
-      var connectionDiv = sandboxDiv.find('.panel-body').find('.connection');
-      connectionDiv.empty().append(
+      var connectionDiv = sandboxDiv.find('.panel-body-content').find('.connection');
+      connectionDiv.empty();
+      connectionDiv.append(
+            $('<img/>')
+              .attr('src', '/img/neo4j-browser-3-0-sm.png')
+              .attr('height', '175')
+              .attr('style', 'float: left; margin-right: 5px;')
+      );
+      dateDiff = getTimeDiff(Date.now(), instance.expires);
+      if (dateDiff['days'] == 1) {
+        daysStr = 'day';
+      } else {
+        daysStr = 'days';
+      }
+      if (dateDiff['minutes'] == 1) {
+        minsStr = 'minute';
+      } else {
+        minsStr = 'minutes';
+      }
+      if (dateDiff['hours'] == 1) {
+        hoursStr = 'minute';
+      } else {
+        hoursStr = 'hours';
+      }
+      expiresString = `${dateDiff['days']} ${daysStr}, ${dateDiff['hours']} ${hoursStr}, ${dateDiff['mins']} ${minsStr}`
+      triggerExpiresWarning = false;
+      expiresWarningLevel = '';
+      if (dateDiff['days'] < 2) {
+        triggerExpiresWarning = true;
+        if (dateDiff['days'] < 1) {
+          expiresWarningLevel = 'danger';
+        } else {
+          expiresWarningLevel = 'warning';
+        }
+        sandboxDiv.find('.panel-body-alerts').append($('<div/>').attr('class', `alert alert-custom alert-${expiresWarningLevel}`).html(`<strong>Warning:</strong> Sandbox expires in ${expiresString}. <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalExtendSandbox">Extend Sandbox</button>`));
+        $(".extend-sandbox").on("click", function() { $("#extend-sandbox-dialog").dialog("open") });
+      }
+      connectionDiv.append(
             $('<p/>')
-              .text('Neo4j Browser: ')
-              .append($('<a/>')
-                .attr('href', `http://${instance.ip}:${instance.port}/`)
-                .attr('target', '_blank')
-                .text(`http://${instance.ip}:${instance.port}/`)
-              ))
+              .append(
+                $('<b/>').text('Neo4j Browser: '))
+              .append(
+                $('<b/>')
+                .append($('<a/>')
+                  .attr('href', `http://${instance.ip}:${instance.port}/`)
+                  .attr('target', '_blank')
+                  .text(`http://${instance.ip}:${instance.port}/`)
+              )))
             .append($('<p/>')
-              .html(`username: ${instance.username}<br />` +
-                    `password: ${instance.password}`));
+              .html(`<b>Username:</b> ${instance.username}<br />` +
+                    `<b>Password:</b> ${instance.password}`))
+            .append($('<p/>')
+              .html(`<b>IP Address:</b> ${instance.ip}<br />` +
+                    `<b>HTTP Port:</b> ${instance.port}<br />` +
+                    `<b>Bolt Port:</b> ${instance.boltPort}`))
+            .append($('<p/>')
+              .html(`<b>Expires:</b> ${expiresString}`));
 
 
       sandboxDiv.find('.datamodel a').click(update_sandbox_panel('datamodel', instance.sandboxId));
-      var datamodelDiv = sandboxDiv.find('.panel-body').find('.datamodel');
+      var datamodelDiv = sandboxDiv.find('.panel-body-content').find('.datamodel');
       datamodelDiv.empty().append($('<img/>')
                           .attr('src', instance.modelImage)
                           .attr('width', '100%'));
 
 
       sandboxDiv.find('.code a').click(update_sandbox_panel('code', instance.sandboxId));
-      var codeDiv = sandboxDiv.find('.panel-body').find('.code');
+      var codeDiv = sandboxDiv.find('.panel-body-content').find('.code');
       codeDiv.empty().append($('<div/>')
                           .attr('class', `tabs-code-${instance.usecase}`)
                           .append($('<ul />')))
@@ -501,9 +571,9 @@ $('.tabs-code').resizable({
       usecase = usecases[usecaseNum]
       ucname = usecase.name
 
+      $('#usecaseList').find('col-md-4').empty();
       /* always show blank sandbox for testing TODO remove */
-      if ((! ucname in activeUsecases) || (ucname == 'blank-sandbox')) {
-        console.log("Allow " + ucname);
+      if ((! ucname in activeUsecases)) {
         columnNum = (availableForLaunchCount % 3 ) + 1;
         panelDiv = $('<div/>').attr('class', 'panel panel-primary')
           .append(
@@ -524,6 +594,7 @@ $('.tabs-code').resizable({
     }
     $("#sandboxListContainer").show();
     $("#usecaseListContainer").show();
+    $('#identityContainer').show();
   }
 
   var update_sandbox_panel = function(panelName, sandboxId) {
@@ -532,8 +603,8 @@ $('.tabs-code').resizable({
             // this element isn't active, set it active and update content
             $( event.target.parentElement.parentElement ).find('li').removeClass('active');
             $( event.target.parentElement ).addClass('active');
-            $( event.target ).closest('.panel').find('.panel-body').children().hide();
-            $( event.target ).closest('.panel').find('.panel-body').find('.' + panelName).show();
+            $( event.target ).closest('.panel').find('.panel-body-content').children().hide();
+            $( event.target ).closest('.panel').find('.panel-body-content').find('.' + panelName).show();
            console.log('Selected ' + panelName + ' for sandbox id: ' + sandboxId);
         }
     }
@@ -561,6 +632,8 @@ $('.tabs-code').resizable({
     $('.jumbotron').show();
     $('#sandboxList').empty();
     $('#sandboxListContainer').hide();
+    $('#usecaseListContainer').hide();
+    $('#identityContainer').hide();
     window.location.href = window.location.href;
   };
 
@@ -585,6 +658,7 @@ $(document).ready(function() {
   if (localStorage.getItem('id_token')) {
     // TODO FIGURE OUT WHY DOUBLE LOADING
     retrieve_update_instances();
+    updateIdentity();
     $('.btn-login').hide();
     $('.btn-logout').show();
   }
