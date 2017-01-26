@@ -115,6 +115,7 @@ def lambda_handler(event, context):
       s.boltPort AS boltPort,
       s.password AS password,
       s.expires AS expires,
+      s.sandbox_hash_key AS sandboxHashKey,
       id(s) AS sandboxId,
       uc.model_image AS modelImage
     """

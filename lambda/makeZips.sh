@@ -23,3 +23,6 @@ cd ..
 cd SandboxGetInstanceByHashKey
 zip -r9 ../SandboxGetInstanceByHashKey.zip *
 cd ..
+cd SandboxStopInstance
+zip -r9 ../SandboxStopInstance.zip *
+cd ..
