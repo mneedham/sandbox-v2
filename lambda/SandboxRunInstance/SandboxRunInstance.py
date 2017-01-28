@@ -115,7 +115,7 @@ def add_sandbox_to_db(user, usecase, taskid, password, sandboxHashKey):
       s.sandbox_hash_key={sandboxHashKey},
       s.expires=(timestamp() + 1000 * 60 * 60 * 24 * 7)
     CREATE (s)-[:IS_INSTANCE_OF]->(uc)
-    RETURN s.sandbox_hash_key AS sandboxHashKey,s.taskid AS taskId,s.usecase AS usecase,s.running AS running,s.expires AS expires,s.password AS password,uc.model_image AS modelImage
+    RETURN s.sandbox_hash_key AS sandboxHashKey,s.taskid AS taskId,s.usecase AS usecase,s.running AS running,s.expires AS expires,uc.model_image AS modelImage
     """
     results = session.run(query,
       parameters={"auth0_key": user, "usecase": usecase, "taskid": taskid, "password": password, "sandboxHashKey": sandboxHashKey})
@@ -188,7 +188,7 @@ def lambda_handler(event, context):
         )
         logger.debug('Adding sandbox to database')
         res = add_sandbox_to_db(user, usecase, response['tasks'][0]['taskArn'], encrypt_user_creds(userDbPassword), sandboxHashKey)
-        response_json = { "status": "PENDING" }
+        response_json = { "status": "PENDING", "password": userDbPassword}
         for record in res:
             record_dict = dict(record)
         response_json.update(record_dict)    

@@ -125,7 +125,8 @@
         "Authorization": id_token 
       },
       success: function (data){
-        $("#modalLaunchInstance").modal()
+        $("#modalLaunchInstance").modal();
+        update_instances(data, usecases);
       }
     });
   }
@@ -319,12 +320,17 @@
     sandboxListDiv = $("#sandboxList");
     activeUsecases = {}
 
+    if (! Array.isArray(instances) ){
+      instances = [ instances ];
+    }
+
     for (var instanceNum in instances) {
       var instance = instances[instanceNum]
       instance.username = 'neo4j';
 
       activeUsecases[instance.usecase] = true;
 
+      existingSandbox = sandboxListDiv.find(`[data-sandboxhashkey='${instance.sandboxHashKey}']`);
       sandboxDiv = $("#sandbox_template").clone();
       sandboxDiv
       .removeAttr('id')
@@ -370,7 +376,12 @@
         sandboxDiv.find('.panel-body-alerts').append($('<div/>').attr('class', `alert alert-custom alert-${expiresWarningLevel}`).html(`<strong>Warning:</strong> Sandbox expires in ${expiresString}. <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalExtendSandbox">Extend Sandbox</button>`));
         //$(".extend-sandbox").on("click", function() { $("#extend-sandbox-dialog").dialog("open") });
       }
-      connectionDiv.append(
+
+      if ('status' in instance && instance['status'] == 'PENDING') {
+        connectionDiv.append($('<p/>').text('Launching! Will show connection info when available.'));
+        setTimeout(function() { retrieve_update_instances() }, 2000);
+      } else {
+        connectionDiv.append(
             $('<p/>')
               .append(
                 $('<b/>').text('Neo4j Browser: '))
@@ -394,7 +405,7 @@
                     `<b>Bolt Port:</b> ${instance.boltPort}`))
             .append($('<p/>')
               .html(`<b>Expires:</b> ${expiresString}`));
-
+      }
 
       sandboxDiv.find('.datamodel a').click(update_sandbox_panel('datamodel', instance.sandboxId));
       var datamodelDiv = sandboxDiv.find('.panel-body-content').find('.datamodel');
@@ -413,7 +424,12 @@
 
       sandboxDiv.find('.shutdown a').click(function () {shutdownInstance(instance.sandboxHashKey)});
 
-      sandboxListDiv.append(sandboxDiv);
+      if (existingSandbox.length == 0) {
+        sandboxListDiv.append(sandboxDiv);
+      } else {
+        // sandbox already here, update as necessary
+        existingSandbox.replaceWith(sandboxDiv);
+      }
     }
 
     availableForLaunchCount = 0;
