@@ -140,6 +140,8 @@ def lambda_handler(event, context):
     
     logger.debug('Checking to see if sandbox exists')
 
+    # TODO MUTEX issue here needs fixed to prevent same user 
+    # getting many sandboxes
     if not check_sandbox_exists(user, usecase):
         logger.debug('Generating password')
 
