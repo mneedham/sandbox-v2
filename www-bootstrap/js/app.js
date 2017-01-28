@@ -67,9 +67,6 @@
     }
     window.addEventListener('message', function(event) {
       clearInterval(pollInterval);
-      if (targetUsecase) {
-        window.setTimeout(launchInstance(targetUsecase), 1000);
-      }
     });
     pollInterval = setInterval(function (e) {
       win.postMessage('Polling for results', 
@@ -77,8 +74,8 @@
       }, 6000);
   }
 
-  var launchButtonAction = function() {
-    $('.btn-launch').click(function (e) {
+  var launchButtonAction = function(button) {
+    button.click(function (e) {
       //this.hide();
       //$('.btn-launch').hide();  
       var id_token = localStorage.getItem('id_token');
@@ -90,15 +87,31 @@
         $( this ).closest('.panel').hide();
         // TODO: Rebalance columns
         return launchInstance(e.target.dataset['usecase']);
-      } else {
-        return launchInstance('us-elections-foo');
+      }
+    });
+  }
+
+  var shutdownInstance = function(sandboxHashKey) {
+    var id_token = localStorage.getItem('id_token');
+
+    $.ajax
+    ({
+      type: "POST",
+      url: `${API_PATH}/SandboxStopInstance`,
+      dataType: 'json',
+      data: JSON.stringify({ "sandboxHashKey": sandboxHashKey}),
+      contentType: "application/json",
+      async: true,
+      headers: {
+        "Authorization": id_token
+      },
+      success: function (data){
       }
     });
   }
 
   var launchInstance = function(usecase) {
     var id_token = localStorage.getItem('id_token');
-    var rand = Math.floor((Math.random() * 100) + 1);
 
     $.ajax
     ({
@@ -112,7 +125,7 @@
         "Authorization": id_token 
       },
       success: function (data){
-        retrieve_update_instances();
+        $("#modalLaunchInstance").modal()
       }
     });
   }
@@ -145,7 +158,8 @@
           dataType: 'json',
           async: true,
           headers: {
-            "Authorization": id_token 
+            "Authorization": id_token,
+            "Cache-Control": "max-age=0" 
           },
           success: function (data){
             runningInstances = data;
@@ -153,7 +167,7 @@
               update_instances(data, usecases);
             } else {
               window.setTimeout( 
-                check_for_instances_and_usecases(200)
+                function () { check_for_instances_and_usecases(200) }
                 ,200);
             }
           }
@@ -354,7 +368,7 @@
           expiresWarningLevel = 'warning';
         }
         sandboxDiv.find('.panel-body-alerts').append($('<div/>').attr('class', `alert alert-custom alert-${expiresWarningLevel}`).html(`<strong>Warning:</strong> Sandbox expires in ${expiresString}. <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalExtendSandbox">Extend Sandbox</button>`));
-        $(".extend-sandbox").on("click", function() { $("#extend-sandbox-dialog").dialog("open") });
+        //$(".extend-sandbox").on("click", function() { $("#extend-sandbox-dialog").dialog("open") });
       }
       connectionDiv.append(
             $('<p/>')
@@ -397,6 +411,7 @@
                         .tabs({heightStyle: "fill"}).tabs("refresh");
       retrieve_show_code_snippets(instance.usecase, instance.username, instance.password, instance.ip, instance.port, instance.boltPort, codeDiv.find(`.tabs-code-${instance.usecase}`));
 
+      sandboxDiv.find('.shutdown a').click(function () {shutdownInstance(instance.sandboxHashKey)});
 
       sandboxListDiv.append(sandboxDiv);
     }
@@ -423,7 +438,7 @@
               )
           );
         $(".uc-col-" + columnNum).append(panelDiv);
-        launchButtonAction();
+        launchButtonAction(panelDiv.find('.btn-launch'));
         availableForLaunchCount++;
       }
     }

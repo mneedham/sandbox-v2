@@ -115,10 +115,10 @@ def add_sandbox_to_db(user, usecase, taskid, password, sandboxHashKey):
       s.sandbox_hash_key={sandboxHashKey},
       s.expires=(timestamp() + 1000 * 60 * 60 * 24 * 7)
     CREATE (s)-[:IS_INSTANCE_OF]->(uc)
-    RETURN s
+    RETURN s.sandbox_hash_key AS sandboxHashKey,s.taskid AS taskId,s.usecase AS usecase,s.running AS running,s.expires AS expires,s.password AS password,uc.model_image AS modelImage
     """
     results = session.run(query,
-      parameters={"auth0_key": user, "usecase": usecase, "taskid": taskid, "password": password, "sandboxHashKey": sandboxHashKey}).consume()
+      parameters={"auth0_key": user, "usecase": usecase, "taskid": taskid, "password": password, "sandboxHashKey": sandboxHashKey})
 
     if session.healthy:
         session.close()
@@ -140,8 +140,6 @@ def lambda_handler(event, context):
     
     logger.debug('Checking to see if sandbox exists')
 
-    # TODO MUTEX issue here needs fixed to prevent same user 
-    # getting many sandboxes
     if not check_sandbox_exists(user, usecase):
         logger.debug('Generating password')
 
@@ -189,11 +187,13 @@ def lambda_handler(event, context):
             startedBy=('SB("%s","%s")' % (user, usecase))[:36]
         )
         logger.debug('Adding sandbox to database')
-        add_sandbox_to_db(user, usecase, response['tasks'][0]['taskArn'], encrypt_user_creds(userDbPassword), sandboxHashKey)
-
-        response_body = json.dumps( { "status": "PENDING",
-                          "taskArn": response['tasks'][0]['taskArn'],
-                          "password": userDbPassword }, indent=2, cls=MyEncoder )
+        res = add_sandbox_to_db(user, usecase, response['tasks'][0]['taskArn'], encrypt_user_creds(userDbPassword), sandboxHashKey)
+        response_json = { "status": "PENDING" }
+        for record in res:
+            record_dict = dict(record)
+        response_json.update(record_dict)    
+                          
+        response_body = json.dumps(response_json, indent=2, cls=MyEncoder )
                           
         # response_body = json.dumps(response['tasks'][0], indent=2, cls=MyEncoder)
         response_statusCode = 200
@@ -209,3 +209,4 @@ def lambda_handler(event, context):
         response_body = json.dumps( {"errorString": "Sandbox already exists for user: %s and usecase %s"  % (user, usecase) })
 
         return { "statusCode": response_statusCode, "headers": { "Content-type": response_contentType, "Access-Control-Allow-Origin": "*" }, "body": response_body }
+
