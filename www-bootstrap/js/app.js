@@ -169,7 +169,7 @@
     } else {
       console.log('Timeout setting for: ' + (time * 2));
       window.setTimeout( 
-              check_for_instances_and_usecases(time*2)
+              function () { check_for_instances_and_usecases(time*2) }
               ,time * 2);
     }
   }
@@ -294,176 +294,6 @@
     }*/
   } 
 
-  var show_usecases = function(usecases) {
-    var oList = $('#usecaseList')
-    var uList = $('<ul>', {id: 'usecaseList', style: 'display: none'})
-    for (var usecaseNum in usecases) {
-      (function (ucname) {
-        var usecase = usecases[usecaseNum]
-        var li = $('<li/>')
-          .attr('class', 'usecaseListItem')
-          .appendTo(uList);
-        var divUsecase = $('<div/>')
-          .appendTo(li)
-          .attr('id', 'usecase:' + ucname);
-        var divUsecaseImage = $('<div/>')
-          .attr('class', 'usecase-div-image')
-          .appendTo(divUsecase);
-        var imgUsecaseImage = $('<img/>')
-          .attr('class', 'usecase-img')
-          .attr('src', usecase.logo)
-          .appendTo(divUsecaseImage);
-        var divUsecaseDescription = $('<div/>')
-          .attr('class', 'usecase-div-description')
-          .appendTo(divUsecase);
-        var paraUsecaseDescription = $('<p/>')
-          .text(`${usecase.name} - ${usecase.description}`)
-          .appendTo(divUsecaseDescription);
-        var paraUsecaseLaunchButton = $('<p/>')
-          .appendTo(divUsecaseDescription);
-        var buttonUsecaseLaunch = $('<button/>')
-          .attr('type', 'submit')
-          .attr('class', 'btn-launch')
-          .attr('data-usecase', usecase.name)
-          .text('Get Sandbox')
-          .appendTo(paraUsecaseLaunchButton);
-        var divUsecaseConnections = $('<div/>')
-          .attr('class', 'connectionsList')
-          .appendTo(divUsecaseDescription);
-        var divUsecaseClear = $('<div/>')
-          .attr('class', 'clear')
-          .appendTo(divUsecase);
-
-        window.addEventListener("runningInstance", function (event) {
-          var sandboxId = event.detail.sandboxId;
-          if (event.detail && event.detail.usecase && event.detail.usecase == ucname) {
-              $('*[data-usecase="' + ucname + '"]').hide();
-              var currentConnections = 
-                divUsecaseConnections.find(`*[data-sandboxid="${event.detail.sandboxId}"]`)
-              var divConnectionInfo = $('<div/>')
-                  .attr('class', 'connectionInfoItem')
-                  .attr('data-connectioninfo', `${event.detail.ip}:${event.detail.port}`)
-                  .attr('data-sandboxid', event.detail.sandboxId)
-                  .append(
-                    $('<div/>')
-                      .attr('class', 'connectionInfoItemTabContainer')
-                      .append($('<ul/>')
-                        .append($('<li/>')
-                          .append($('<a/>')
-                            .attr('href','#tabs-connection-info')
-                            .text('Connection Info')))
-                        .append($('<li/>')
-                          .append($('<a/>')
-                            .attr('href','#tabs-datamodel')
-                            .text('Data Model')))
-                        .append($('<li/>')
-                          .append($('<a/>')
-                            .attr('href','#tabs-code')
-                            .text('Code')))
-                        .append($('<li/>')
-                          .append($('<a/>')
-                            .attr('href','#tabs-logs')
-                            .text('Logs'))))
-                      .append($('<div/>')
-                        .attr('id','tabs-connection-info')
-                        .attr('class','tabs-connection-info')
-                        .append($('<p/>')
-                          .text('Neo4j Browser: ')
-                          .append($('<a/>')
-                            .attr('href', `http://${event.detail.ip}:${event.detail.port}/`)
-                            .attr('target', '_blank')
-                            .text(`http://${event.detail.ip}:${event.detail.port}/`)
-                          ))
-                        .append($('<p/>')
-                          .html(`username: ${event.detail.username}<br />` +
-                                `password: ${event.detail.password}`)))
-                      .append($('<div/>')
-                        .attr('id','tabs-datamodel')
-                        .append($('<img/>')
-                          .attr('src', event.detail.modelImage)
-                          .attr('width', '100%')))
-                      .append($('<div/>')
-                        .attr('id','tabs-code')
-                        .attr('class','tabs-code')
-                        .append($('<div/>')
-			  .attr('class', `tabs-code-${event.detail.usecase}`)
-			  .append($('<ul />')))
-			.tabs({heightStyle: "auto"}))
-                      .append($('<div/>')
-                        .attr('id','tabs-logs')
-                        .append($('<textarea/>')
-                          .attr('id', `logs-${event.detail.sandboxId}`)
-                          .attr('value',"")
-                          .text(`loading... for task ${event.detail.taskId}\n`)
-                          ))
-                      .tabs({
-                        heightStyle: "auto",
-                        activate: function(event, ui) {
-                          if (ui.newTab[0].outerText == "Logs") {
-                            if (! ui.newPanel[0].lastChild.CodeMirror) {
-                              var editor = CodeMirror.fromTextArea(
-                                ui.newPanel[0].firstChild, {
-                                mode: 'shell',
-                                lineNumbers: true
-                              })
-    			      editor.setValue('Loading...');
-                              retrieve_logs(editor, sandboxId, null);
-                            }
-                          }
-                        }
-                      }));
-                    /*
-                    $('<a/>')
-                      .attr('href', `http://${event.detail.ip}:${event.detail.port}/`)
-                      .text(`http://${event.detail.ip}:${event.detail.port}/`)
-                    );*/
-$('.connectionInfoItemTabContainer').tabs("refresh");
-$('.tabs-code').tabs("refresh");
-              if(currentConnections.length == 0) {
-/*
-$('.connectionInfoItem').resizable({
-         handles: 's',
-         alsoResize: '.ui-tabs-panel'
-     });
-$('.tabs-code').resizable({
-         handles: 's',
-         alsoResize: '.ui-tabs-panel'
-     });
-*/
-                divConnectionInfo.appendTo(divUsecaseConnections);
-                retrieve_show_code_snippets(event.detail.usecase, event.detail.username, event.detail.password, event.detail.ip, event.detail.port, event.detail.boltPort, divConnectionInfo.find(`.tabs-code-${event.detail.usecase}`));
-              } else {
-                // only replace if pending item.  TODO, preempt earlier to prevent dom build
-                if (currentConnections.data('sandboxStatus') == 'pending'){
-                  currentConnections.replaceWith(divConnectionInfo);
-                }
-              }
-              $('.connectionInfoItemTabContainer').tabs("refresh");
-	      $('.tabs-code').tabs("refresh");
-          }    
-        });
-        window.addEventListener("startingInstance", function (event) {
-          if (event.detail && event.detail.usecase && event.detail.usecase == ucname) {
-              $('*[data-usecase="' + ucname + '"]').hide();
-              var currentConnections = 
-                divUsecaseConnections.find(`*[data-sandboxid="${event.detail.sandboxId}"]`)
-              if(currentConnections.length == 0) {
-                $('<div/>')
-                    .attr('data-sandboxid', event.detail.sandboxId)
-                    .attr('data-sandbox-status', 'pending')
-                    .text("Starting instance for this usecase.  Give me a few seconds please")
-                    .appendTo(divUsecaseConnections);
-              }
-	      $('.connectionInfoItemTabContainer').tabs("refresh");
-	     $('.tabs-code').tabs("refresh");
-          }    
-        });
-      })(usecases[usecaseNum].name);
-    }
-    oList.replaceWith(uList);
-    // update buttons
-    launchButtonAction();
-  }
 
   var update_instances = function(instances, usecases) {
     console.log(instances);
@@ -539,7 +369,11 @@ $('.tabs-code').resizable({
               )))
             .append($('<p/>')
               .html(`<b>Username:</b> ${instance.username}<br />` +
-                    `<b>Password:</b> ${instance.password}`))
+                    //`<b>Password:</b> <input type="text" size="${instance.password.length}" id="pw-${instance.sandboxHashKey}" value="${instance.password}" style="border: 0px"></input>` +
+                    `<b>Password:</b> <span id="pw-${instance.sandboxHashKey}" style="margin-right: 10px">${instance.password}</span>` +
+                    `<button type="button" class="btn copybtn btn-default btn-xs" data-clipboard-target="#pw-${instance.sandboxHashKey}">` + 
+                    `<span class="glyphicon glyphicon-copy" aria-hidden="true"></span></button>` +
+                    `` ))
             .append($('<p/>')
               .html(`<b>IP Address:</b> ${instance.ip}<br />` +
                     `<b>HTTP Port:</b> ${instance.port}<br />` +
@@ -649,6 +483,7 @@ $(document).ready(function() {
     e.preventDefault();
     logout();
   })
+  new Clipboard('.copybtn');
   var profile = localStorage.getItem('profile');
   if (profile) {
     try {
