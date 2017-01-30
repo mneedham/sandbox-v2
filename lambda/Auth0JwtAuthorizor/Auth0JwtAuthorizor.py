@@ -22,7 +22,7 @@ def add_update_user(user, jwt):
     data = { "id_token": jwt }
 
     req = urllib2.Request(
-        	url = 'https://neo4j-sync.auth0.com/tokeninfo',
+        	url = 'https://devrel-test.auth0.com/tokeninfo',
         	headers = {"Content-type": "application/json"},
 	        data = json.dumps(data))
         
@@ -68,7 +68,7 @@ def lambda_handler(event, context):
     logger.setLevel(LOGGING_LEVEL)
 
     creds = sblambda.get_creds('auth0')
-    secret = base64.b64decode(creds['auth0_secret'])
+    secret = creds['auth0_secret']
     encoded = event['authorizationToken']
 
     # TODO Handle expired signatures 

@@ -16,6 +16,16 @@ class MyEncoder(json.JSONEncoder):
 
         return json.JSONEncoder.default(self, obj)
 
+def decode_base64(data):
+    """Decode base64, padding being optional.
+
+    :param data: Base64 data as an ASCII byte string
+    :returns: The decoded byte string.
+
+    """
+    data += '=' * (-len(data)% 4)
+    return base64.decodestring(data)
+
 
 def get_creds(credName):
     global creds, DB_CREDS_BUCKET
@@ -28,7 +38,7 @@ def get_creds(credName):
         response = s3.get_object(Bucket=DB_CREDS_BUCKET,Key="%s.enc.cfg" % (credName))
         contents = response['Body'].read()
 
-        encryptedData = base64.b64decode(contents)
+        encryptedData = decode_base64(contents)
         decryptedResponse = kms.decrypt(CiphertextBlob = encryptedData)
         decryptedData = decryptedResponse['Plaintext']
         creds[credName] = json.loads(decryptedData)
