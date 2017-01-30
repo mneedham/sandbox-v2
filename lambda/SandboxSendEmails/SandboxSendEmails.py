@@ -8,6 +8,7 @@ import base64
 import os
 import logging
 import traceback
+from string import Template
 
 db_creds = None
 glob_session = None
@@ -15,6 +16,7 @@ glob_session = None
 DB_HOST = os.environ["DB_HOST"]
 DB_CREDS_BUCKET = os.environ["DB_CREDS_BUCKET"]
 DB_CREDS_OBJECT = os.environ["DB_CREDS_OBJECT"]
+EMAIL_TEMPLATES_BUCKET = os.environ["EMAIL_TEMPLATES_BUCKET"]
 
 class MyEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -115,6 +117,82 @@ def send_email_reminderone(sandboxes):
             }
         )
         print(response)
+        
+        
+
+def get_sandboxes_for_email_created():
+    session = get_db_session()
+
+    instances_query = """
+    MATCH 
+      (s:Sandbox)
+    WHERE 
+      s.running = True
+      AND
+      s.sendEmailCreated = 'Q'
+    RETURN
+      s.usecase AS usecase, s.ip, s.port, s.boltPort, s.expires, id(s) AS id
+    """
+    results = session.run(instances_query)
+
+    sandboxes = []
+
+    for record in results:
+      record = dict((el[0], el[1]) for el in record.items())
+      sandboxes.append(record)
+
+    if session.healthy:
+        session.close()
+
+    return sandboxes
+
+def set_sandboxes_email_status_created(sandbox_ids, status):
+    session = get_db_session()
+
+    instances_update_query = """
+    MATCH 
+      (s:Sandbox)
+    WHERE 
+      id(s) IN {sandbox_ids}
+    SET
+      s.sendEmailCreated={status}
+    """
+    results = session.run(instances_update_query, parameters={"sandbox_ids": list(sandbox_ids), "status": status}).consume()
+
+    if session.healthy:
+        session.close()
+
+    return results
+
+
+
+def send_email_created(sandboxes):
+    s3 = boto3.client('s3')
+    response = s3.get_object(Bucket=EMAIL_TEMPLATES_BUCKET,Key="%s.txt" % ('created'))
+    templatePlainText = response['Body'].read()
+    
+    templateObj = Template(templatePlainText)
+    
+    print(templatePlainText)
+    
+    client = boto3.client('ses')
+    for sandbox in sandboxes:
+        bodyPlainText = templateObj.substitute(sburl='neo4j-sandbox-www.s3-website-us-east-1.amazonaws.com/#', greeting=sandbox['usecase'])
+        response = client.send_email(
+            Source = 'Neo4j DevRel <ryan+sandbox@ryguy.com>',
+            Destination = {
+                'ToAddresses': [ 'ryan@neo4j.com' ]
+            },
+            Message = {
+                'Subject': { 'Data': 'Welcome to the Neo4j Sandbox' },
+                'Body': { 'Text': { 'Data': bodyPlainText } }
+            }
+        )
+        print(response)
+
+
+
+
 
 def lambda_handler(event, context):
     body = ""
@@ -122,6 +200,7 @@ def lambda_handler(event, context):
     contentType = 'application/json'
 
     status = 'S'
+
 
     try:
       sbs = get_sandboxes_for_email_reminderone()
@@ -142,6 +221,26 @@ def lambda_handler(event, context):
 
     print('SANDBOXES FOR EMAIL REMINDER ONE')
     print( sbs )
+    
+    
+    try:
+      sbs = get_sandboxes_for_email_created()
+      send_email_created(sbs)
+    except:
+      logging.error(traceback.format_exc())
+      print('Error in sending email -setting status as M')
+      status = 'M'
+
+    try:
+      sbids = []
+      for sb in sbs:
+        sbids.append(sb['id'])
+      set_sandboxes_email_status_created(sbids, status)
+    except Exception as e:
+      logging.error(traceback.format_exc())
+      print('Error in setting sandbox statuses')
+
+    print('SANDBOXES FOR EMAIL CREATED')
+    print( sbs )
   
     return True
-
