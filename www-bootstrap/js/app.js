@@ -1,5 +1,5 @@
   const API_PATH = "https://ppriuj7e7i.execute-api.us-east-1.amazonaws.com/prod";
-  const AUTH_URL = "https://auth.neo4j.com/index.html";
+  const AUTH_URL = "http://neo4j-sandbox-www-auth.s3-website-us-east-1.amazonaws.com/";
   const CODE_SNIPPETS_PATH = "https://s3.amazonaws.com/neo4j-sandbox-code-snippets";
 
   var pollInterval;
@@ -7,17 +7,21 @@
   var runningInstances = false;
   var editors = {};
   var identityName = '';
+  var activeUsecases = {}
+  var activeInstancesUpdated = false;
 
   var listener = function(event) {
-    if (event.origin == "https://auth.neo4j.com") {
-      $('.jumbotron').hide();
-      $('.marketing').hide();
+    if (event.origin == "http://neo4j-sandbox-www-auth.s3-website-us-east-1.amazonaws.com") {
+      $('.jumbotron').fadeOut("fast");
+      $('.marketing').fadeOut("fast");
       $('.btn-launch').show();
       //$('#logs').show();
       event.source.close();
       localStorage.setItem('id_token', event.data.token)
       localStorage.setItem('profile', JSON.stringify(event.data.profile))
+      localStorage.setItem('refresh_token', event.data.refreshToken)
       show_profile_info(event.data.profile)
+      conditional_update_usecases();
       retrieve_update_instances();
       updateIdentity();
     }
@@ -34,7 +38,8 @@
     } else if('email' in profile) {
       identityName = profile['email'];
     } 
-    $('#identityGreeting').text("Greetings " + identityName).show();
+    $('#identityGreeting').text("Greetings " + identityName);
+    $('#identityContainer').fadeIn('fast');
   }
 
   var getTimeDiff = function(time1, time2) {
@@ -49,6 +54,14 @@
     addEventListener("message", listener, false)
   } else {
     attachEvent("onmessage", listener)
+  }
+
+  var shutdownInstanceAction = function(sandboxDiv, instance, clickItem) {
+    clickItem.click( function() {
+        shutdownInstance(instance.sandboxHashKey, sandboxDiv);
+        sandboxDiv.fadeTo(400, 0.3);
+        sandboxDiv.attr('style', '-webkit-filter: grayscale(1);');
+    });
   }
 
   var loginButtonAction = function(e) {
@@ -84,14 +97,16 @@
       }
       if (e.target.dataset && e.target.dataset['usecase']) {
         // hide panel
-        $( this ).closest('.panel').hide();
+        $( this ).closest('.panel').fadeOut('slow');
+        // TODO: Be smarter about refreshes - don't need net calls, but can count divs
         // TODO: Rebalance columns
+        //$("#modalLaunchInstance").modal();
         return launchInstance(e.target.dataset['usecase']);
       }
     });
   }
 
-  var shutdownInstance = function(sandboxHashKey) {
+  var shutdownInstance = function(sandboxHashKey, sandboxDiv) {
     var id_token = localStorage.getItem('id_token');
 
     $.ajax
@@ -106,8 +121,18 @@
         "Authorization": id_token
       },
       success: function (data){
+        sandboxDiv.remove();
+        // TODO check number of sandbox divs and update UI based upon it
+        updateUx();
       }
     });
+  }
+
+  var updateUx = function() {
+    activeInstancesUpdated = false;
+    activeUsecases = [];
+    retrieve_update_instances();
+    conditional_update_usecases();
   }
 
   var launchInstance = function(usecase) {
@@ -125,8 +150,8 @@
         "Authorization": id_token 
       },
       success: function (data){
-        $("#modalLaunchInstance").modal();
         update_instances(data, usecases);
+        setTimeout(function() { updateUx() }, 1000);
       }
     });
   }
@@ -170,6 +195,31 @@
               window.setTimeout( 
                 function () { check_for_instances_and_usecases(200) }
                 ,200);
+            }
+          },
+          error: function (jqXHR, textStatus, errorThrown) {
+            /* CORS headers unavailable from AWS API Gateway
+               when throwing 401, so status details missing. 
+               Assume errors are auth failures. */
+              // Refresh token
+            if (retry) {
+              $.ajax
+              ({
+                type: "POST",
+                url: "https://neo4j-sync.auth0.com/delegation",
+                contentType: "application/json",
+                dataType: 'json',
+                async: true,
+                data: JSON.stringify(
+                  { "client_id": "OEWOmp34xybu0efvGQ8eM4zNTNUTJJOB",
+                    "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
+                    "refresh_token": localStorage.getItem('refresh_token'),
+                    "api_type": "app" }),
+                success: function (data){
+                  localStorage.setItem('id_token', data.id_token);
+                  retrieve_show_instances(false);
+                }
+              });
             }
           }
         });
@@ -310,16 +360,59 @@
   } 
 
 
+  var conditional_update_usecases = function() {
+    if (usecases && activeInstancesUpdated) {
+      update_usecases(usecases);
+    } else {
+      setTimeout(function() { conditional_update_usecases() }, 100); 
+    }
+  }
+
+  var update_usecases = function(usecases) {
+    availableForLaunchCount = 0;
+    $('#usecaseList').find('.col-md-4').empty();
+    for (var usecaseNum in usecases) {
+      usecase = usecases[usecaseNum]
+      ucname = usecase.name
+
+      /* always show blank sandbox for testing TODO remove */
+      if (! (ucname in activeUsecases)) {
+        columnNum = (availableForLaunchCount % 3 ) + 1;
+        panelDiv = $('<div/>').attr('class', 'panel panel-primary')
+          .append(
+            $('<div/>').attr('class', 'panel-heading').text(ucname)
+          )
+          .append(
+            $('<div/>').attr('class', 'panel-body')
+              .append(
+                $('<button/>').attr('type','button').attr('class','btn btn-success btn-launch')
+                .attr('data-usecase', ucname)
+                .text('Launch Sandbox')
+              )
+          );
+        $(".uc-col-" + columnNum).append(panelDiv);
+        launchButtonAction(panelDiv.find('.btn-launch'));
+        availableForLaunchCount++;
+      }
+    }
+    $("#usecaseListContainer").show();
+    if (availableForLaunchCount > 0) {
+      $('#usecaseListAlert').hide();
+    } else {
+      $('#usecaseListAlert').show();
+    }
+  }
+
   var update_instances = function(instances, usecases) {
     console.log(instances);
     console.log(usecases);
 
-    $('.jumbotron').hide();
-    $('.marketing').hide();
+    $('.jumbotron').fadeOut("fast");
+    $('.marketing').fadeOut("fast");
 
     sandboxListDiv = $("#sandboxList");
-    activeUsecases = {}
 
+    // this is a new launch
     if (! Array.isArray(instances) ){
       instances = [ instances ];
     }
@@ -378,9 +471,15 @@
       }
 
       if ('status' in instance && instance['status'] == 'PENDING') {
+        newLaunch = true;
+        connectionDiv.append($('<p/>').text('Launching! Will show connection info when available.'));
+        setTimeout(function() { retrieve_update_instances() }, 2000);
+      } else if (instance.ip == null) {
+        newLaunch = false;
         connectionDiv.append($('<p/>').text('Launching! Will show connection info when available.'));
         setTimeout(function() { retrieve_update_instances() }, 2000);
       } else {
+        newLaunch = false;
         connectionDiv.append(
             $('<p/>')
               .append(
@@ -422,48 +521,26 @@
                         .tabs({heightStyle: "fill"}).tabs("refresh");
       retrieve_show_code_snippets(instance.usecase, instance.username, instance.password, instance.ip, instance.port, instance.boltPort, codeDiv.find(`.tabs-code-${instance.usecase}`));
 
-      sandboxDiv.find('.shutdown a').click(function () {shutdownInstance(instance.sandboxHashKey)});
-
+      shutdownInstanceAction(sandboxDiv, instance, sandboxDiv.find('.shutdown a') );
+      sandboxDiv.hide();
       if (existingSandbox.length == 0) {
         sandboxListDiv.append(sandboxDiv);
       } else {
         // sandbox already here, update as necessary
         existingSandbox.replaceWith(sandboxDiv);
       }
-    }
-
-    availableForLaunchCount = 0;
-    for (var usecaseNum in usecases) {
-      usecase = usecases[usecaseNum]
-      ucname = usecase.name
-
-      $('#usecaseList').find('col-md-4').empty();
-      /* always show blank sandbox for testing TODO remove */
-      if (! (ucname in activeUsecases)) {
-        columnNum = (availableForLaunchCount % 3 ) + 1;
-        panelDiv = $('<div/>').attr('class', 'panel panel-primary')
-          .append(
-            $('<div/>').attr('class', 'panel-heading').text(ucname)
-          )
-          .append(
-            $('<div/>').attr('class', 'panel-body')
-              .append(
-                $('<button/>').attr('type','button').attr('class','btn btn-success btn-launch')
-                .attr('data-usecase', ucname)
-                .text('Launch Sandbox')
-              )
-          );
-        $(".uc-col-" + columnNum).append(panelDiv);
-        launchButtonAction(panelDiv.find('.btn-launch'));
-        availableForLaunchCount++;
+      if (newLaunch) {
+        sandboxDiv.fadeIn(2000);
+      } else {
+        sandboxDiv.show();
       }
     }
-    $("#sandboxListContainer").show();
-    $("#usecaseListContainer").show();
-    if (availableForLaunchCount > 0) {
-      $('#usecaseListAlert').hide();
+
+    if (instances.length > 0) {
+      $("#sandboxListContainer").show();
     }
-    $('#identityContainer').show();
+
+    activeInstancesUpdated = true;
   }
 
   var update_sandbox_panel = function(panelName, sandboxId) {
@@ -510,6 +587,9 @@ $(document).ready(function() {
   $('.btn-login').click(function (e) {
     loginButtonAction(e);
   });
+  $('.btn-startnow').click(function (e) {
+    loginButtonAction(e);
+  });
   $('.btn-logout').click(function(e) {
     e.preventDefault();
     logout();
@@ -528,6 +608,7 @@ $(document).ready(function() {
   if (localStorage.getItem('id_token')) {
     // TODO FIGURE OUT WHY DOUBLE LOADING
     retrieve_update_instances();
+    conditional_update_usecases();
     updateIdentity();
     $('.btn-login').hide();
     $('.btn-logout').show();
