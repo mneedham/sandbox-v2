@@ -65,23 +65,30 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <script>
     document.addEventListener("DOMContentLoaded", function() {
-      lock.show({
-        closable: false,
-        authParams: { scope: 'openid offline_access'},
-        callbackURL: location.href,
-        responseType: 'token',
-        icon: 'http://neo4j.com/wp-content/themes/neo4jweb/assets/images/neo4j-logo-2015.png',
-        dict: {
-          signin: {
-            title: 'Sign in'
-          },
-          signup: {
-            title: 'Sign up'
-          }
-        }
-      });
+      if (! window.location.hash) {
+        lock.show({
+          closable: false,
+          authParams: { scope: 'openid offline_access'},
+          callbackURL: location.href,
+          responseType: 'token'
+        });
+      }
     });
     var options = {
+      theme: {
+        logo: 'http://info.neo4j.com/rs/773-GON-065/images/neo4j_logo_globe.png',
+        primaryColor: '#58b535'
+      },
+      initialScreen: (localStorage.getItem('previousLogin') == null)?'signUp':'login',
+      languageDictionary: {
+        title: 'Neo4j Sandbox',
+        signin: {
+          title: 'Sign in'
+        },
+        signup: {
+          title: 'Sign up'
+        }
+      }
     }
     var lock = new Auth0Lock('CK4MU2kBWYkDXdWcKs5mj0GbgzEDfifL', 'devrel-test.auth0.com', options);
     var userProfile = null;
@@ -121,6 +128,7 @@ lock.on("authenticated", function(res) {
       lock.hide();
       return;
     }
+    localStorage.setItem('previousLogin', 'true');
     localStorage.setItem('id_token', res.idToken);
           window.addEventListener('message',function(event) {
               var mapObj = {

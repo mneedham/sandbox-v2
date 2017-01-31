@@ -257,6 +257,7 @@
   var retrieve_show_code_snippets = function(usecase, username, password, ip, httpPort, boltPort, tabjq) {
     tabjq.attr('style', 'min-height: 400px');
     var languages = ['php', 'py', 'java', 'js'];
+    var tabs = tabjq.tabs({heightStyle: "content", activate: function() {codeTabActivate(usecase, language)}}).css({'min-height':'300px'});
     for (var langId in languages) {
       language = languages[langId];
       (function(language, usecase, username, password, ip, httpPort, boltPort, tabjq) {
@@ -269,8 +270,8 @@
           headers: {
           },
           success: function (data) {
-              var tabs = tabjq.tabs({heightStyle: "auto"});
               var ul = tabs.find( "ul" );
+              tabs.on( "tabscreate", function( event, ui ) {codeTabActivate(usecase, language);} );
               var code = data.replace("<USERNAME>", username)
                 .replace("<PASSWORD>", password)
                 .replace("<HOST>", ip)
@@ -294,7 +295,7 @@
               } else if (language == 'php') {
                 mode = 'application/x-httpd-php';
               }
-              editors[usecase + '-' + language] = CodeMirror.fromTextArea(textarea.get()[0], {mode: 'javascript', autoRefresh: true})
+              editors[usecase + '-' + language] = CodeMirror.fromTextArea(textarea.get()[0], {mode: 'javascript', autoRefresh: true, theme: "paraiso-dark"})
 
 /*
               var editor = CodeMirror.fromTextArea(
@@ -303,13 +304,15 @@
                   lineNumbers: true
               });
 */
+              //$('.ui-tabs').tabs( "option", "active", 0 );
               tabs.tabs("refresh"); 
-              $( "#tabs" ).tabs( "refresh" );
-              $( "#accordion" ).accordion( "refresh" );
-              tabs.tabs({
+              tabs.tabs('option', 'active', 0); 
+              //$( "#tabs" ).tabs( "refresh" );
+              //$( "#accordion" ).accordion( "refresh" );
+              /* tabs.tabs({
                 active: 0,
                 activate: codeTabActivate(usecase, language)
-                });
+                }).css({'resize':'none','min-height':'300px'}); */
           }
         });
       })(language, usecase, username, password, ip, httpPort, boltPort, tabjq);
@@ -318,9 +321,9 @@
 
   var codeTabActivate = function(usecase, language) {
     return function(event, ui) {
-      $( "#tabs" ).tabs( "refresh" );
-      $( "#accordion" ).accordion( "refresh" );
       editors[usecase + '-' + language].refresh();
+      //$( "#tabs" ).tabs( "refresh" );
+      //$( "#accordion" ).accordion( "refresh" );
     }
   }
 
@@ -516,9 +519,9 @@
       sandboxDiv.find('.code a').click(update_sandbox_panel('code', instance.sandboxId));
       var codeDiv = sandboxDiv.find('.panel-body-content').find('.code');
       codeDiv.empty().append($('<div/>')
-                          .attr('class', `tabs-code-${instance.usecase}`)
+                          .attr('class', `tabs-code-${instance.usecase} tabs-nohdr`)
                           .append($('<ul />')))
-                        .tabs({heightStyle: "fill"}).tabs("refresh");
+                        .tabs({heightStyle: "content"});// .tabs("refresh");
       retrieve_show_code_snippets(instance.usecase, instance.username, instance.password, instance.ip, instance.port, instance.boltPort, codeDiv.find(`.tabs-code-${instance.usecase}`));
 
       shutdownInstanceAction(sandboxDiv, instance, sandboxDiv.find('.shutdown a') );
@@ -597,21 +600,23 @@ $(document).ready(function() {
   new Clipboard('.copybtn');
   var profile = localStorage.getItem('profile');
   if (profile) {
-    try {
-      show_profile_info(JSON.parse(profile))    
-    } catch (err) {
-
+    profileObj = JSON.parse(profile);
+    show_profile_info(profileObj);
+    if ('email_verified' in profileObj && profileObj['email_verified'] == false) {
+      $('.btn-login').hide();
+      $('.btn-logout').show();
+      $('.need-verification').show();
     }
-  }
-  retrieve_usecases();
-
-  if (localStorage.getItem('id_token')) {
-    // TODO FIGURE OUT WHY DOUBLE LOADING
-    retrieve_update_instances();
-    conditional_update_usecases();
-    updateIdentity();
-    $('.btn-login').hide();
-    $('.btn-logout').show();
+  
+    if (localStorage.getItem('id_token')) {
+      // TODO FIGURE OUT WHY DOUBLE LOADING
+      retrieve_usecases();
+      retrieve_update_instances();
+      conditional_update_usecases();
+      updateIdentity();
+      $('.btn-login').hide();
+      $('.btn-logout').show();
+    }
   }
 });
 
