@@ -1,0 +1,12 @@
+${greeting},
+
+Thank you for signing up for the Neo4j Sandbox.  We hope you have a great experience using Neo4j and learning Graph Databases. 
+
+Your Sandboxes are accessible at:
+${sburl}
+
+Please feel free to reach out should you have any questions.
+
+Cheers,
+Neo4j Developer Relations Team
+devrel@neo4j.com
