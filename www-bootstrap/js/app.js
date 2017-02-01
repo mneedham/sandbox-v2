@@ -9,6 +9,7 @@
   var identityName = '';
   var activeUsecases = {}
   var activeInstancesUpdated = false;
+  var emailVerificationNotNeeded = false;
   var emailVerified = false;
 
   var listener = function(event) {
@@ -26,9 +27,14 @@
       localStorage.setItem('refresh_token', event.data.refreshToken)
       show_profile_info(event.data.profile)
       profileObj = event.data.profile
+
       if (profileObj && 'email_verified' in profileObj && profileObj['email_verified'] == true) {
+        emailVerified = true;
+      } else if (! ('email_verified' in profileObj)) {
+        emailVerficationNotNeeded = true;
+      }
+      if (emailVerified || emailVerificationNotNeeded) {
         $('.need-verification').hide();
-        emailVerified = true
         retrieve_usecases();
         conditional_update_usecases();
         retrieve_update_instances();
@@ -177,8 +183,10 @@
       profileObj = JSON.parse(profile);
       if ('email_verified' in profileObj && profileObj['email_verified'] == true) {
         emailVerified = true
+      } else if (! ('email_verified' in profileObj)) {
+        emailVerificationNotNeeded = true;
       }
-      if (emailVerified) {
+      if (emailVerified || emailVerificationNotNeeded) {
         $('.need-verification').hide();
         retrieve_usecases();
         retrieve_update_instances();
@@ -459,8 +467,6 @@
     console.log(instances);
     console.log(usecases);
 
-    $('.jumbotron').fadeOut("fast");
-    $('.marketing').fadeOut("fast");
 
     sandboxListDiv = $("#sandboxList");
 
@@ -476,7 +482,11 @@
       activeUsecases[instance.usecase] = true;
 
       existingSandbox = sandboxListDiv.find(`[data-sandboxhashkey='${instance.sandboxHashKey}']`);
-      sandboxDiv = $("#sandbox_template").clone();
+      if ('status' in instance && instance['status'] == 'PENDING') {
+        sandboxDiv = $("#sandbox_launching_template").clone();
+      } else {
+        sandboxDiv = $("#sandbox_template").clone();
+      }
       sandboxDiv
       .removeAttr('id')
       .attr('data-sandboxid', instance.sandboxId)
@@ -486,12 +496,6 @@
       sandboxDiv.find('.connection a').click(update_sandbox_panel('connection', instance.sandboxId));
       var connectionDiv = sandboxDiv.find('.panel-body-content').find('.connection');
       connectionDiv.empty();
-      connectionDiv.append(
-            $('<img/>')
-              .attr('src', '/img/neo4j-browser-3-0-sm.png')
-              .attr('height', '175')
-              .attr('style', 'float: left; margin-right: 5px;')
-      );
       dateDiff = getTimeDiff(Date.now(), instance.expires);
       if (dateDiff['days'] == 1) {
         daysStr = 'day';
@@ -532,6 +536,12 @@
         setTimeout(function() { retrieve_update_instances() }, 2000);
       } else {
         newLaunch = false;
+        connectionDiv.append(
+              $('<img/>')
+                .attr('src', '/img/neo4j-browser-3-0-sm.png')
+                .attr('height', '175')
+                .attr('style', 'float: left; margin-right: 5px;')
+        );
         connectionDiv.append(
             $('<p/>')
               .append(
@@ -653,21 +663,23 @@ $(document).ready(function() {
     profileObj = JSON.parse(profile);
     show_profile_info(profileObj);
     if ('email_verified' in profileObj && profileObj['email_verified'] == false) {
+      emailVerified = false;
+    } else if (! ('email_verified' in profileObj)) {
+      emailVerificationNotNeeded = true;
+    }
+    $('.jumbotron').fadeOut("fast");
+    $('.marketing').fadeOut("fast");
+    $('.btn-login').hide();
+    $('.btn-logout').show();
+    if ( (!emailVerified) && (!emailVerificationNotNeeded) ) {
       updateProfile();
-      $('.btn-login').hide();
-      $('.btn-logout').show();
-      $('.jumbotron').fadeOut("fast");
-      $('.marketing').fadeOut("fast");
       $('#sandboxListContainer').hide();
       $('#usecaseListContainer').hide();
       $('.need-verification').show();
     }
-  
     if (localStorage.getItem('id_token')) {
       // TODO FIGURE OUT WHY DOUBLE LOADING
       updateIdentity();
-      $('.btn-login').hide();
-      $('.btn-logout').show();
       emailVerificationCheck();
     }
   }
