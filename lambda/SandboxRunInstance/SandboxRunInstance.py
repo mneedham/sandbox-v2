@@ -113,7 +113,8 @@ def add_sandbox_to_db(user, usecase, taskid, password, sandboxHashKey):
       s.taskid={taskid},
       s.password={password},
       s.sandbox_hash_key={sandboxHashKey},
-      s.expires=(timestamp() + 1000 * 60 * 60 * 24 * 7)
+      s.expires=(timestamp() + 1000 * 60 * 60 * 24 * 7),
+      s.sendEmailCreated='Q'
     CREATE (s)-[:IS_INSTANCE_OF]->(uc)
     RETURN s.sandbox_hash_key AS sandboxHashKey,s.taskid AS taskId,s.usecase AS usecase,s.running AS running,s.expires AS expires,uc.model_image AS modelImage
     """

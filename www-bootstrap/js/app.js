@@ -9,21 +9,36 @@
   var identityName = '';
   var activeUsecases = {}
   var activeInstancesUpdated = false;
+  var emailVerified = false;
 
   var listener = function(event) {
     if (event.origin == "http://neo4j-sandbox-www-auth.s3-website-us-east-1.amazonaws.com") {
       $('.jumbotron').fadeOut("fast");
       $('.marketing').fadeOut("fast");
+      $('.btn-login').hide();
+      $('.btn-logout').show();
       $('.btn-launch').show();
       //$('#logs').show();
       event.source.close();
       localStorage.setItem('id_token', event.data.token)
       localStorage.setItem('profile', JSON.stringify(event.data.profile))
+      localStorage.setItem('access_token', event.data.accessToken)
       localStorage.setItem('refresh_token', event.data.refreshToken)
       show_profile_info(event.data.profile)
-      conditional_update_usecases();
-      retrieve_update_instances();
-      updateIdentity();
+      profileObj = event.data.profile
+      if (profileObj && 'email_verified' in profileObj && profileObj['email_verified'] == true) {
+        $('.need-verification').hide();
+        emailVerified = true
+        retrieve_usecases();
+        conditional_update_usecases();
+        retrieve_update_instances();
+      } else {
+        updateIdentity();
+        updateProfile();
+        $('#sandboxListContainer').hide();
+        $('#usecaseListContainer').hide();
+        $('.need-verification').show();
+      }
     }
   }
 
@@ -152,6 +167,40 @@
       success: function (data){
         update_instances(data, usecases);
         setTimeout(function() { updateUx() }, 1000);
+      }
+    });
+  }
+
+  var emailVerificationCheck = function() {
+    var profile = localStorage.getItem('profile');
+    if (profile) {
+      profileObj = JSON.parse(profile);
+      if ('email_verified' in profileObj && profileObj['email_verified'] == true) {
+        emailVerified = true
+      }
+      if (emailVerified) {
+        $('.need-verification').hide();
+        retrieve_usecases();
+        retrieve_update_instances();
+        conditional_update_usecases();
+      }
+    }
+  }
+
+  var updateProfile = function() {
+    var access_token = localStorage.getItem('access_token');
+    $.ajax
+    ({
+      type: "GET",
+      url: `https://devrel-test.auth0.com/userinfo`,
+      dataType: 'json',
+      async: true,
+      headers: {
+        "Authorization": "Bearer " + access_token
+      },
+      success: function (data){
+       localStorage.setItem('profile', JSON.stringify(data));
+       emailVerificationCheck();
       }
     });
   }
@@ -575,6 +624,7 @@
   var logout = function() {
     localStorage.removeItem('id_token');
     localStorage.removeItem('profile');
+    localStorage.removeItem('access_token');
     $('.btn-logout').hide();
     $('.btn-login').show();
     $('.marketing').show();
@@ -603,19 +653,22 @@ $(document).ready(function() {
     profileObj = JSON.parse(profile);
     show_profile_info(profileObj);
     if ('email_verified' in profileObj && profileObj['email_verified'] == false) {
+      updateProfile();
       $('.btn-login').hide();
       $('.btn-logout').show();
+      $('.jumbotron').fadeOut("fast");
+      $('.marketing').fadeOut("fast");
+      $('#sandboxListContainer').hide();
+      $('#usecaseListContainer').hide();
       $('.need-verification').show();
     }
   
     if (localStorage.getItem('id_token')) {
       // TODO FIGURE OUT WHY DOUBLE LOADING
-      retrieve_usecases();
-      retrieve_update_instances();
-      conditional_update_usecases();
       updateIdentity();
       $('.btn-login').hide();
       $('.btn-logout').show();
+      emailVerificationCheck();
     }
   }
 });
