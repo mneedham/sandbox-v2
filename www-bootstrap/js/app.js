@@ -11,6 +11,7 @@
   var activeInstancesUpdated = false;
   var emailVerificationNotNeeded = false;
   var emailVerified = false;
+  var activeInstances = [];
 
   var listener = function(event) {
     if (event.origin == "http://neo4j-sandbox-www-auth.s3-website-us-east-1.amazonaws.com") {
@@ -211,6 +212,28 @@
        emailVerificationCheck();
       }
     });
+  }
+
+  var checkIfInstanceActive = function(sandboxHashKey) {
+      var id_token = localStorage.getItem('id_token');
+      $.ajax
+      ({
+        type: "GET",
+        url: `${API_PATH}/SandboxGetInstanceByHashKey`,
+        data: {"sandboxHashKey": sandboxHashKey, "verifyConnect": "true"},
+        dataType: 'text',
+        async: true,
+        headers: {
+          "Authorization": id_token,
+          "Cache-Control": "max-age=0" 
+        },
+        success: function (data){
+          activeInstances.push(sandboxHashKey);
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+          console.log(errorThrown);
+        }
+      });
   }
 
   var show_profile_info = function(profile) {
@@ -440,7 +463,7 @@
         columnNum = (availableForLaunchCount % 3 ) + 1;
         panelDiv = $('<div/>').attr('class', 'panel panel-primary')
           .append(
-            $('<div/>').attr('class', 'panel-heading').text(ucname)
+            $('<div/>').attr('class', 'panel-heading').text(usecase.long_name)
           )
           .append(
             $('<div/>').attr('class', 'panel-body')
@@ -475,11 +498,20 @@
       instances = [ instances ];
     }
 
+    var shouldUpdateInstances = false;
+
+
     for (var instanceNum in instances) {
       var instance = instances[instanceNum]
       instance.username = 'neo4j';
 
       activeUsecases[instance.usecase] = true;
+
+      for (var ucNum in usecases) {
+        if (usecases[ucNum].name == instance.usecase) {
+          thisUsecase = usecases[ucNum]
+        }
+      }
 
       existingSandbox = sandboxListDiv.find(`[data-sandboxhashkey='${instance.sandboxHashKey}']`);
       if ('status' in instance && instance['status'] == 'PENDING') {
@@ -491,7 +523,7 @@
       .removeAttr('id')
       .attr('data-sandboxid', instance.sandboxId)
       .attr('data-sandboxhashkey', instance.sandboxHashKey);
-      sandboxDiv.find('.navbar-brand').text(instance.usecase);
+      sandboxDiv.find('.navbar-brand').text(thisUsecase.long_name);
 
       sandboxDiv.find('.connection a').click(update_sandbox_panel('connection', instance.sandboxId));
       var connectionDiv = sandboxDiv.find('.panel-body-content').find('.connection');
@@ -515,7 +547,7 @@
       expiresString = `${dateDiff['days']} ${daysStr}, ${dateDiff['hours']} ${hoursStr}, ${dateDiff['mins']} ${minsStr}`
       triggerExpiresWarning = false;
       expiresWarningLevel = '';
-      if (dateDiff['days'] < 2) {
+      if (dateDiff['days'] < 3) {
         triggerExpiresWarning = true;
         if (dateDiff['days'] < 1) {
           expiresWarningLevel = 'danger';
@@ -529,11 +561,16 @@
       if ('status' in instance && instance['status'] == 'PENDING') {
         newLaunch = true;
         connectionDiv.append($('<p/>').text('Launching! Will show connection info when available.'));
-        setTimeout(function() { retrieve_update_instances() }, 2000);
+        shouldUpdateInstances = true;
       } else if (instance.ip == null) {
         newLaunch = false;
         connectionDiv.append($('<p/>').text('Launching! Will show connection info when available.'));
-        setTimeout(function() { retrieve_update_instances() }, 2000);
+        shouldUpdateInstances = true;
+      } else if ((instance['connectionVerified'] != true) && $.inArray(instance.sandboxHashKey,activeInstances) == -1){
+        newLaunch = false;
+        connectionDiv.append($('<p/>').text('Connecting to sandbox.'));
+        checkIfInstanceActive(instance.sandboxHashKey);
+        shouldUpdateInstances = true;
       } else {
         newLaunch = false;
         connectionDiv.append(
@@ -600,6 +637,10 @@
 
     if (instances.length > 0) {
       $("#sandboxListContainer").show();
+    }
+
+    if (shouldUpdateInstances) {
+        setTimeout(function() { retrieve_update_instances() }, 2000);
     }
 
     activeInstancesUpdated = true;

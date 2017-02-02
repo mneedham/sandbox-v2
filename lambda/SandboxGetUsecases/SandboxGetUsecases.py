@@ -67,7 +67,7 @@ def lambda_handler(event, context):
     WHERE 
       uc.enabled=True
     RETURN 
-      uc.name AS name, uc.model_image AS model_image, uc.logo AS logo, uc.description AS description 
+      uc.name AS name, uc.long_name AS long_name, uc.model_image AS model_image, uc.logo AS logo, uc.description AS description 
     """
 
     body = ""

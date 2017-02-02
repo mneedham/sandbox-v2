@@ -275,17 +275,41 @@
             Would you like to extend your Neo4j Sandboxes?  Provide the following information and we'll extend them by 7 days.<br />
             <form>
               <div class="form-group">
+                <label for="extendSandboxInputWorkEmail">Work email</label>
+                <input type="email" class="form-control" id="extendSandboxInputWorkEmail" aria-describedby="extendSandboxInputWorkEmailHelp" placeholder="Enter your work email address">
+              </div>
+              <div class="form-group">
+                <label for="extendSandboxInputPhoneNumber">Phone Number</label>
+                <input type="tel" class="form-control" id="extendSandboxInputPhoneNumber" aria-describedby="extendSandboxInputPhoneNumberHelp" placeholder="Enter your phone number, eg 1-555-555-1212">
+              </div>
+              <div class="form-group">
                 <label for="extendSandboxInputCompany">Company</label>
                 <input type="text" class="form-control" id="extendSandboxInputCompany" aria-describedby="extendSandboxInputCompanyHelp" placeholder="Enter company name">
               </div>
               <div class="form-group">
                 <label for="extendSandboxInputIndustry">Industry</label>
                 <select class="form-control" id="extendSandboxInputIndustry">
+                    <option></option>
                     <option>Energy</option>
                     <option>Technology</option>
                     <option>Financial Services</option>
                     <option>Consumer Products</option>
                     <option>Manufacturing</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="extendSandboxInputJob">Job Function</label>
+                <select class="form-control" id="extendSandboxInputJob">
+                    <option></option>
+                    <option>Software Developer/Engineer</option>
+                    <option>Architect</option>
+                    <option>Database Administrator (DBA)</option>
+                    <option>Product/Project Management</option>
+                    <option>Development Manager/Tech Lead/Director</option>
+                    <option>IT Executive</option>
+                    <option>Partner</option>
+                    <option>Student</option>
+                    <option>Other</option>
                 </select>
               </div>
               <div class="form-group">

@@ -5,6 +5,7 @@ import boto3
 import datetime
 import time
 import sblambda
+import socket
 
 def get_task_info(taskArray):
     client = boto3.client('ecs')
@@ -72,6 +73,26 @@ def get_task_info(taskArray):
 
     return containersAndPorts
 
+def update_connection_verified(sandbox_hash_key):
+    session = sblambda.get_db_session()
+
+    instances_update = """
+    MATCH 
+      (s:Sandbox)
+    WHERE 
+      s.sandbox_hash_key = {sandbox_hash_key}
+    SET
+      s.connection_verified = true
+    """
+
+    print('updating verification for sandbox hash key')
+    results = session.run(instances_update, parameters={"sandbox_hash_key": sandbox_hash_key})
+
+    if session.healthy:
+        session.close()
+
+    return results
+
 def update_db(sandbox_hash_key, containersAndPorts):
     session = sblambda.get_db_session()
     
@@ -105,6 +126,9 @@ def update_db(sandbox_hash_key, containersAndPorts):
 
 def lambda_handler(event, context):
     sandbox_hash_key = event['queryStringParameters']['sandboxHashKey']
+    verifyConnect = False
+    if ('verifyConnect' in event['queryStringParameters'] and event['queryStringParameters']['verifyConnect'] == 'true'):
+        verifyConnect = True
     session = sblambda.get_db_session()
     
     instances_query = """
@@ -145,14 +169,30 @@ def lambda_handler(event, context):
     # re-run DB query to get final data
     results = session.run(instances_query, parameters={"sandbox_hash_key": sandbox_hash_key})
     tasks = []
+    foundRecord = False
     for record in results:
+      foundRecord = True
       record = dict((el[0], el[1]) for el in record.items())
-      print('final record to be returned:')
-      print(record)
-      body = '%s:%s' % (record['ip'], record['boltPort'])
-
+      if verifyConnect:
+        # verify we can connect
+        try:
+          s = socket.socket()
+          s.settimeout(2)
+          s.connect((record['ip'], int(record['boltPort'])))
+          body = '%s:%s' % (record['ip'], record['boltPort'])
+          print('Successfully Connected')
+          update_connection_verified(sandbox_hash_key)
+        except:
+          body = '%s:%s' % (record['ip'], record['boltPort'])
+          print('Failed Connecting to: %s%s' % (record['ip'], record['boltPort']))
+          statusCode = 404
+      else:
+        # no need to verify connection
+        body = '%s:%s' % (record['ip'], record['boltPort']) 
+    if not foundRecord:
+        body = 'Sandbox not found'
+        statusCode = 404
     if session.healthy:
         session.close()
 
     return { "statusCode": statusCode, "headers": { "Content-type": contentType, "Access-Control-Allow-Origin": "*" }, "body": body }
- 

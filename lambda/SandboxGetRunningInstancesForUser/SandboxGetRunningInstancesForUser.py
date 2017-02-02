@@ -116,6 +116,7 @@ def lambda_handler(event, context):
       s.password AS password,
       s.expires AS expires,
       s.sandbox_hash_key AS sandboxHashKey,
+      s.connection_verified AS connectionVerified,
       id(s) AS sandboxId,
       uc.model_image AS modelImage
     """
@@ -154,4 +155,3 @@ def lambda_handler(event, context):
         session.close()
  
     return { "statusCode": statusCode, "headers": { "Content-type": contentType, "Access-Control-Allow-Origin": "*" }, "body": body }
- 
