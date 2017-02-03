@@ -26,3 +26,6 @@ cd ..
 cd SandboxStopInstance
 zip -r9 ../SandboxStopInstance.zip *
 cd ..
+cd SandboxBackupInstance
+zip -r9 ../SandboxBackupInstance.zip *
+cd ..

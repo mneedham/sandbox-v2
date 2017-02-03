@@ -22,6 +22,7 @@ def get_task_info(taskArray):
         taskArn = task['taskArn']
         port = False
         boltPort = False
+        backupPort = False
 
         for container in task['containers']:
             if container['name'] == 'neo4j-enterprise-db-only':
@@ -31,9 +32,11 @@ def get_task_info(taskArray):
                             port = binding['hostPort']
                         if binding['containerPort'] == 7687:
                             boltPort = binding['hostPort']
+                        if binding['containerPort'] == 9500:
+                            backupPort = binding['hostPort']
 
         if taskArn and port:
-            containersAndPorts[taskArn] = {"port": port, "boltPort": boltPort, "taskArn": task['taskArn'], "containerInstanceArn": task["containerInstanceArn"] }
+            containersAndPorts[taskArn] = {"port": port, "boltPort": boltPort, "backupPort": backupPort, "taskArn": task['taskArn'], "containerInstanceArn": task["containerInstanceArn"] }
             containerInstances[ task['containerInstanceArn'] ] = {}
     
     if len(containerInstances) > 0:
@@ -89,7 +92,8 @@ def update_db(auth0_key, containersAndPorts):
     SET
       s.ip = c.ip,
       s.port = c.port,
-      s.boltPort = c.boltPort
+      s.boltPort = c.boltPort,
+      s.backupPort = c.backupPort
     """
     
     results = session.run(instances_update, parameters={"auth0_key": auth0_key, "containers": containersAndPorts}).consume()
@@ -113,6 +117,7 @@ def lambda_handler(event, context):
     RETURN 
       u.name AS name, s.taskid AS taskid, s.usecase AS usecase, s.ip AS ip, s.port AS port,
       s.boltPort AS boltPort,
+      s.backupPort AS backupPort,
       s.password AS password,
       s.expires AS expires,
       s.sandbox_hash_key AS sandboxHashKey,
@@ -129,7 +134,7 @@ def lambda_handler(event, context):
     tasks = []
     for record in results:
       record = dict((el[0], el[1]) for el in record.items())
-      if not (record["ip"] and record["boltPort"]):
+      if not (record["ip"] and record["boltPort"] and record["backupPort"]):
           tasks.append(record["taskid"])
           
     if len(tasks) > 0:

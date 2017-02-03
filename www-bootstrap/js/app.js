@@ -86,6 +86,14 @@
     });
   }
 
+  var backupInstanceAction = function(sandboxDiv, instance, clickItem) {
+    clickItem.click( function() {
+        backupInstance(instance.sandboxHashKey, sandboxDiv);
+        //sandboxDiv.fadeTo(400, 0.3);
+        //sandboxDiv.attr('style', '-webkit-filter: grayscale(1);');
+    });
+  }
+
   var loginButtonAction = function(e) {
     $('.btn-login').hide();
     win = window.open(AUTH_URL,
@@ -144,6 +152,28 @@
       },
       success: function (data){
         sandboxDiv.remove();
+        // TODO check number of sandbox divs and update UI based upon it
+        updateUx();
+      }
+    });
+  }
+
+  var backupInstance = function(sandboxHashKey, sandboxDiv) {
+    var id_token = localStorage.getItem('id_token');
+
+    $.ajax
+    ({
+      type: "POST",
+      url: `${API_PATH}/SandboxBackupInstance`,
+      dataType: 'json',
+      data: JSON.stringify({ "sandboxHashKey": sandboxHashKey}),
+      contentType: "application/json",
+      async: true,
+      headers: {
+        "Authorization": id_token
+      },
+      success: function (data){
+        //sandboxDiv.remove();
         // TODO check number of sandbox divs and update UI based upon it
         updateUx();
       }
@@ -621,6 +651,7 @@
       retrieve_show_code_snippets(instance.usecase, instance.username, instance.password, instance.ip, instance.port, instance.boltPort, codeDiv.find(`.tabs-code-${instance.usecase}`));
 
       shutdownInstanceAction(sandboxDiv, instance, sandboxDiv.find('.shutdown a') );
+      backupInstanceAction(sandboxDiv, instance, sandboxDiv.find('.backup a') );
       sandboxDiv.hide();
       if (existingSandbox.length == 0) {
         sandboxListDiv.append(sandboxDiv);

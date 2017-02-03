@@ -95,6 +95,7 @@ def lambda_handler(event, context):
       policy.allowMethod(HttpVerb.GET, 'SandboxRetrieveUserLogs')
       policy.allowMethod(HttpVerb.POST, 'SandboxRunInstance')
       policy.allowMethod(HttpVerb.POST, 'SandboxStopInstance')
+      policy.allowMethod(HttpVerb.POST, 'SandboxBackupInstance')
     except jwt.ExpiredSignatureError:
       logger.error('JWT token denied because expired')
       raise Exception('Unauthorized')
