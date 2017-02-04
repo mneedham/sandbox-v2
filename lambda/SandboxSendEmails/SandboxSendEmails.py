@@ -10,7 +10,7 @@ import logging
 import traceback
 from string import Template
 
-db_creds = None
+db_creds = Nones
 glob_session = None
 
 DB_HOST = os.environ["DB_HOST"]
@@ -107,7 +107,8 @@ def send_email_reminderone(sandboxes):
     client = boto3.client('ses')
     for sandbox in sandboxes:
         response = client.send_email(
-            Source = 'ryan+sandbox@ryguy.com',
+            Source = 'devrel+sandbox@neo4j.com',
+            SourceArn = 'arn:aws:ses:us-east-1:128916679330:identity/neo4j.com',
             Destination = {
                 'ToAddresses': [ 'ryan@neo4j.com' ]
             },
@@ -179,7 +180,8 @@ def send_email_created(sandboxes):
     for sandbox in sandboxes:
         bodyPlainText = templateObj.substitute(sburl='neo4j-sandbox-www.s3-website-us-east-1.amazonaws.com/#', greeting=sandbox['usecase'])
         response = client.send_email(
-            Source = 'Neo4j DevRel <ryan+sandbox@ryguy.com>',
+            Source = 'Neo4j DevRel <devrel+sandbox@neo4j.com>',
+            SourceArn = 'arn:aws:ses:us-east-1:128916679330:identity/neo4j.com',
             Destination = {
                 'ToAddresses': [ 'ryan@neo4j.com' ]
             },
