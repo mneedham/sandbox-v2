@@ -274,7 +274,7 @@
      $('#welcome').show();
   };
 
-  var retrieve_update_instances = function() {
+  var retrieve_update_instances = function(retry=true) {
     var id_token = localStorage.getItem('id_token');
     if (id_token) {
         $('.btn-login').hide();
@@ -316,7 +316,7 @@
               $.ajax
               ({
                 type: "POST",
-                url: "https://neo4j-sync.auth0.com/delegation",
+                url: "https://devrel-test.auth0.com/delegation",
                 contentType: "application/json",
                 dataType: 'json',
                 async: true,
@@ -327,7 +327,7 @@
                     "api_type": "app" }),
                 success: function (data){
                   localStorage.setItem('id_token', data.id_token);
-                  retrieve_show_instances(false);
+                  retrieve_update_instances(false);
                 }
               });
             }
@@ -605,7 +605,7 @@
         newLaunch = false;
         connectionDiv.append(
               $('<img/>')
-                .attr('src', '/img/neo4j-browser-3-0-sm.png')
+                .attr('src', thisUsecase['logo'])
                 .attr('height', '175')
                 .attr('style', 'float: left; margin-right: 5px;')
         );

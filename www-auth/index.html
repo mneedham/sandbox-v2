@@ -87,12 +87,18 @@
         signup: {
           title: 'Sign up'
         }
+      },
+      auth: {
+        params: {
+          scope: 'openid email offline_access'
+        }
       }
     }
     var lock = new Auth0Lock('CK4MU2kBWYkDXdWcKs5mj0GbgzEDfifL', 'devrel-test.auth0.com', options);
     var userProfile = null;
     var auth0 = new Auth0({
       domain:       'devrel-test.auth0.com',
+      scope:        'openid offline_access',
       clientID:     'CK4MU2kBWYkDXdWcKs5mj0GbgzEDfifL',
       callbackURL:  location.href,
       callbackOnLocationHash: true
@@ -136,7 +142,7 @@ lock.on("authenticated", function(res) {
                 token: res.idToken,
                 accessToken: res.accessToken,
                 state: res.state,
-                refreshToken: res.refresh_token
+                refreshToken: res.refreshToken
               }
               event.source.postMessage(mapObj, event.origin);  
           },false);
