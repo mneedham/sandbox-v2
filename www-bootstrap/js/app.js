@@ -1,5 +1,5 @@
   const API_PATH = "https://ppriuj7e7i.execute-api.us-east-1.amazonaws.com/prod";
-  const AUTH_URL = "http://neo4j-sandbox-www-auth.s3-website-us-east-1.amazonaws.com";
+  const AUTH_URL = "https://auth.neo4jsandbox.com";
   const CODE_SNIPPETS_PATH = "https://s3.amazonaws.com/neo4j-sandbox-code-snippets";
   const AUTH_CLIENT_ID = "CK4MU2kBWYkDXdWcKs5mj0GbgzEDfifL";
   const AUTH_DELEGATION_URL = "https://devrel-test.auth0.com/delegation"
