@@ -188,16 +188,20 @@ def lambda_handler(event, context):
             startedBy=('SB("%s","%s")' % (user, usecase))[:36]
         )
         logger.debug('Adding sandbox to database')
-        res = add_sandbox_to_db(user, usecase, response['tasks'][0]['taskArn'], encrypt_user_creds(userDbPassword), sandboxHashKey)
-        response_json = { "status": "PENDING", "password": userDbPassword}
-        for record in res:
-            record_dict = dict(record)
-        response_json.update(record_dict)    
-                          
+        if 'tasks' in response and len(response['tasks']) > 0:
+          res = add_sandbox_to_db(user, usecase, response['tasks'][0]['taskArn'], encrypt_user_creds(userDbPassword), sandboxHashKey)
+          response_json = { "status": "PENDING", "password": userDbPassword}
+          for record in res:
+              record_dict = dict(record)
+          response_json.update(record_dict)    
+          response_statusCode = 200
+        else: 
+          response_json = { "status": "FAILED",
+                            "ECS response": response }
+          response_statusCode = 500
+
         response_body = json.dumps(response_json, indent=2, cls=MyEncoder )
-                          
         # response_body = json.dumps(response['tasks'][0], indent=2, cls=MyEncoder)
-        response_statusCode = 200
         response_contentType = 'application/json'
     
         return { "statusCode": response_statusCode, "headers": { "Content-type": response_contentType, "Access-Control-Allow-Origin": "*" }, "body": response_body }

@@ -1,0 +1,21 @@
+# pip install neo4j-driver
+
+from neo4j.v1 import GraphDatabase, basic_auth
+
+driver = GraphDatabase.driver(
+    "bolt://<HOST>:<BOLTPORT>", 
+    auth=basic_auth("<USERNAME>", "<PASSWORD>"))
+session = driver.session()
+
+cypher_query = '''
+MATCH (c:Candidate)
+WHERE c.party = {party}
+RETURN c.name AS name
+LIMIT 10
+'''
+
+results = session.run(cypher_query,
+  parameters={"party": "Republican"})
+
+for record in results:
+  print(record['name'])

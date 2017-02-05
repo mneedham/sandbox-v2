@@ -1,0 +1,15 @@
+// npm install --save neo4j
+var neo4j = require('neo4j');
+var db = new neo4j.GraphDatabase('http://<USERNAME>:<PASSWORD>@<HOST>:<HTTPPORT>');
+
+var query = 
+  "MATCH (n) \
+   RETURN ID(n) as id \
+   LIMIT 10"";
+
+var params = {};
+db.cypher({ query: query, params: params}, 
+  function(err, results) {
+    if (err || !results) throw err;
+    results.forEach(function(row) { console.log(row['id']) });
+  });

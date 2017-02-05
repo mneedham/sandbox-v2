@@ -689,6 +689,8 @@
             $( event.target ).closest('.panel').find('.panel-body-content').find('.' + panelName).show();
            console.log('Selected ' + panelName + ' for sandbox id: ' + sandboxId);
         }
+        event.preventDefault();
+        //bar
     }
   }
 

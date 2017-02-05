@@ -10,29 +10,50 @@ from neo4j.v1 import GraphDatabase, basic_auth, constants
 import logging
 import sblambda
 from awspol import AuthPolicy, HttpVerb
+import ast
+
+logger = None
 
 if 'LOGGING_LEVEL' in os.environ:
   LOGGING_LEVEL = int(os.environ["LOGGING_LEVEL"])
 else:
   LOGGING_LEVEL = 30
 
+if 'REVALIDATE_USER' in os.environ:
+  REVALIDATE_USER = ast.literal_eval(os.environ["REVALIDATE_USER"])
+else:
+  REVALIDATE_USER = True
+
+logger = logging.getLogger()
+logger.setLevel(LOGGING_LEVEL)
+
 def add_update_user(user, jwt):
+    global REVALIDATE_USER
     session = sblambda.get_db_session()
 
     data = { "id_token": jwt }
 
-    req = urllib2.Request(
-        	url = 'https://devrel-test.auth0.com/tokeninfo',
-        	headers = {"Content-type": "application/json"},
-	        data = json.dumps(data))
+    profile = {}
+
+    try:
+      req = urllib2.Request(
+          	url = 'https://devrel-test.auth0.com/tokeninfo',
+          	headers = {"Content-type": "application/json"},
+  	        data = json.dumps(data))
         
-    f = urllib2.urlopen(url = req)
-    profile = json.loads(f.read())
+      f = urllib2.urlopen(url = req)
+      profile = json.loads(f.read())
+    except urllib2.HTTPError as h:
+      if REVALIDATE_USER:
+        raise
+      else:
+        name = 'UNVALIDATED USER'
+        picture = ''
+        email = 'UNVALIDATED'
+        description = 'UNVALIDATED USER: SHOULD ONLY SEE IN TEST'
+        logger.warning('Allowing unvalidated user to proceed (REVALIDATE_USER=%s). User: "%s"' % (REVALIDATE_USER, user))
+        pass
     
-    name = ''
-    picture = ''
-    email = 'none'
-    description = ''
     
     if 'name' in profile:
         name = profile['name']
@@ -62,10 +83,8 @@ def add_update_user(user, jwt):
 
 
 def lambda_handler(event, context):
-    global LOGGING_LEVEL
+    global LOGGING_LEVEL, logger
 
-    logger = logging.getLogger()
-    logger.setLevel(LOGGING_LEVEL)
 
     creds = sblambda.get_creds('auth0')
     secret = creds['auth0_secret']
@@ -97,7 +116,7 @@ def lambda_handler(event, context):
       policy.allowMethod(HttpVerb.POST, 'SandboxStopInstance')
       policy.allowMethod(HttpVerb.POST, 'SandboxBackupInstance')
     except jwt.ExpiredSignatureError:
-      logger.error('JWT token denied because expired')
+      logger.info('JWT token denied because expired')
       raise Exception('Unauthorized')
 
     # Finally, build the policy and exit the function using return
