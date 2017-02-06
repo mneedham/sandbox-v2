@@ -131,26 +131,29 @@ def lambda_handler(event, context):
     contentType = 'application/json'
     
     results = session.run(instances_query, parameters={"auth0_key": auth0_key})
+    resultjson = []
     tasks = []
     for record in results:
       record = dict((el[0], el[1]) for el in record.items())
       if not (record["ip"] and record["boltPort"] and record["backupPort"]):
           tasks.append(record["taskid"])
+      else:
+          if record["password"]:
+              record["password"] = sblambda.decrypt_user_creds(record["password"])
+          resultjson.append(record)
           
     if len(tasks) > 0:
         taskInfo = get_task_info(tasks)
         if len(taskInfo) > 0:
             update_db(auth0_key, taskInfo.values())
             
-    # re-run DB query to get final data
-    results = session.run(instances_query, parameters={"auth0_key": auth0_key})
-    resultjson = []
-    tasks = []
-    for record in results:
-      record = dict((el[0], el[1]) for el in record.items())
-      if record["password"]:
-          record["password"] = sblambda.decrypt_user_creds(record["password"])
-      resultjson.append(record)
+        # re-run DB query to get final data
+        results = session.run(instances_query, parameters={"auth0_key": auth0_key})
+        for record in results:
+          record = dict((el[0], el[1]) for el in record.items())
+          if record["password"]:
+              record["password"] = sblambda.decrypt_user_creds(record["password"])
+          resultjson.append(record)
 
     # TODO update IPs from taskinfo
     # TODO verify can connect to IP/port

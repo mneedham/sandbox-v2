@@ -742,6 +742,8 @@ $(document).ready(function() {
       emailVerified = false;
     } else if (! ('email_verified' in profileObj)) {
       emailVerificationNotNeeded = true;
+    } else {
+      emailVerified = true;
     }
     $('.jumbotron').fadeOut("fast");
     $('.marketing').fadeOut("fast");

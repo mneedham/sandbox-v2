@@ -21,6 +21,17 @@ logging.getLogger().setLevel(logging.DEBUG)
 
 queue = Queue.Queue()
 
+def makeRequest(jwttext, data):
+  try:
+    req = urllib2.Request(url=RUN_INSTANCE_URL, data=json.dumps(data))
+    req.add_header('Authorization', jwttext)
+    req.add_header('Cache-Control', 'max-age=0')
+    r = urllib2.urlopen(req)
+    print(r.read())
+    return True
+  except urllib2.HTTPError, e:
+    print('HTTPError = ' + str(e.code))
+    return False
 
 class ThreadLaunch(threading.Thread):
   """Threaded Sandbox Launch"""
@@ -36,16 +47,11 @@ class ThreadLaunch(threading.Thread):
       data = {
         "usecase": "legis-graph"
       }
-      
-      try:
-        req = urllib2.Request(url=RUN_INSTANCE_URL, data=json.dumps(data))
-        req.add_header('Authorization', jwttext)
-        req.add_header('Cache-Control', 'max-age=0')
-        r = urllib2.urlopen(req)
-        print(r.read())
-      except urllib2.HTTPError, e:
-        print('HTTPError = ' + str(e.code))
-        print(e.read())
+
+      req = makeRequest(jwttext, data)
+      while (req == False):
+        time.sleep(10)
+        req = makeRequest(jwttext, data)
    
       #signals to queue job is done
       self.queue.task_done()
@@ -54,12 +60,12 @@ start = time.time()
 
 def main():
   #spawn a pool of threads, and pass them queue instance 
-  for i in range(5):
+  for i in range(10):
     t = ThreadLaunch(queue)
     t.setDaemon(True)
     t.start()
 
-  for i in range(1000):
+  for i in range(5):
     iteration = i
     currentTime = int(calendar.timegm(time.gmtime()))
     rand = random.randint(1, 1000000)

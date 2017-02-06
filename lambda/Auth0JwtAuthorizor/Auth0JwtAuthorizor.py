@@ -34,6 +34,10 @@ def add_update_user(user, jwt):
     data = { "id_token": jwt }
 
     profile = {}
+    name = '<default>'
+    picture = '<default>'
+    email = '<default>'
+    description = '<default>'
 
     try:
       req = urllib2.Request(

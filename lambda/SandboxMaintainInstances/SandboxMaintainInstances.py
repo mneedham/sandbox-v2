@@ -6,6 +6,7 @@ import datetime
 import time
 import os
 import sblambda
+import logging
 
 SANDBOX_CLUSTER_NAME = os.environ["SANDBOX_CLUSTER_NAME"]
 ECS_AUTO_SCALING_GROUP_NAME = os.environ["ECS_AUTO_SCALING_GROUP_NAME"]
@@ -83,20 +84,39 @@ def check_utilization():
     print('DO NOT NEED MORE INSTANCES')
 
 def get_task_list():
+    global SANDBOX_CLUSTER_NAME
+    response_tasks = []
+
+    logger = logging.getLogger()
+    logger.setLevel(30)
+
     client = boto3.client('ecs')
     ## TODO: ONLY GETS 100, need to page
-    response = client.list_tasks(
-        cluster='sandbox-v2',
-        desiredStatus='RUNNING'
+    paginator = client.get_paginator('list_tasks')
+    response_iterator = paginator.paginate(
+      cluster=SANDBOX_CLUSTER_NAME,
+      desiredStatus='RUNNING',
+      PaginationConfig={
+          'MaxItems': 100000,
+          'PageSize': 100
+      }
     )
+    for page in response_iterator:
+      response_tasks.extend(page['taskArns'])
+
+    logger.info("response_tasks: %s"  % str(response_tasks))
+
     # return an array of taskArns
-    return response['taskArns']
+    return response_tasks
     
     
 def get_task_info(taskArray):
+    global SANDBOX_CLUSTER_NAME
+    print("describe_tasks_array")
+    print(taskArray)
     client = boto3.client('ecs')
     response = client.describe_tasks(
-        cluster='sandbox-v2',
+        cluster=SANDBOX_CLUSTER_NAME,
         tasks=taskArray
     )
     
@@ -116,14 +136,19 @@ def get_task_info(taskArray):
         if taskArn and port:
             containersAndPorts[taskArn] = {"port": port, "taskArn": task['taskArn'], "containerInstanceArn": task["containerInstanceArn"] }
             containerInstances[ task['containerInstanceArn'] ] = {}
-    
+   
+    print("Container Instances:")
+    print(containerInstances)
+ 
     if len(containerInstances) > 0:
         response = client.describe_container_instances(
-            cluster='sandbox-v2',
+            cluster=SANDBOX_CLUSTER_NAME,
             containerInstances=containerInstances.keys()
         )
 
         instanceMapping = {}
+        print('Describe container instances:')
+        print(response)
 
         for containerInstance in response['containerInstances']:
             inst = containerInstances[ containerInstance['containerInstanceArn'] ]
@@ -143,7 +168,11 @@ def get_task_info(taskArray):
         for taskArn,containerInfo in containersAndPorts.iteritems(): 
             if 'containerInstanceArn' in containerInfo:
                 inst = containerInstances[ containerInfo['containerInstanceArn'] ] 
-                containerInfo['ip'] = inst['ip']
+                if 'ip' in inst:
+                  containerInfo['ip'] = inst['ip']
+                else:
+                  print('No IP in inst')
+                  print(inst)
                 containerInfo['ec2InstanceId'] = inst['ec2InstanceId']
 
     return containersAndPorts
@@ -188,11 +217,12 @@ def set_tasks_not_running(tasks):
         return False
     
 def stop_tasks(tasks, reason):
+    global SANDBOX_CLUSTER_NAME
     client = boto3.client('ecs')
     
     for task in tasks:
         client.stop_task(
-            cluster='sandbox-v2',
+            cluster=SANDBOX_CLUSTER_NAME,
             task=task,
             reason=reason)
     
@@ -292,6 +322,10 @@ def lambda_handler(event, context):
 
     print('TASKS RUNNING, BUT NOT IN DB')
     print( allTasksRunning - allTasksInDb )
+    print( "Calculated from - allTasksRunning:" )
+    print(allTasksRunning)
+    print( "Calculated from - allTasksInDb:" )
+    print(allTasksInDb)
     stop_tasks( allTasksRunning - allTasksInDb, 'Task running but not in DB' )
 
     print('EXPIRED TASKS RUNNING')
@@ -302,7 +336,7 @@ def lambda_handler(event, context):
     mark_tasks_for_email()
     
     if len(tasksWithoutIp) > 0:
-        taskInfo = get_task_info(tasks)
+        taskInfo = get_task_info(list(tasksWithoutIp))
         if len(taskInfo) > 0:
             update_db(taskInfo.values())
             
