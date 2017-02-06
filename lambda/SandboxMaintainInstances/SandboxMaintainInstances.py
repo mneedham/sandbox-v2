@@ -326,7 +326,9 @@ def lambda_handler(event, context):
     print(allTasksRunning)
     print( "Calculated from - allTasksInDb:" )
     print(allTasksInDb)
-    stop_tasks( allTasksRunning - allTasksInDb, 'Task running but not in DB' )
+    # This has a timing issue. TODO resolve and add functionality back,
+    # after we can ignore tasks which started in the last few minutes
+    #stop_tasks( allTasksRunning - allTasksInDb, 'Task running but not in DB' )
 
     print('EXPIRED TASKS RUNNING')
     print( expiredTasksInDb )
