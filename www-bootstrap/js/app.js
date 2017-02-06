@@ -189,7 +189,7 @@
     conditional_update_usecases();
   }
 
-  var launchInstance = function(usecase) {
+  var launchInstance = function(usecase, errorTimeout=5000) {
     var id_token = localStorage.getItem('id_token');
 
     $.ajax
@@ -205,7 +205,31 @@
       },
       success: function (data){
         update_instances(data, usecases);
-        setTimeout(function() { updateUx() }, 1000);
+        $("#alertContainer").empty();
+        setTimeout(function() { updateUx() }, 2000);
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        var json = JSON.parse(jqXHR.responseText);
+        console.log("Error starting instance for usecase: " + usecase);
+        console.log(json);
+        if (json["status"] == "FAILED") {
+          errorIsEcsFault = false;
+          for (failureIn in json["ECS response"]["failures"]) {
+            failure = json["ECS response"]["failures"][failureIn];
+            if (failure["reason"].startsWith("RESOURCE") || failure["reason"].startsWith("AGENT")) {
+              errorIsEcsFault = true;
+            }
+          }
+          if (errorIsEcsFault) {
+            $("#alertContainer").empty().append(
+              $("<div/>").attr("class", "alert alert-info").text("Neo4j Sandbox is popular right now, so there's a slight delay in launching your sandbox.  We'll e-mail you when it's ready, or you can check back here.  E-mail us at devrel@neo4j.com if the problem persists.")
+            );
+            $("#alertContainer").show();
+            window.setTimeout( 
+              function () { launchInstance(usecase, errorTimeout * 2) }
+              ,errorTimeout);
+          }
+        }
       }
     });
   }
@@ -417,8 +441,11 @@
               });
 */
               //$('.ui-tabs').tabs( "option", "active", 0 );
-              tabs.tabs("refresh"); 
-              tabs.tabs('option', 'active', 0); 
+   
+              //commented these out
+              //tabs.tabs('option', 'active', 0); 
+              //tabs.tabs("refresh"); 
+
               //$( "#tabs" ).tabs( "refresh" );
               //$( "#accordion" ).accordion( "refresh" );
               /* tabs.tabs({

@@ -177,7 +177,7 @@ def lambda_handler(event, context):
         # verify we can connect
         try:
           s = socket.socket()
-          s.settimeout(2)
+          s.settimeout(5)
           s.connect((record['ip'], int(record['boltPort'])))
           body = '%s:%s' % (record['ip'], record['boltPort'])
           print('Successfully Connected')

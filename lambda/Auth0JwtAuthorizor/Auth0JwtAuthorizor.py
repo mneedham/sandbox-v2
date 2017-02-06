@@ -35,6 +35,7 @@ def add_update_user(user, jwt):
 
     profile = {}
     name = '<default>'
+    email = '<default>'
     picture = '<default>'
     email = '<default>'
     description = '<default>'
@@ -52,8 +53,6 @@ def add_update_user(user, jwt):
         raise
       else:
         name = 'UNVALIDATED USER'
-        picture = ''
-        email = 'UNVALIDATED'
         description = 'UNVALIDATED USER: SHOULD ONLY SEE IN TEST'
         logger.warning('Allowing unvalidated user to proceed (REVALIDATE_USER=%s). User: "%s"' % (REVALIDATE_USER, user))
         pass
@@ -68,17 +67,21 @@ def add_update_user(user, jwt):
     if 'description' in profile:
         description = profile['description']
 
+    if 'email' in profile:
+        email = profile['email']
+
     query = """
     MERGE
       (u:User {auth0_key: {auth0_key}})
     SET
       u.name={name},
       u.picture={picture},
-      u.description={description}
+      u.description={description},
+      u.email={email}
     RETURN u
     """
     results = session.run(query,
-      parameters={"auth0_key": user, "name": name, "picture": picture, "description": description}).consume()
+      parameters={"auth0_key": user, "name": name, "picture": picture, "description": description, "email": email}).consume()
     
     if session.healthy: 
         session.close() 

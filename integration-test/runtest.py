@@ -31,6 +31,7 @@ def makeRequest(jwttext, data):
     return True
   except urllib2.HTTPError, e:
     print('HTTPError = ' + str(e.code))
+    print(e.read())
     return False
 
 class ThreadLaunch(threading.Thread):
@@ -65,7 +66,7 @@ def main():
     t.setDaemon(True)
     t.start()
 
-  for i in range(5):
+  for i in range(1000):
     iteration = i
     currentTime = int(calendar.timegm(time.gmtime()))
     rand = random.randint(1, 1000000)

@@ -339,8 +339,9 @@ def lambda_handler(event, context):
         taskInfo = get_task_info(list(tasksWithoutIp))
         if len(taskInfo) > 0:
             update_db(taskInfo.values())
-            
-    check_utilization()
+
+    # DISABLE - use CloudWatch            
+    # check_utilization()
 
     session = sblambda.get_db_session() 
     if session.healthy:
