@@ -157,6 +157,12 @@ def lambda_handler(event, context):
 
         logger.debug('Running Task on ECS')
         client = boto3.client('ecs')
+ 
+        # TODO need to catch exceptions such as
+        # An error occurred (InvalidParameterException) when calling the 
+        # RunTask operation: No Container Instances were found in your 
+        # cluster.: InvalidParameterException
+
         response = client.run_task(
             cluster=SANDBOX_CLUSTER_NAME,
             taskDefinition=SANDBOX_TASK_DEFINITION,
