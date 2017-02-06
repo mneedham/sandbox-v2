@@ -37,5 +37,6 @@ def import_data():
     results = session.run(query, parameters={})
     for record in results:
       print(record)
+  session.close()
   
 import_data()
