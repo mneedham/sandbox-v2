@@ -113,7 +113,7 @@ def add_sandbox_to_db(user, usecase, taskid, password, sandboxHashKey):
       s.taskid={taskid},
       s.password={password},
       s.sandbox_hash_key={sandboxHashKey},
-      s.expires=(timestamp() + 1000 * 60 * 60 * 24 * 7),
+      s.expires=(timestamp() + 1000 * 60 * 60 * 24 * 3),
       s.sendEmailCreated='Q'
     CREATE (s)-[:IS_INSTANCE_OF]->(uc)
     RETURN s.sandbox_hash_key AS sandboxHashKey,s.taskid AS taskId,s.usecase AS usecase,s.running AS running,s.expires AS expires,uc.model_image AS modelImage
@@ -191,6 +191,7 @@ def lambda_handler(event, context):
                     ]
             }
             ]},
+            placementStrategy=[ {"type": "spread", "field": "instanceId"} ],
             startedBy=('SB("%s","%s")' % (user, usecase))[:36]
         )
         logger.debug('Adding sandbox to database')
@@ -220,4 +221,3 @@ def lambda_handler(event, context):
         response_body = json.dumps( {"errorString": "Sandbox already exists for user: %s and usecase %s"  % (user, usecase) })
 
         return { "statusCode": response_statusCode, "headers": { "Content-type": response_contentType, "Access-Control-Allow-Origin": "*" }, "body": response_body }
-

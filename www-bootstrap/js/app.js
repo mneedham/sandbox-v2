@@ -606,7 +606,7 @@
       expiresString = `${dateDiff['days']} ${daysStr}, ${dateDiff['hours']} ${hoursStr}, ${dateDiff['mins']} ${minsStr}`
       triggerExpiresWarning = false;
       expiresWarningLevel = '';
-      if (dateDiff['days'] < 3) {
+      if (dateDiff['days'] < 2) {
         triggerExpiresWarning = true;
         if (dateDiff['days'] < 1) {
           expiresWarningLevel = 'danger';

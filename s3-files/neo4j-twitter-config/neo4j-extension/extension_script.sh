@@ -2,9 +2,9 @@
 
 cp /conf-base/neo4j.conf $PWD/conf/neo4j.conf
 
-if [ ! -d "/usecase-datastores-ro/$USECASE.db" ]; then
-  cp -R /usecase-datastores-ro/$USECASE.db $PWD/data/
-  dbms.active_database=$USECASE.db
+if [ -d "/usecase-datastores-ro/$USECASE.db" ]; then
+  cp -R /usecase-datastores-ro/$USECASE.db $PWD/data/databases/
+ echo "dbms.active_database=$USECASE.db" >> $PWD/conf/neo4j.conf
 fi
 
 echo "browser.post_connect_cmd=play http://guides.neo4j.com/sandbox/$USECASE" >> $PWD/conf/neo4j.conf
