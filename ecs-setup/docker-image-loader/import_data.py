@@ -4,6 +4,7 @@ from neo4j.v1 import GraphDatabase, basic_auth
 from retrying import retry
 import os
 import boto3
+import botocore
 
 NEO4J_HOST = os.environ["NEO4J_HOST"]
 NEO4J_AUTH = os.environ["NEO4J_AUTH"]
@@ -26,17 +27,21 @@ def get_db_session():
 
 def import_data():
   global USECASE
-  session = get_db_session()
   s3 = boto3.client('s3')
-  response = s3.get_object(Bucket='neo4j-sandbox-import-scripts',Key='%s.cyp' % (USECASE))
-  queriesString = response['Body'].read()
-  
-  queries  = queriesString.split(";\n")
-  for query in queries:
-    print("###### Executing query:\n%s" % (query))
-    results = session.run(query, parameters={})
-    for record in results:
-      print(record)
-  session.close()
+  try:
+    response = s3.get_object(Bucket='neo4j-sandbox-import-scripts',Key='%s.cyp' % (USECASE))
+    queriesString = response['Body'].read()
+    
+    queries  = queriesString.split(";\n")
+    session = get_db_session()
+    for query in queries:
+      print("###### Executing query:\n%s" % (query))
+      results = session.run(query, parameters={})
+      for record in results:
+        print(record)
+    session.close()
+  except botocore.exceptions.ClientError as e:
+    if e.response['Error']['Code'] == "404":
+      print("No import script found for usecase: %s" % (USECASE))
   
 import_data()

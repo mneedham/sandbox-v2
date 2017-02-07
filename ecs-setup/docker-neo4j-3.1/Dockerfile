@@ -5,6 +5,7 @@ RUN apk add --no-cache --quiet \
   py-pip \
   zip
 
+RUN pip install --upgrade pip
 RUN pip install boto3
 
 COPY ./backup-server.py /

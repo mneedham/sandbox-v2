@@ -29,3 +29,6 @@ cd ..
 cd SandboxBackupInstance
 zip -r9 ../SandboxBackupInstance.zip *
 cd ..
+cd SandboxProcessEcsEvent
+zip -r9 ../SandboxProcessEcsEvent.zip *
+cd ..
