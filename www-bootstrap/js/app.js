@@ -2,7 +2,7 @@
   const AUTH_URL = "https://auth.neo4jsandbox.com";
   const CODE_SNIPPETS_PATH = "https://s3.amazonaws.com/neo4j-sandbox-code-snippets";
   const AUTH_CLIENT_ID = "CK4MU2kBWYkDXdWcKs5mj0GbgzEDfifL";
-  const AUTH_DELEGATION_URL = "https://devrel-test.auth0.com/delegation"
+  const AUTH_DELEGATION_URL = "https://neo4j-sandbox.auth0.com/delegation"
 
   var pollInterval;
   var usecases = false;
@@ -15,8 +15,11 @@
   var emailVerified = false;
   var activeInstances = [];
 
+  var shaObj = new jsSHA("SHA-256", "TEXT");
+
   var listener = function(event) {
     if (event.origin == AUTH_URL) {
+      ga('send', 'event', 'auth', 'webevent back from auth0');
       $('.jumbotron').fadeOut("fast");
       $('.marketing').fadeOut("fast");
       $('.btn-login').hide();
@@ -30,24 +33,17 @@
       localStorage.setItem('refresh_token', event.data.refreshToken)
       show_profile_info(event.data.profile)
       profileObj = event.data.profile
+      if ('user_id' in profileObj) {
+        shaObj.update(profileObj['user_id']);
+        hash = shaObj.getHash("HEX");
+        ga('set', 'userId', hash);
+      } else if ('sub' in profileObj) {
+        shaObj.update(profileObj['sub']);
+        hash = shaObj.getHash("HEX");
+        ga('set', 'userId', hash);
+      }
 
-      if (profileObj && 'email_verified' in profileObj && profileObj['email_verified'] == true) {
-        emailVerified = true;
-      } else if (! ('email_verified' in profileObj)) {
-        emailVerficationNotNeeded = true;
-      }
-      if (emailVerified || emailVerificationNotNeeded) {
-        $('.need-verification').hide();
-        retrieve_usecases();
-        conditional_update_usecases();
-        retrieve_update_instances();
-      } else {
-        updateIdentity();
-        updateProfile();
-        $('#sandboxListContainer').hide();
-        $('#usecaseListContainer').hide();
-        $('.need-verification').show();
-      }
+      emailVerificationCheck();
     }
   }
 
@@ -97,10 +93,11 @@
   }
 
   var loginButtonAction = function(e) {
+    ga('send', 'event', 'auth', 'clicked login button');
     $('.btn-login').hide();
     win = window.open(AUTH_URL + "/",
-                "loginWindow",
-                "location=0,status=0,scrollbars=0, width=1080,height=720");
+                "_blank",
+                "location=1,status=0,scrollbars=0, width=1080,height=720");
     try {
       win.moveTo(500, 300);
     } catch (e) {
@@ -116,7 +113,7 @@
     pollInterval = setInterval(function (e) {
       win.postMessage('Polling for results', 
                       AUTH_URL)
-      }, 6000);
+      }, 2000);
   }
 
   var launchButtonAction = function(button) {
@@ -190,6 +187,7 @@
   }
 
   var launchInstance = function(usecase, errorTimeout=5000) {
+    ga('send', 'event', 'sandbox', 'launching', usecase);
     var id_token = localStorage.getItem('id_token');
 
     $.ajax
@@ -222,7 +220,7 @@
           }
           if (errorIsEcsFault) {
             $("#alertContainer").empty().append(
-              $("<div/>").attr("class", "alert alert-info").text("Neo4j Sandbox is popular right now, so there's a slight delay in launching your sandbox.  We'll e-mail you when it's ready, or you can check back here.  E-mail us at devrel@neo4j.com if the problem persists.")
+              $("<div/>").attr("class", "alert alert-info").text("Neo4j Sandbox is popular right now, so there's a slight delay in launching your sandbox.  Keep this window open and we'll keep trying.  E-mail us at devrel@neo4j.com if the problem persists.")
             );
             $("#alertContainer").show();
             window.setTimeout( 
@@ -230,11 +228,12 @@
               ,errorTimeout);
           }
         }
+        ga('send', 'event', 'sandbox', 'launch failed', usecase);
       }
     });
   }
 
-  var emailVerificationCheck = function() {
+  var emailVerificationCheck = function( calledFromUpdateProfile = false ) {
     var profile = localStorage.getItem('profile');
     if (profile) {
       profileObj = JSON.parse(profile);
@@ -248,6 +247,20 @@
         retrieve_usecases();
         retrieve_update_instances();
         conditional_update_usecases();
+      } else {
+        ga('send', 'event', 'auth', 'email verification needed');
+        updateIdentity();
+        if (calledFromUpdateProfile) {
+          window.setTimeout(
+            function () {
+              updateProfile()
+            }, 10000);
+        } else {
+          updateProfile();
+        }
+        $('#sandboxListContainer').hide();
+        $('#usecaseListContainer').hide();
+        $('.need-verification').show();
       }
     }
   }
@@ -257,7 +270,7 @@
     $.ajax
     ({
       type: "GET",
-      url: `https://devrel-test.auth0.com/userinfo`,
+      url: `https://neo4j-sandbox.auth0.com/userinfo`,
       dataType: 'json',
       async: true,
       headers: {
@@ -265,7 +278,7 @@
       },
       success: function (data){
        localStorage.setItem('profile', JSON.stringify(data));
-       emailVerificationCheck();
+       emailVerificationCheck(true);
       }
     });
   }
@@ -433,25 +446,11 @@
               }
               editors[usecase + '-' + language] = CodeMirror.fromTextArea(textarea.get()[0], {mode: 'javascript', autoRefresh: true, theme: "paraiso-dark"})
 
-/*
-              var editor = CodeMirror.fromTextArea(
-                  textarea[0], {
-                  mode: 'shell',
-                  lineNumbers: true
-              });
-*/
-              //$('.ui-tabs').tabs( "option", "active", 0 );
-   
-              //commented these out
-              //tabs.tabs('option', 'active', 0); 
-              //tabs.tabs("refresh"); 
+              if (tabs.data("ui-tabs")) {
+                tabs.tabs('option', 'active', 0); 
+                tabs.tabs("refresh"); 
+              }
 
-              //$( "#tabs" ).tabs( "refresh" );
-              //$( "#accordion" ).accordion( "refresh" );
-              /* tabs.tabs({
-                active: 0,
-                activate: codeTabActivate(usecase, language)
-                }).css({'resize':'none','min-height':'300px'}); */
           }
         });
       })(language, usecase, username, password, ip, httpPort, boltPort, tabjq);
@@ -512,27 +511,31 @@
 
   var update_usecases = function(usecases) {
     availableForLaunchCount = 0;
-    $('#usecaseList').find('.col-md-4').empty();
+    $('#usecaseList').find('.col-md-6').empty();
     for (var usecaseNum in usecases) {
       usecase = usecases[usecaseNum]
       ucname = usecase.name
 
       /* always show blank sandbox for testing TODO remove */
       if (! (ucname in activeUsecases)) {
-        columnNum = (availableForLaunchCount % 3 ) + 1;
-        panelDiv = $('<div/>').attr('class', 'panel panel-primary')
+        columnNum = (availableForLaunchCount % 2 ) + 1;
+        panelDiv = $('<div/>').attr('class', 'panel panel-primary').attr('style', 'height: 150px')
           .append(
             $('<div/>').attr('class', 'panel-heading').text(usecase.long_name)
           )
           .append(
             $('<div/>').attr('class', 'panel-body')
               .append(
-                $('<button/>').attr('type','button').attr('class','btn btn-success btn-launch')
-                .attr('data-usecase', ucname)
-                .text('Launch Sandbox')
+                $('<p/>').attr('style', 'height: 40px').text(usecase.description))
+              .append(
+                $('<div/>').attr('class', '').append(
+                  $('<button/>').attr('type','button').attr('class','btn btn-sm btn-success btn-launch')
+                  .attr('data-usecase', ucname)
+                  .text('Launch Sandbox')
+                )
               )
           );
-        $(".uc-col-" + columnNum).append(panelDiv);
+        $('.uc-col-' + columnNum).append(panelDiv) 
         launchButtonAction(panelDiv.find('.btn-launch'));
         availableForLaunchCount++;
       }
@@ -546,10 +549,6 @@
   }
 
   var update_instances = function(instances, usecases) {
-    console.log(instances);
-    console.log(usecases);
-
-
     sandboxListDiv = $("#sandboxList");
 
     // this is a new launch
@@ -573,7 +572,10 @@
       }
 
       existingSandbox = sandboxListDiv.find(`[data-sandboxhashkey='${instance.sandboxHashKey}']`);
+
       if ('status' in instance && instance['status'] == 'PENDING') {
+        sandboxDiv = $("#sandbox_launching_template").clone();
+      } else if ((instance['connectionVerified'] != true) && $.inArray(instance.sandboxHashKey,activeInstances) == -1) {
         sandboxDiv = $("#sandbox_launching_template").clone();
       } else {
         sandboxDiv = $("#sandbox_template").clone();
@@ -677,6 +679,7 @@
                           .attr('class', `tabs-code-${instance.usecase} tabs-nohdr`)
                           .append($('<ul />')))
                         .tabs({heightStyle: "content"});// .tabs("refresh");
+      
       retrieve_show_code_snippets(instance.usecase, instance.username, instance.password, instance.ip, instance.port, instance.boltPort, codeDiv.find(`.tabs-code-${instance.usecase}`));
 
       shutdownInstanceAction(sandboxDiv, instance, sandboxDiv.find('.shutdown a') );
@@ -763,6 +766,7 @@ $(document).ready(function() {
   new Clipboard('.copybtn');
   var profile = localStorage.getItem('profile');
   if (profile) {
+    ga('send', 'event', 'auth', 'loaded from localstorage');
     profileObj = JSON.parse(profile);
     show_profile_info(profileObj);
     if ('email_verified' in profileObj && profileObj['email_verified'] == false) {
@@ -776,16 +780,18 @@ $(document).ready(function() {
     $('.marketing').fadeOut("fast");
     $('.btn-login').hide();
     $('.btn-logout').show();
-    if ( (!emailVerified) && (!emailVerificationNotNeeded) ) {
-      updateProfile();
-      $('#sandboxListContainer').hide();
-      $('#usecaseListContainer').hide();
-      $('.need-verification').show();
-    }
+
+    emailVerificationCheck();
+
     if (localStorage.getItem('id_token')) {
+      ga('send', 'event', 'auth', 'have id_token');
+
+      shaObj.update(profileObj['sub']);
+      hash = shaObj.getHash("HEX");
+      ga('set', 'userId', hash);
+
       // TODO FIGURE OUT WHY DOUBLE LOADING
       updateIdentity();
-      emailVerificationCheck();
     }
   }
 });

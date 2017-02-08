@@ -59,20 +59,22 @@
       padding: 0 5em;
     }
   </style>
-  <script src="//cdn.auth0.com/js/lock/10.3.0/lock.min.js"></script>
-  <script src="//cdn.auth0.com/w2/auth0-6.js"></script>
+  <script src="//cdn.auth0.com/js/lock/10.9.1/lock.min.js"></script>
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <script>
+</head>
+
+<body>
+  <script type="text/javascript">
+     var authenticated = false;
     document.addEventListener("DOMContentLoaded", function() {
-      if (! window.location.hash) {
-        lock.show({
-          closable: false,
-          authParams: { scope: 'openid offline_access'},
-          callbackURL: location.href,
-          responseType: 'token'
-        });
-      }
+      window.setTimeout( function() { if (! authenticated) {
+        lock.show() }}, 500);
     });
+  </script>
+
+  <script type="text/javascript">
+
     var options = {
       theme: {
         logo: 'http://info.neo4j.com/rs/773-GON-065/images/neo4j_logo_globe.png',
@@ -90,32 +92,33 @@
       },
       auth: {
         params: {
-          scope: 'openid email offline_access'
+          scope: 'openid email'
         }
       }
     }
-    var lock = new Auth0Lock('CK4MU2kBWYkDXdWcKs5mj0GbgzEDfifL', 'devrel-test.auth0.com', options);
+    var lock = new Auth0Lock('hraAZfwc1LVcKvfGiCE2gMq8f2JuHlPM', 'neo4j-sandbox.auth0.com', options);
     var userProfile = null;
-    var auth0 = new Auth0({
-      domain:       'devrel-test.auth0.com',
-      scope:        'openid offline_access',
-      clientID:     'CK4MU2kBWYkDXdWcKs5mj0GbgzEDfifL',
-      callbackURL:  location.href,
-      callbackOnLocationHash: true
-    });
 
-    function getFirebaseToken(id_token, cb) {
-      var options = {
-        id_token: id_token,
-        api: 'firebase'
-      };
-      auth0.getDelegationToken(options, function (err, delegationResult) {
-          cb(delegationResult)
-      });
-    }
+    window.addEventListener('message',function(event) {
+      if (globalProfile && globalResponse) {
+          profile = globalProfile; 
+          res = globalResponse;
+
+          var mapObj = {
+    	    profile: profile,
+    	    data_token: res.idToken,
+    	    token: res.idToken,
+    	    accessToken: res.accessToken,
+    	    state: res.state,
+    	    refreshToken: res.refreshToken
+          }
+          event.source.postMessage(mapObj, event.origin);  
+      }
+  },false);
+
+
   </script>
-</head>
-<body>
+  <div id="debugger"></div>
   <div id="spinner-wrapper">
     <div id="wrap">
       <div class="item">
@@ -124,28 +127,20 @@
       </div>
     </div>
   </div>
-  <script>
-
+  <script type="text/javascript">
+    var globalProfile = false;
+    var globalResponse = false;
 lock.on("authenticated", function(res) {
-  lock.getProfile(res.idToken, function(error, profile) {
-    if (error) {
-      // Handle error
-      lock.hide();
-      return;
-    }
-    localStorage.setItem('previousLogin', 'true');
-    localStorage.setItem('id_token', res.idToken);
-          window.addEventListener('message',function(event) {
-              var mapObj = {
-                profile: profile,
-                data_token: res.idToken,
-                token: res.idToken,
-                accessToken: res.accessToken,
-                state: res.state,
-                refreshToken: res.refreshToken
-              }
-              event.source.postMessage(mapObj, event.origin);  
-          },false);
+  //alert("authenticated");
+  globalProfile = 0;
+  authenticated = true;
+  lock.getUserInfo(res.accessToken, function(error, profile) {
+    //alert(error);
+    //alert(profile);
+    globalProfile = profile;
+    globalResponse = res;
+    //alert("Done setting globalProfile");
+    //alert(globalProfile);
   });
 });
 
