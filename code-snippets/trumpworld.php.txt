@@ -32,5 +32,3 @@ $result = $client->run($cypher_query, $params);
 foreach ($result->records() as $record) {
   echo $record->get('name') . PHP_EOL;
 }
-
-?>
