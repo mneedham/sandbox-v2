@@ -1,0 +1,16 @@
+// npm install --save neo4j
+var neo4j = require('neo4j');
+var db = new neo4j.GraphDatabase('http://<USERNAME>:<PASSWORD>@<HOST>:<HTTPPORT>');
+
+// Who are the legislators in legis-graph?
+var query = 
+  "MATCH (l:Legislator) \
+   RETURN l.firstName + ' ' + l.lastName AS name \
+   LIMIT $limit";
+
+var params = {"limit": 10};
+db.cypher({ query: query, params: params}, 
+  function(err, results) {
+    if (err || !results) throw err;
+    results.forEach(function(row) { console.log(row['name']) });
+  });
