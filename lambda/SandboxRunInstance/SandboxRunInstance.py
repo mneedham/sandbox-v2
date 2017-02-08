@@ -99,6 +99,30 @@ def check_sandbox_exists(user, usecase):
 
     return result
 
+def user_verified(user):
+    result = False
+
+    session = get_db_session()
+    
+    query = """
+    MATCH 
+      (u:User)
+    WHERE 
+      u.auth0_key = {auth0_key}
+      AND
+      u.email_verified = true
+    RETURN
+      u.auth0_key
+    """
+    results = session.run(query, 
+      parameters={"auth0_key": user})
+    for record in results:
+        result = True
+    if session.healthy:
+        session.close()
+
+    return result
+
 def add_sandbox_to_db(user, usecase, taskid, password, sandboxHashKey):
     session = get_db_session()
     
@@ -141,7 +165,16 @@ def lambda_handler(event, context):
     
     logger.debug('Checking to see if sandbox exists')
 
-    if not check_sandbox_exists(user, usecase):
+    if not user_verified(user):
+        logger.error('User email is not verified for user: %s' % (user))
+
+        response_statusCode = 403
+        response_contentType = 'application/json'
+        response_body = json.dumps( {"errorString": "User email is not verified for user: %s"  % (user) })
+
+        return { "statusCode": response_statusCode, "headers": { "Content-type": response_contentType, "Access-Control-Allow-Origin": "*" }, "body": response_body }
+         
+    elif not check_sandbox_exists(user, usecase):
         logger.debug('Generating password')
 
         userDbPassword = get_generated_password()

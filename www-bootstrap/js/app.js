@@ -26,7 +26,6 @@
       $('.btn-logout').show();
       $('.btn-launch').show();
       //$('#logs').show();
-      event.source.close();
       localStorage.setItem('id_token', event.data.token)
       localStorage.setItem('profile', JSON.stringify(event.data.profile))
       localStorage.setItem('access_token', event.data.accessToken)
@@ -44,6 +43,7 @@
       }
 
       emailVerificationCheck();
+      event.source.close();
     }
   }
 
@@ -136,8 +136,8 @@
   }
 
   var shutdownInstance = function(sandboxHashKey, sandboxDiv) {
+    ga('send', 'event', 'sandbox', 'shutdown', sandboxHashKey);
     var id_token = localStorage.getItem('id_token');
-
     $.ajax
     ({
       type: "POST",
@@ -158,6 +158,7 @@
   }
 
   var backupInstance = function(sandboxHashKey, sandboxDiv) {
+    ga('send', 'event', 'sandbox', 'backup', sandboxHashKey);
     var id_token = localStorage.getItem('id_token');
 
     $.ajax
@@ -172,9 +173,22 @@
         "Authorization": id_token
       },
       success: function (data){
+        sandboxDiv.find('.panel-body-alerts')
+          .append($("<div/>")
+            .attr("class","alert alert-warning")
+            .text("Backup feature not fully implemented. Email devrel@neo4j.com if you have questions or feedback."));
+        ga('send', 'event', 'sandbox', 'backup-success', sandboxHashKey);
+
         //sandboxDiv.remove();
         // TODO check number of sandbox divs and update UI based upon it
-        updateUx();
+        // updateUx();
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        sandboxDiv.find('.panel-body-alerts')
+          .append($("<div/>")
+            .attr("class","alert alert-warning")
+            .text("Backup feature not fully implemented (f). Email devrel@neo4j.com if you have questions or feedback."));
+        ga('send', 'event', 'sandbox', 'backup-error', sandboxHashKey);
       }
     });
   }
@@ -205,12 +219,13 @@
         update_instances(data, usecases);
         $("#alertContainer").empty();
         setTimeout(function() { updateUx() }, 2000);
+        ga('send', 'event', 'sandbox', 'launch-success', usecase);
       },
       error: function (jqXHR, textStatus, errorThrown) {
         var json = JSON.parse(jqXHR.responseText);
         console.log("Error starting instance for usecase: " + usecase);
         console.log(json);
-        if (json["status"] == "FAILED") {
+        if ('status' in json && json["status"] == "FAILED") {
           errorIsEcsFault = false;
           for (failureIn in json["ECS response"]["failures"]) {
             failure = json["ECS response"]["failures"][failureIn];
@@ -219,6 +234,7 @@
             }
           }
           if (errorIsEcsFault) {
+            ga('send', 'event', 'sandbox', 'launching-error', 'ECS failure');
             $("#alertContainer").empty().append(
               $("<div/>").attr("class", "alert alert-info").text("Neo4j Sandbox is popular right now, so there's a slight delay in launching your sandbox.  Keep this window open and we'll keep trying.  E-mail us at devrel@neo4j.com if the problem persists.")
             );
@@ -226,9 +242,12 @@
             window.setTimeout( 
               function () { launchInstance(usecase, errorTimeout * 2) }
               ,errorTimeout);
+          } else {
+            ga('send', 'event', 'sandbox', 'launching-error', 'NON-ECS failure');
           }
+        } else {
+          ga('send', 'event', 'sandbox', 'launching-error', "Status Unknown");
         }
-        ga('send', 'event', 'sandbox', 'launch failed', usecase);
       }
     });
   }
@@ -265,6 +284,22 @@
     }
   }
 
+  /*
+  var toCamelCase = function(object, exceptions) {
+    if (typeof object !== 'object' || object === null) {
+      return object;
+    }
+  
+    exceptions = exceptions || [];
+  
+    return Object.keys(object).reduce(function (p, key) {
+      var newKey = exceptions.indexOf(key) === -1 ? snakeToCamel(key) : key;
+      p[newKey] = toCamelCase(object[key]);
+      return p;
+    }, {});
+  }
+  */
+  
   var updateProfile = function() {
     var access_token = localStorage.getItem('access_token');
     $.ajax
@@ -466,6 +501,7 @@
   }
 
   var retrieve_logs = function(editor, sbid, nextToken) {
+    ga('send', 'event', 'sandbox', 'retrieving_logs');
     var id_token = localStorage.getItem('id_token');
     if (id_token) {
       data = {"sbid": sbid}
@@ -738,6 +774,7 @@
   }
 
   var logout = function() {
+    ga('send', 'event', 'auth', 'logout');
     localStorage.removeItem('id_token');
     localStorage.removeItem('profile');
     localStorage.removeItem('access_token');
@@ -769,6 +806,7 @@ $(document).ready(function() {
     ga('send', 'event', 'auth', 'loaded from localstorage');
     profileObj = JSON.parse(profile);
     show_profile_info(profileObj);
+    /*
     if ('email_verified' in profileObj && profileObj['email_verified'] == false) {
       emailVerified = false;
     } else if (! ('email_verified' in profileObj)) {
@@ -776,6 +814,7 @@ $(document).ready(function() {
     } else {
       emailVerified = true;
     }
+    */
     $('.jumbotron').fadeOut("fast");
     $('.marketing').fadeOut("fast");
     $('.btn-login').hide();

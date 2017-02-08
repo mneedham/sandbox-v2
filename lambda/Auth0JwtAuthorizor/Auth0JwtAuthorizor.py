@@ -29,7 +29,6 @@ logger.setLevel(LOGGING_LEVEL)
 
 def add_update_user(user, jwt):
     global REVALIDATE_USER
-    session = sblambda.get_db_session()
 
     data = { "id_token": jwt }
 
@@ -39,15 +38,19 @@ def add_update_user(user, jwt):
     picture = '<default>'
     email = '<default>'
     description = '<default>'
+    emailVerified = True
 
     try:
       req = urllib2.Request(
-          	url = 'https://devrel-test.auth0.com/tokeninfo',
+          	url = 'https://neo4j-sandbox.auth0.com/tokeninfo',
           	headers = {"Content-type": "application/json"},
   	        data = json.dumps(data))
         
       f = urllib2.urlopen(url = req)
-      profile = json.loads(f.read())
+      jsonProfile = f.read()
+      profile = json.loads(jsonProfile)
+      logger.debug(jsonProfile)
+
     except urllib2.HTTPError as h:
       if REVALIDATE_USER:
         raise
@@ -70,6 +73,11 @@ def add_update_user(user, jwt):
     if 'email' in profile:
         email = profile['email']
 
+    if 'email_verified' in profile:
+        if profile['email_verified'] == False:
+          emailVerified = False
+    
+
     query = """
     MERGE
       (u:User {auth0_key: {auth0_key}})
@@ -77,16 +85,18 @@ def add_update_user(user, jwt):
       u.name={name},
       u.picture={picture},
       u.description={description},
-      u.email={email}
+      u.email={email},
+      u.email_verified={emailVerified}
     RETURN u
     """
-    results = session.run(query,
-      parameters={"auth0_key": user, "name": name, "picture": picture, "description": description, "email": email}).consume()
+    session = sblambda.get_db_session()
+    session.run(query,
+      parameters={"auth0_key": user, "name": name, "picture": picture, "description": description, "email": email, "emailVerified": emailVerified}).consume()
     
     if session.healthy: 
         session.close() 
 
-    return results
+    return True
 
 
 def lambda_handler(event, context):
