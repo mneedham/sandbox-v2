@@ -10,7 +10,11 @@ import calendar
 import random
 import Queue
 import threading
+import os
 
+
+JWT_SECRET = os.environ["JWT_SECRET"]
+JWT_AUD = os.environ["JWT_AUD"]
 
 RUN_INSTANCE_URL = 'https://ppriuj7e7i.execute-api.us-east-1.amazonaws.com/dev/SandboxRunInstance'
 
@@ -60,6 +64,8 @@ class ThreadLaunch(threading.Thread):
 start = time.time()
 
 def main():
+  global JWT_SECRET, JWT_AUD
+
   #spawn a pool of threads, and pass them queue instance 
   for i in range(10):
     t = ThreadLaunch(queue)
@@ -76,14 +82,14 @@ def main():
     payload = {
       "email": "ryan@ryguy.com",
       "email_verified": True,
-      "iss": "https://devrel-test.auth0.com/",
+      "iss": "https://neo4j-sandbox.auth0.com/",
       "sub": "generated|%s|%s" % (rand, iteration),
-      "aud": "CK4MU2kBWYkDXdWcKs5mj0GbgzEDfifL",
+      "aud": JWT_AUD,
       "exp": currentTime + 60*60*24,
       "iat": currentTime 
     }
   
-    jwttext= encodeJwt(payload, 'T8VM3OWmK4Xfq3sNCw-YeiBPssMbn-XwgTKVXhRahpqfhZeZnqVzj1_TtbCva0li')
+    jwttext= encodeJwt(payload, JWT_SECRET)
     queue.put(jwttext)
 
   queue.join()
