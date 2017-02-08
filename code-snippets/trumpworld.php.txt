@@ -23,7 +23,7 @@ $client = ClientBuilder::create()
 $cypher_query = <<<EOQ
 MATCH (o:Organization)
 RETURN o.name AS name
-LIMIT $limit
+LIMIT {limit}
 EOQ;
 
 $params = ["limit" => 10];
@@ -32,3 +32,5 @@ $result = $client->run($cypher_query, $params);
 foreach ($result->records() as $record) {
   echo $record->get('name') . PHP_EOL;
 }
+
+?>
