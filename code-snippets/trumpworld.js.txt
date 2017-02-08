@@ -1,0 +1,16 @@
+// npm install --save neo4j
+var neo4j = require('neo4j');
+var db = new neo4j.GraphDatabase('http://<USERNAME>:<PASSWORD>@<HOST>:<HTTPPORT>');
+
+// What are all the Organizations in Trumpworld?
+var query = 
+  "MATCH (o:Organization) \
+   RETURN o.name AS name \
+   LIMIT $limit";
+
+var params = {"limit": 10};
+db.cypher({ query: query, params: params}, 
+  function(err, results) {
+    if (err || !results) throw err;
+    results.forEach(function(row) { console.log(row['name']) });
+  });
