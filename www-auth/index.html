@@ -59,7 +59,7 @@
       padding: 0 5em;
     }
   </style>
-  <script src="//cdn.auth0.com/js/lock/10.9.1/lock.min.js"></script>
+  <script src="//cdn.auth0.com/js/lock/10.10.0/lock.min.js"></script>
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 </head>
@@ -77,7 +77,7 @@
 
     var options = {
       theme: {
-        logo: 'http://info.neo4j.com/rs/773-GON-065/images/neo4j_logo_globe.png',
+        logo: 'https://info.neo4j.com/rs/773-GON-065/images/neo4j_logo_globe.png',
         primaryColor: '#58b535'
       },
       initialScreen: (localStorage.getItem('previousLogin') == null)?'signUp':'login',
@@ -92,7 +92,9 @@
       },
       auth: {
         params: {
-          scope: 'openid email'
+          scope: 'openid email',
+          redirectUrl: 'https://auth.neo4jsandbox.com',
+          responseType: 'token'
         }
       }
     }

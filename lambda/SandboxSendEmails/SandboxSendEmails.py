@@ -10,7 +10,7 @@ import logging
 import traceback
 from string import Template
 
-db_creds = Nones
+db_creds = None
 glob_session = None
 
 DB_HOST = os.environ["DB_HOST"]
@@ -126,13 +126,13 @@ def get_sandboxes_for_email_created():
 
     instances_query = """
     MATCH 
-      (s:Sandbox)
+      (uc:Usecase)<-[:IS_INSTANCE_OF]-(s:Sandbox)<-[:IS_ALLOCATED]-(u:User)
     WHERE 
       s.running = True
       AND
       s.sendEmailCreated = 'Q'
     RETURN
-      s.usecase AS usecase, s.ip, s.port, s.boltPort, s.expires, id(s) AS id
+      s.usecase AS usecase, s.ip, s.port, s.boltPort, s.expires, id(s) AS id, u.name AS name, u.email AS email, uc.long_name AS uc_long_name
     """
     results = session.run(instances_query)
 
@@ -178,19 +178,22 @@ def send_email_created(sandboxes):
     
     client = boto3.client('ses')
     for sandbox in sandboxes:
-        bodyPlainText = templateObj.substitute(sburl='neo4j-sandbox-www.s3-website-us-east-1.amazonaws.com/#', greeting=sandbox['usecase'])
+      try:
+        bodyPlainText = templateObj.substitute(sburl='https://neo4jsandbox.com/', greeting=sandbox['name'])
         response = client.send_email(
             Source = 'Neo4j DevRel <devrel+sandbox@neo4j.com>',
             SourceArn = 'arn:aws:ses:us-east-1:128916679330:identity/neo4j.com',
             Destination = {
-                'ToAddresses': [ 'ryan@neo4j.com' ]
+                'ToAddresses': [ sandbox['email'] ]
             },
             Message = {
-                'Subject': { 'Data': 'Welcome to the Neo4j Sandbox' },
+                'Subject': { 'Data': 'You\'ve Created a New Neo4j Sandbox for %s' % (sandbox['uc_long_name']) },
                 'Body': { 'Text': { 'Data': bodyPlainText } }
             }
         )
         print(response)
+      except:
+        logging.error(traceback.format_exc())
 
 
 
@@ -206,7 +209,8 @@ def lambda_handler(event, context):
 
     try:
       sbs = get_sandboxes_for_email_reminderone()
-      send_email_reminderone(sbs)
+      # don't actually send this email yet
+      #send_email_reminderone(sbs)
     except:
       logging.error(traceback.format_exc())
       print('Error in sending email -setting status as M')
