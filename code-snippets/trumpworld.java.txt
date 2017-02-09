@@ -7,12 +7,13 @@ import java.util.List;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonMap;
 
-public class BlankSandbox {
+public class TrumpworldSandbox {
 
     public static void main(String...args) {
         Config noSSL = Config.build().withEncryptionLevel(Config.EncryptionLevel.NONE).toConfig();
         Driver driver = GraphDatabase.driver("bolt://<HOST>:<BOLTPORT>",AuthTokens.basic("<USERNAME>","<PASSWORD>"),noSSL); // <password>
         try (Session session = driver.session()) {
+            // what are the organizations in Trumpworld?
             String cypherQuery =
                 "MATCH (o:Organization) " + 
                 "RETURN o.name AS name " +

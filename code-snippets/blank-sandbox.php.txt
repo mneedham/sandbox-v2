@@ -22,10 +22,10 @@ $client = ClientBuilder::create()
 $cypher_query = <<<EOQ
 MATCH (n)
 RETURN id(n) AS id
-LIMIT 10
+LIMIT {limit}
 EOQ;
 
-$params = [];
+$params = ["limit" => 10];
 $result = $client->run($cypher_query, $params);
 
 foreach ($result->records() as $record) {

@@ -810,6 +810,15 @@
   };
 
 $(document).ready(function() {
+  $('.carousel-inner .item .carousel-caption')
+    .attr("style", "background-color: rgba(0, 0, 0, 0.4); padding: 5px 5px 5px 5px");
+
+  $('#carousel-sandbox-features').carousel(
+  {
+    interval: 10000
+  }
+  );
+
   $('.btn-login').click(function (e) {
     loginButtonAction(e);
   });

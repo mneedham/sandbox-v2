@@ -5,9 +5,9 @@ var db = new neo4j.GraphDatabase('http://<USERNAME>:<PASSWORD>@<HOST>:<HTTPPORT>
 var query = 
   "MATCH (n) \
    RETURN ID(n) as id \
-   LIMIT 10"";
+   LIMIT $limit";
 
-var params = {};
+var params = {"limit": 10};
 db.cypher({ query: query, params: params}, 
   function(err, results) {
     if (err || !results) throw err;

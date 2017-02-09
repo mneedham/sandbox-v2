@@ -7,7 +7,7 @@ import java.util.List;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonMap;
 
-public class BlankSandbox {
+public class LegisGraphSandbox {
 
     public static void main(String...args) {
         Config noSSL = Config.build().withEncryptionLevel(Config.EncryptionLevel.NONE).toConfig();
