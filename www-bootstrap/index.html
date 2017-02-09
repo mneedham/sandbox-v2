@@ -299,22 +299,22 @@
       <div class="modal-body">
           <p>
             Would you like to extend your Neo4j Sandboxes?  Provide the following information and we'll extend them by 7 days.<br />
-            <form>
+            <form id="extend-sandboxes">
               <div class="form-group">
                 <label for="extendSandboxInputWorkEmail">Work email</label>
-                <input type="email" class="form-control" id="extendSandboxInputWorkEmail" aria-describedby="extendSandboxInputWorkEmailHelp" placeholder="Enter your work email address">
+                <input name="email" type="email" class="form-control" id="extendSandboxInputWorkEmail" aria-describedby="extendSandboxInputWorkEmailHelp" placeholder="Enter your work email address">
               </div>
               <div class="form-group">
                 <label for="extendSandboxInputPhoneNumber">Phone Number</label>
-                <input type="tel" class="form-control" id="extendSandboxInputPhoneNumber" aria-describedby="extendSandboxInputPhoneNumberHelp" placeholder="Enter your phone number, eg 1-555-555-1212">
+                <input name="telephone" type="tel" class="form-control" id="extendSandboxInputPhoneNumber" aria-describedby="extendSandboxInputPhoneNumberHelp" placeholder="Enter your phone number, eg 1-555-555-1212">
               </div>
               <div class="form-group">
                 <label for="extendSandboxInputCompany">Company</label>
-                <input type="text" class="form-control" id="extendSandboxInputCompany" aria-describedby="extendSandboxInputCompanyHelp" placeholder="Enter company name">
+                <input name="company" type="text" class="form-control" id="extendSandboxInputCompany" aria-describedby="extendSandboxInputCompanyHelp" placeholder="Enter company name">
               </div>
               <div class="form-group">
                 <label for="extendSandboxInputIndustry">Industry</label>
-                <select class="form-control" id="extendSandboxInputIndustry">
+                <select name="industry" class="form-control" id="extendSandboxInputIndustry">
                     <option></option>
                     <option>Energy</option>
                     <option>Technology</option>
@@ -325,7 +325,7 @@
               </div>
               <div class="form-group">
                 <label for="extendSandboxInputJob">Job Function</label>
-                <select class="form-control" id="extendSandboxInputJob">
+                <select name="jobrole" class="form-control" id="extendSandboxInputJob">
                     <option></option>
                     <option>Software Developer/Engineer</option>
                     <option>Architect</option>
@@ -340,21 +340,21 @@
               </div>
               <div class="form-group">
                 <label for="extendSandboxInputReason">Why are you interested in Neo4j?</label>
-                <textarea class="form-control" id="extendSandboxInputReason" rows="3"></textarea>
+                <textarea name="whyneo4j" class="form-control" id="extendSandboxInputReason" rows="3"></textarea>
               </div>
             </form>
           </p>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary">Extend</button>
+        <button type="button" class="btn btn-primary" id="extend-button">Extend</button>
       </div>
     </div><!-- /.modal-content -->
   </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
 
       <footer class="footer">
-        <p><a href="//neo4j.com/privacy">Privacy Policy</a> - <a href="//neo4j.com/terms">General Terms</a> - <a href="//neo4j.com/terms/online-trial-agreement/">Online Trial Terms</a></p>
+        <p><a href="//neo4j.com/privacy-policy/">Privacy Policy</a> - <a href="//neo4j.com/terms/">General Terms</a> - <a href="//neo4j.com/terms/online-trial-agreement/">Online Trial Terms</a></p>
       </footer>
 
     </div> <!-- /container -->

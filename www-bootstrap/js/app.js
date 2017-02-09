@@ -30,7 +30,7 @@
       localStorage.setItem('profile', JSON.stringify(event.data.profile))
       localStorage.setItem('access_token', event.data.accessToken)
       localStorage.setItem('refresh_token', event.data.refreshToken)
-      show_profile_info(event.data.profile)
+      updateIdentity();
       profileObj = event.data.profile
       if ('user_id' in profileObj) {
         shaObj.update(profileObj['user_id']);
@@ -74,6 +74,15 @@
     addEventListener("message", listener, false)
   } else {
     attachEvent("onmessage", listener)
+  }
+
+  var serializeForm = function(formObj) {
+    var values = {};
+    $.each($(formObj).serializeArray(), 
+      function() { 
+        values[this.name] = this.value; 
+      });
+    return values;
   }
 
   var shutdownInstanceAction = function(sandboxDiv, instance, clickItem) {
@@ -152,6 +161,26 @@
       success: function (data){
         sandboxDiv.remove();
         // TODO check number of sandbox divs and update UI based upon it
+        updateUx();
+      }
+    });
+  }
+
+  var extendSandbox = function(formValuesObj) {
+    ga('send', 'event', 'sandbox', 'extend');
+    var id_token = localStorage.getItem('id_token');
+    $.ajax
+    ({
+      type: "POST",
+      url: `${API_PATH}/SandboxExtend`,
+      dataType: 'json',
+      data: JSON.stringify(formValuesObj),
+      contentType: "application/json",
+      async: true,
+      headers: {
+        "Authorization": id_token
+      },
+      success: function (data){
         updateUx();
       }
     });
@@ -268,7 +297,6 @@
         conditional_update_usecases();
       } else {
         ga('send', 'event', 'auth', 'email verification needed');
-        updateIdentity();
         if (calledFromUpdateProfile) {
           window.setTimeout(
             function () {
@@ -339,14 +367,6 @@
         }
       });
   }
-
-  var show_profile_info = function(profile) {
-     $('.nickname').text(profile.nickname);
-     $('.btn-login').hide();
-     $('.avatar').attr('src', profile.picture).show();
-     $('.btn-logout').show();
-     $('#welcome').show();
-  };
 
   var retrieve_update_instances = function(retry=true) {
     var id_token = localStorage.getItem('id_token');
@@ -805,16 +825,8 @@ $(document).ready(function() {
   if (profile) {
     ga('send', 'event', 'auth', 'loaded from localstorage');
     profileObj = JSON.parse(profile);
-    show_profile_info(profileObj);
-    /*
-    if ('email_verified' in profileObj && profileObj['email_verified'] == false) {
-      emailVerified = false;
-    } else if (! ('email_verified' in profileObj)) {
-      emailVerificationNotNeeded = true;
-    } else {
-      emailVerified = true;
-    }
-    */
+    updateIdentity();
+
     $('.jumbotron').fadeOut("fast");
     $('.marketing').fadeOut("fast");
     $('.btn-login').hide();
@@ -828,10 +840,13 @@ $(document).ready(function() {
       shaObj.update(profileObj['sub']);
       hash = shaObj.getHash("HEX");
       ga('set', 'userId', hash);
-
-      // TODO FIGURE OUT WHY DOUBLE LOADING
-      updateIdentity();
     }
   }
+    $("#extend-button").click(
+      function() {
+        var formValuesObj = serializeForm($("#extend-sandboxes"));
+        extendSandbox(formValuesObj);
+      }
+    );
 });
 
