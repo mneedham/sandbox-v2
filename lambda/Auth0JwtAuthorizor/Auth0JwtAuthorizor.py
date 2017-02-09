@@ -112,9 +112,10 @@ def lambda_handler(event, context):
 
     try:
       decoded = jwt.decode(encoded, secret, algorithms=['HS256'], audience=creds['auth0_audience'])
-    
-      if re.search("SandboxRunInstance$", event['methodArn']):
-          add_update_user(decoded['sub'], encoded)    
+   
+      # don't skip adding user on read only 
+      # if re.search("SandboxRunInstance$", event['methodArn']):
+      add_update_user(decoded['sub'], encoded)    
 
       tmp = event['methodArn'].split(':')
       apiGatewayArnTmp = tmp[5].split('/')
