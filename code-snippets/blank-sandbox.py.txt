@@ -10,11 +10,11 @@ session = driver.session()
 cypher_query = '''
 MATCH (n)
 RETURN id(n) AS id
-LIMIT 10
+LIMIT $limit
 '''
 
 results = session.run(cypher_query,
-  parameters={})
+  parameters={"limit": 10})
 
 for record in results:
   print(record['id'])
