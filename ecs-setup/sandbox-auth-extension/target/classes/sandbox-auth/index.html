@@ -1,0 +1,25 @@
+<html>
+<body>
+<script type="text/javascript">
+function receiveMessage(event)
+{
+  var origin = event.origin || event.originalEvent.origin; // For Chrome, the origin property is in the event.originalEvent object.
+  if (origin === "https://neo4jsandbox.com") {
+    if (data.authkey) {
+      localStorage.setItem("neo4j.authorization_data", btoa(data.authkey));
+    }
+  } else {
+    return;
+  }
+}
+
+window.addEventListener("message", receiveMessage);
+
+var authkey = window.location.hash.substr(1);
+if (authkey && authkey.length) {
+  localStorage.setItem("neo4j.authorization_data", btoa(authkey)) 
+  window.location = "/browser/";
+}
+</script>
+</body>
+</html>
