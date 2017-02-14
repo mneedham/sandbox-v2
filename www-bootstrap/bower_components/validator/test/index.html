@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Validator Tests</title>
+  <link href="https://cdn.rawgit.com/mochajs/mocha/v3.2.0/mocha.css" rel="stylesheet">
+</head>
+<body>
+  <div id="mocha"></div>
+  <script src="https://cdn.rawgit.com/chaijs/chai/3.5.0/chai.js"></script>
+  <script src="https://cdn.rawgit.com/mochajs/mocha/v3.2.0/mocha.js"></script>
+  <script src="../dist/validator.js"></script>
+  <script>
+    if (typeof window.initMochaPhantomJS === 'function') {
+      window.initMochaPhantomJS();
+    }
+
+    mocha.setup('bdd');
+  </script>
+  <script src="options.js"></script>
+  <script src="methods.js"></script>
+  <script src="events.js"></script>
+  <script>
+    mocha.checkLeaks();
+    mocha.globals(['Validator']);
+    mocha.run();
+  </script>
+</body>
+</html>

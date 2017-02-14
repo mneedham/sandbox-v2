@@ -4,6 +4,7 @@ aws s3 cp s3://neo4j-twitter-config/config.json /app-config/config.json
 aws s3 cp s3://neo4j-twitter-config/neo4j-config/ /neo4j-config --recursive
 aws s3 cp s3://neo4j-twitter-config/neo4j-plugins/ /neo4j-plugins --recursive
 aws s3 cp s3://neo4j-twitter-config/neo4j-extension/ /neo4j-extension --recursive
+aws s3 cp s3://neo4j-twitter-config/nginx-config/ /nginx-config --recursive
 chmod -R 755 /neo4j-extension
 
 # copy neo4j 3.1.1 datastores
@@ -14,3 +15,4 @@ chmod -R 755 /neo4j-sandbox-usecase-datastores
 echo ECS_CLUSTER=sandbox-v2 > /etc/ecs/ecs.config
 docker pull ryguyrg/neo4j-importer:sandbox-v2.1.1
 docker pull ryguyrg/neo4j-sandbox-3.1
+docker pull nginx:stable-alpine

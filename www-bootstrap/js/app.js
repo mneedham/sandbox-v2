@@ -169,6 +169,7 @@
   var extendSandbox = function(formValuesObj) {
     ga('send', 'event', 'sandbox', 'extend');
     var id_token = localStorage.getItem('id_token');
+    $("#extend-button").prop( "disabled", true);
     $.ajax
     ({
       type: "POST",
@@ -182,6 +183,15 @@
       },
       success: function (data){
         updateUx();
+        $('#modalExtendSandbox').modal('hide');
+        $("#extend-button").prop( "disabled", false);
+        ga('send', 'event', 'sandbox', 'extend-success');
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        // TODO display aleraprop( "disabled", true );t
+        $("#extend-button").prop( "disabled", false);
+        ga('send', 'event', 'sandbox', 'extend-error');
+        alert("error extending sandbox. retry");
       }
     });
   }
@@ -851,11 +861,48 @@ $(document).ready(function() {
       ga('set', 'userId', hash);
     }
   }
-    $("#extend-button").click(
-      function() {
+  var form = ($('#extend-sandboxes'))[0];
+  var validator = new window.Validator(form, {
+    namespace: 'sb',
+    trigger: 'input',
+    stopOnError: false,
+    success: function(e) {
+      var input = e.target;
+      input.classList.remove('form-control-warning');
+      input.classList.add('form-control-success');
+      input.parentNode.classList.remove('has-warning');
+      input.parentNode.classList.add('has-success');
+      input.nextElementSibling.classList.remove('glyphicon-remove');
+      input.nextElementSibling.classList.add('glyphicon-ok');
+    },
+    error: function(e) {
+      var input = e.target;
+      input.focus();
+      input.classList.remove('form-control-success');
+      input.classList.add('form-control-warning');
+      input.parentNode.classList.remove('has-success');
+      input.parentNode.classList.add('has-warning');
+      input.nextElementSibling.classList.remove('glyphicon-ok');
+      input.nextElementSibling.classList.add('glyphicon-remove');
+    },
+  });
+  $("#extend-button").click(
+    function(e) {
+      var validForm = true;
+      allInput = $("#extend-sandboxes").find(':input').toArray();
+      for (i in allInput) {
+        if (validator.isInvalid(allInput[i])) {
+          validForm = false;
+        }
+      }
+      if (validForm) {
         var formValuesObj = serializeForm($("#extend-sandboxes"));
         extendSandbox(formValuesObj);
+      } else {
+        e.preventDefault();
       }
-    );
+      return false;
+    }
+  );
 });
 

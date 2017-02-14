@@ -1,0 +1,12 @@
+{
+  "TWITTER_CONSUMER_KEY": "0qbBHofvnKYHWj9EfcHKkXieG",
+  "TWITTER_CONSUMER_SECRET": "oxjKmUSSXJnIw4MpSbbKDixZl51YWj8dKXDDdFMpveokuBmy3c",
+  "SESSION_KEY_SECRET": "5615458901DiG1TRBB<>BZN2",
+  "SYSLOG_HOST": "logs3.papertrailapp.com",
+  "SYSLOG_PORT": 16315,
+  "ECS_TASK_REVISION": 1,
+  "ECS_CLUSTER_NAME": "neo4j-twitter",
+  "ECS_AUTO_SCALING_GROUP_NAME": "ecs-neo4j-twitter",
+  "MEMCACHE_HOST_PORT": "memcache:11211",
+  "AWS_REGION_NAME": "us-east-1"
+}

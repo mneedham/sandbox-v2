@@ -32,3 +32,6 @@ cd ..
 cd SandboxProcessEcsEvent
 zip -r9 ../SandboxProcessEcsEvent.zip *
 cd ..
+cd SandboxExtend
+zip -r9 ../SandboxExtend.zip *
+cd ..

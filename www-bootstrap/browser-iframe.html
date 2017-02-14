@@ -1,0 +1,43 @@
+<html>
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+</head>
+<body>
+<script>
+const AUTH_DELEGATION_URL = "https://neo4j-sandbox.auth0.com/delegation";
+const AUTH_CLIENT_ID = "hraAZfwc1LVcKvfGiCE2gMq8f2JuHlPM";
+const AUTH_BROWSER_TARGET = "ci4sA8elhLfcXc8l3spS9mlttiE4EWoQ";
+
+function receiveMessage(event)
+{
+  var re = /^https:\/\/\d+-\d+-\d+-\d+-\d+.neo4jsandbox.com$/i;
+  var origin = event.origin || event.originalEvent.origin; // For Chrome, the origin property is in the event.originalEvent object.
+   
+  if (re.test(origin)) {
+    var browser_id_token = false;
+              $.ajax
+              ({
+                type: "POST",
+                url: AUTH_DELEGATION_URL,
+                contentType: "application/json",
+                dataType: 'json',
+                async: true,
+                data: JSON.stringify(
+                  { "client_id": AUTH_CLIENT_ID,
+                    "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
+                    "target": AUTH_BROWSER_TARGET,
+                    "id_token": localStorage.getItem('id_token')
+                  }),
+                success: function (data){
+                  browser_id_token = data.id_token;
+                  message = { "authkey": "jwt:" + browser_id_token };
+                  event.source.postMessage(message, event.origin);
+                }
+              });
+  }
+}
+window.addEventListener("message", receiveMessage, false);
+
+</script>
+</body>
+</html>

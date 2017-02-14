@@ -1,6 +1,7 @@
 #! /bin/bash
 
 cp /conf-base/neo4j.conf $PWD/conf/neo4j.conf
+cp -R /conf-base/certs $PWD/conf/
 
 if [ -d "/usecase-datastores-ro/$USECASE.db" ]; then
   cp -R /usecase-datastores-ro/$USECASE.db $PWD/data/databases/

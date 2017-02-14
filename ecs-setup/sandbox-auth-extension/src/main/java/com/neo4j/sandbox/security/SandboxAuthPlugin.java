@@ -53,8 +53,9 @@ public class SandboxAuthPlugin extends AuthPlugin.Adapter
                 RSAKey key = (RSAKey) cer.getPublicKey();
                 
                 DecodedJWT jwt = JWT.require(Algorithm.RSA256(key))
-                   .withIssuer("https://neo4j-sandbox.auth0.com/")
+                   .withIssuer(jwtIssuer)
                    .build().verify(token);
+                api.log().info("JWT successfully verified");
                 return AuthInfo.of( "neo4j", Collections.singleton( PredefinedRoles.ADMIN ) );
               } catch (JWTVerificationException ex){
                 api.log().info("JWT verification exception: " + ex.getMessage());
@@ -64,16 +65,6 @@ public class SandboxAuthPlugin extends AuthPlugin.Adapter
                 return null;
               }
             } 
-            else if ( username.equals( "moraeus" ) && Arrays.equals( password, "suearom".toCharArray() ) )
-            {
-                api.log().info( "Successful log in. Welcome Kalle Moraeus! You are granted admin permissions." );
-                return AuthInfo.of( "moraeus", Collections.singleton( PredefinedRoles.ADMIN ) );
-            }
-            else if ( username.equals( "neo4j" ) && Arrays.equals( password, "neo4j".toCharArray() ) )
-            {
-                api.log().info( "Successful log in. You are granted reader permissions." );
-                return AuthInfo.of( "neo4j", Collections.singleton( PredefinedRoles.READER ) );
-            }
         }
         return null;
     }

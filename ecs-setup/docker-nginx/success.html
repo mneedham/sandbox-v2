@@ -1,0 +1,51 @@
+<html>
+  <head>
+    <title>Neo4j Sandbox</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+  </head>
+  <body>
+    <h1>Neo4j Sandbox Browser</h1>
+    <p id="auth-attempt">Attempting signin to Neo4j Sandbox</p>
+    <p id="auth-error">You've reached this page in error. Redirecting you to the Neo4j Sandbox. Contact devrel@neo4j.com if you have any questions or problems.</p>
+    <script>
+     var aft = window.setTimeout(authFailure, 1000);
+
+     function authFailure() {
+       $('#auth-attempt').hide();
+       $('#auth-error').show();
+       window.setTimeout(function() { window.location="https://neo4jsandbox.com/" }, 2000);
+     }
+
+     function receiveMessage(event) {
+       var re = /^https:.*\.neo4jsandbox\.com$/i;
+       if (re.test(event.origin)) {
+         if (event.data.authkey.length > 5) {
+           window.clearTimeout(aft);
+           localStorage.setItem("neo4j.authorization_data", btoa(event.data.authkey));
+           window.location="/browser/";
+         } else {
+           window.clearTimeout(aft);
+           authFailure();
+         }
+       }
+     }
+
+     window.addEventListener("message", receiveMessage, false);
+     var iframe = $('<iframe>')
+       .attr("id", "browser-iframe")
+       .attr("width", "0") 
+       .attr("height", "0") 
+       .attr("frameborder", "0");
+
+     iframe.on('load', function() {
+       win = document.getElementById("browser-iframe").contentWindow;
+       win.postMessage("hellow", "*"); 
+     });
+        
+     iframe.attr("src", "https://dev.neo4jsandbox.com/browser-iframe.html") 
+
+     $('body').append(iframe);
+
+    </script>
+  </body>
+</html>

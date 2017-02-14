@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="JavaScript form validator.">
+  <meta name="keywords" content="HTML, CSS, JS, JavaScript, form validation, form validator, front-end, frontend, web development">
+  <meta name="author" content="Fengyuan Chen">
+  <title>Validator</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+  <header class="navbar navbar-light navbar-toggleable-md">
+    <nav class="container">
+      <a class="navbar-brand" href="./">Validator</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-collapse" aria-controls="navbar-collapse" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-end" id="navbar-collapse" role="navigation">
+        <nav class="nav navbar-nav float-xs-right">
+          <a class="nav-link" href="https://github.com/xkeshi/validator/blob/master/README.md">Docs</a>
+          <a class="nav-link" href="https://github.com/xkeshi/validator/blob/master/LICENSE">License</a>
+          <a class="nav-link" href="https://github.com/xkeshi/validator">GitHub</a>
+          <a class="nav-link" href="https://github.com/xkeshi">About</a>
+        </nav>
+      </div>
+    </nav>
+  </header>
+
+  <div class="jumbotron bg-primary">
+    <div class="container">
+      <h1>Validator <small>v0.1.0</small></h1>
+      <p class="lead">JavaScript form validator.</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <form>
+      <legend>Example</legend>
+      <fieldset class="form-group">
+        <label for="username">Username</label>
+        <input class="form-control" id="username" type="text" name="username" x-required autocomplete="off">
+        <div class="form-control-feedback"></div>
+      </fieldset>
+      <fieldset class="form-group">
+        <label for="email">Email</label>
+        <input class="form-control" id="email" type="email" name="email" x-pattern="^[\w.!#$%&'*+\/=?^_`{|}~-]+@[\w](?:[\w-]{0,61}[\w])?(?:\.[\w](?:[\w-]{0,61}[\w])?)*$" x-required autocomplete="off">
+        <div class="form-control-feedback"></div>
+      </fieldset>
+      <fieldset class="form-group">
+        <label for="password">Password</label>
+        <input class="form-control" id="password" type="password" name="password" x-pattern="^\S{6,64}$" x-required autocomplete="off">
+        <div class="form-control-feedback"></div>
+      </fieldset>
+      <button class="btn btn-primary" type="submit">Sign Up</button>
+    </form>
+
+    <br>
+    <br>
+
+    <h6>HTML:</h6>
+    <pre class="prettyprint">&lt;form&gt;
+  &lt;legend&gt;Example&lt;/legend&gt;
+  &lt;fieldset class=&quot;form-group&quot;&gt;
+    &lt;label for=&quot;username&quot;&gt;Username&lt;/label&gt;
+    &lt;input class=&quot;form-control&quot; id=&quot;username&quot; type=&quot;text&quot; name=&quot;username&quot; x-required&gt;
+    &lt;div class=&quot;form-control-feedback&quot;&gt;&lt;/div&gt;
+  &lt;/fieldset&gt;
+  &lt;fieldset class=&quot;form-group&quot;&gt;
+    &lt;label for=&quot;email&quot;&gt;Email&lt;/label&gt;
+    &lt;input class=&quot;form-control&quot; id=&quot;email&quot; type=&quot;email&quot; name=&quot;email&quot; x-pattern=&quot;^[\w.!#$%&amp;&#039;*+\/=?^_`{|}~-]+@[\w](?:[\w-]{0,61}[\w])?(?:\.[\w](?:[\w-]{0,61}[\w])?)*$&quot; x-required&gt;
+    &lt;div class=&quot;form-control-feedback&quot;&gt;&lt;/div&gt;
+  &lt;/fieldset&gt;
+  &lt;fieldset class=&quot;form-group&quot;&gt;
+    &lt;label for=&quot;password&quot;&gt;Password&lt;/label&gt;
+    &lt;input class=&quot;form-control&quot; id=&quot;password&quot; type=&quot;password&quot; name=&quot;password&quot; x-pattern=&quot;^\S{6,64}$&quot; x-required&gt;
+    &lt;div class=&quot;form-control-feedback&quot;&gt;&lt;/div&gt;
+  &lt;/fieldset&gt;
+  &lt;button class=&quot;btn btn-primary&quot; type=&quot;submit&quot;&gt;Sign Up&lt;/button&gt;
+&lt;/form&gt;</pre>
+
+    <h6>JavaScript:</h6>
+    <pre class="prettyprint">window.addEventListener('DOMContentLoaded', function () {
+  var form = document.querySelector('form');
+  var validator = new window.Validator(form, {
+    namespace: 'x',
+    trigger: 'input',
+    success: function(e) {
+      var input = e.target;
+
+      input.classList.remove('form-control-warning');
+      input.classList.add('form-control-success');
+      input.parentNode.classList.remove('has-warning');
+      input.parentNode.classList.add('has-success');
+      input.nextElementSibling.textContent = '';
+    },
+    error: function(e) {
+      var input = e.target;
+
+      input.focus();
+      input.classList.remove('form-control-success');
+      input.classList.add('form-control-warning');
+      input.parentNode.classList.remove('has-success');
+      input.parentNode.classList.add('has-warning');
+      input.nextElementSibling.textContent = e.detail.message;
+    },
+  });
+
+  form.querySelector('button[type="submit"]').addEventListener('click', function (e) {
+    if (validator.isInvalid()) {
+      e.preventDefault();
+    }
+  }, false);
+}, false);
+</pre>
+  </div>
+
+  <footer></footer>
+
+  <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js"></script>
+  <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+  <script src="js/validator.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

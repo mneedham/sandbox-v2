@@ -9,5 +9,6 @@ cp -R SandboxLambdaLibrary/* SandboxSendEmails/
 cp -R SandboxLambdaLibrary/* SandboxGetInstanceByHashKey/
 cp -R SandboxLambdaLibrary/* SandboxStopInstance/
 cp -R SandboxLambdaLibrary/* SandboxBackupInstance/
+cp -R SandboxLambdaLibrary/* SandboxExtend/
 
 ./makeZips.sh
