@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Map;
 
 import org.neo4j.server.security.enterprise.auth.plugin.api.AuthToken;
 import org.neo4j.server.security.enterprise.auth.plugin.api.AuthenticationException;
@@ -33,6 +34,7 @@ public class SandboxAuthPlugin extends AuthPlugin.Adapter
     private String certificatePath;
     private String jwtAudience;
     private String jwtIssuer;
+    private String sandboxUser = null;
 
     @Override
     public AuthInfo authenticateAndAuthorize( AuthToken authToken ) throws AuthenticationException
@@ -42,7 +44,7 @@ public class SandboxAuthPlugin extends AuthPlugin.Adapter
 
         api.log().info( "Log in attempted for user '" + username + "'.");
 
-        if ( username != null && password != null )
+        if ( username != null && password != null && sandboxUser != null )
         {
             if (username.equals("jwt")) {
               String token = String.valueOf(password);
@@ -54,6 +56,8 @@ public class SandboxAuthPlugin extends AuthPlugin.Adapter
                 
                 DecodedJWT jwt = JWT.require(Algorithm.RSA256(key))
                    .withIssuer(jwtIssuer)
+                   .withSubject(sandboxUser)
+                   .withAudience(jwtAudience)
                    .build().verify(token);
                 api.log().info("JWT successfully verified");
                 return AuthInfo.of( "neo4j", Collections.singleton( PredefinedRoles.ADMIN ) );
@@ -91,6 +95,11 @@ public class SandboxAuthPlugin extends AuthPlugin.Adapter
 
         jwtIssuer = properties.getProperty( "com.neo4j.sandbox.security.jwtiss" );
         api.log().info( "com.neo4j.sandbox.security.jwtiss=" + jwtIssuer);
+
+        Map<String, String> env = System.getenv();
+        if (env.containsKey("SANDBOX_USER")) {
+            sandboxUser = env.get("SANDBOX_USER");
+        }
     }
 
     private Path resolveConfigFilePath()
