@@ -1,4 +1,4 @@
-  const API_PATH = "https://ppriuj7e7i.execute-api.us-east-1.amazonaws.com/prod";
+  const API_PATH = "https://ppriuj7e7i.execute-api.us-east-1.amazonaws.com/dev";
   const AUTH_URL = "https://auth.neo4jsandbox.com";
   const CODE_SNIPPETS_PATH = "https://s3.amazonaws.com/neo4j-sandbox-code-snippets";
   const AUTH_CLIENT_ID = "CK4MU2kBWYkDXdWcKs5mj0GbgzEDfifL";
@@ -706,6 +706,7 @@
                 .attr('height', '175')
                 .attr('style', 'float: left; margin-right: 5px;')
         );
+        proxyUrl = "https://" + instance.privip.replace(/\./g, "-") + "-" + instance.port + ".neo4jsandbox.com"
         connectionDiv.append(
             $('<p/>')
               .append(
@@ -713,9 +714,9 @@
               .append(
                 $('<b/>')
                 .append($('<a/>')
-                  .attr('href', `http://${instance.ip}:${instance.port}/`)
+                  .attr('href', `${proxyUrl}`)
                   .attr('target', '_blank')
-                  .text(`http://${instance.ip}:${instance.port}/`)
+                  .text(`${proxyUrl}/`)
               )))
             .append($('<p/>')
               .html(`<b>Username:</b> ${instance.username}<br />` +

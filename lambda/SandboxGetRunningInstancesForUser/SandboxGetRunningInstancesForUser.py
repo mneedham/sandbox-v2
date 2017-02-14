@@ -63,9 +63,12 @@ def get_task_info(taskArray):
             for instance in reservation['Instances']:
                 inst = instance
                 ip = inst['PublicIpAddress']
+                privip = inst['PrivateIpAddress']
                 print("ec2InstanceId for ip: %s" % inst['InstanceId'])
                 print("ip: %s" % inst['PublicIpAddress'])
+                print("privip: %s" % inst['PrivateIpAddress'])
                 containerInstances[ instanceMapping[ inst['InstanceId'] ] ]["ip"] = ip 
+                containerInstances[ instanceMapping[ inst['InstanceId'] ] ]["privip"] = privip 
                 containerInstances[ instanceMapping[ inst['InstanceId'] ] ]["ec2InstanceId"] = inst['InstanceId']
    
         for taskArn,containerInfo in containersAndPorts.iteritems(): 
@@ -73,6 +76,7 @@ def get_task_info(taskArray):
                 inst = containerInstances[ containerInfo['containerInstanceArn'] ] 
                 print(json.dumps(inst))
                 containerInfo['ip'] = inst['ip']
+                containerInfo['privip'] = inst['privip']
                 containerInfo['ec2InstanceId'] = inst['ec2InstanceId']
 
     return containersAndPorts
@@ -91,6 +95,7 @@ def update_db(auth0_key, containersAndPorts):
       s.taskid = c.taskArn
     SET
       s.ip = c.ip,
+      s.privip = c.privip,
       s.port = c.port,
       s.boltPort = c.boltPort,
       s.backupPort = c.backupPort
@@ -115,7 +120,7 @@ def lambda_handler(event, context):
       AND
       s.running=True
     RETURN 
-      u.name AS name, s.taskid AS taskid, s.usecase AS usecase, s.ip AS ip, s.port AS port,
+      u.name AS name, s.taskid AS taskid, s.usecase AS usecase, s.ip AS ip, s.privip AS privip, s.port AS port,
       s.boltPort AS boltPort,
       s.backupPort AS backupPort,
       s.password AS password,
@@ -135,7 +140,7 @@ def lambda_handler(event, context):
     tasks = []
     for record in results:
       record = dict((el[0], el[1]) for el in record.items())
-      if not (record["ip"] and record["boltPort"] and record["backupPort"]):
+      if not (record["ip"] and record["privip"] and record["boltPort"] and record["backupPort"]):
           tasks.append(record["taskid"])
       else:
           if record["password"]:

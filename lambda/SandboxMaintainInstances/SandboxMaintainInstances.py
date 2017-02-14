@@ -162,14 +162,17 @@ def get_task_info(taskArray):
         for instance in ec2Instances['Reservations'][0]['Instances']:
             inst = instance
             ip = inst['PublicIpAddress']
+            privip = inst['PrivateIpAddress']
             containerInstances[ instanceMapping[ inst['InstanceId'] ] ]["ip"] = ip 
+            containerInstances[ instanceMapping[ inst['InstanceId'] ] ]["privip"] = privip 
             containerInstances[ instanceMapping[ inst['InstanceId'] ] ]["ec2InstanceId"] = inst['InstanceId']
    
         for taskArn,containerInfo in containersAndPorts.iteritems(): 
             if 'containerInstanceArn' in containerInfo:
                 inst = containerInstances[ containerInfo['containerInstanceArn'] ] 
-                if 'ip' in inst:
+                if 'ip' in inst and 'privip' in inst:
                   containerInfo['ip'] = inst['ip']
+                  containerInfo['privip'] = inst['privip']
                 else:
                   print('No IP in inst')
                   print(inst)
@@ -238,6 +241,7 @@ def update_db(containersAndPorts):
       s.taskid = c.taskArn
     SET
       s.ip = c.ip,
+      s.privip = c.privip,
       s.port = c.port
     """
     
@@ -256,7 +260,7 @@ def get_expired_tasks_set():
       AND
       timestamp() > s.expires
     RETURN 
-      u.name AS name, s.taskid AS taskid, s.usecase AS usecase, s.ip AS ip, s.port AS port
+      u.name AS name, s.taskid AS taskid, s.usecase AS usecase, s.ip AS ip, s.privip AS privip, s.port AS port
     """
 
     results = session.run(instances_query)
@@ -267,7 +271,7 @@ def get_expired_tasks_set():
     for record in results:
       record = dict((el[0], el[1]) for el in record.items())
       expiredTasksInDb.add(record["taskid"])
-      if not record["ip"]:
+      if not record["ip"] or not record["privip"]:
           tasks.append(record["taskid"])
       resultjson.append(record)
 
@@ -283,7 +287,7 @@ def get_tasks_in_db_set():
     WHERE 
       s.running=True
     RETURN 
-      u.name AS name, s.taskid AS taskid, s.usecase AS usecase, s.ip AS ip, s.port AS port
+      u.name AS name, s.taskid AS taskid, s.usecase AS usecase, s.ip AS ip, s.privip AS privip, s.port AS port
     """
 
     results = session.run(instances_query)
@@ -294,7 +298,7 @@ def get_tasks_in_db_set():
     for record in results:
       record = dict((el[0], el[1]) for el in record.items())
       allTasksInDb.add(record["taskid"])
-      if not record["ip"]:
+      if not record["ip"] or not record["privip"]:
           tasks.append(record["taskid"])
       resultjson.append(record)
 

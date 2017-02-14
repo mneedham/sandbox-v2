@@ -207,6 +207,8 @@ def lambda_handler(event, context):
                           "value": usecase},
                         { "name": "EXTENSION_SCRIPT",
                           "value": "extension/extension_script.sh"},
+                        { "name": "SANDBOX_USER",
+                          "value": user},
                         { "name": "NEO4J_AUTH",
                           "value": "neo4j/%s" % (userDbPassword)},
                         { "name": "SANDBOX_HASHKEY",
