@@ -725,7 +725,8 @@
               $('<img/>')
                 .attr('src', thisUsecase['logo'])
                 .attr('height', '175')
-                .attr('style', 'float: left; margin-right: 5px;')
+                .attr('width', '175')
+                .attr('style', 'float: left; margin-right: 15px;')
         );
         proxyUrl = "https://" + instance.privip.replace(/\./g, "-") + "-" + instance.port + ".neo4jsandbox.com"
         connectionDiv.append(
@@ -899,6 +900,12 @@ $(document).ready(function() {
           }, 
           authRenewPeriod
         );
+        // still signed in so no need to wait for this
+        $('.jumbotron').fadeOut("fast");
+        $('.marketing').fadeOut("fast");
+        $('.btn-login').hide();
+        $('.btn-logout').show();
+        emailVerificationCheck();
       }
 
       shaObj.update(profileObj['sub']);
