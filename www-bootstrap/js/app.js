@@ -3,6 +3,8 @@
   const CODE_SNIPPETS_PATH = "https://s3.amazonaws.com/neo4j-sandbox-code-snippets";
   const AUTH_CLIENT_ID = "CK4MU2kBWYkDXdWcKs5mj0GbgzEDfifL";
   const AUTH_DELEGATION_URL = "https://neo4j-sandbox.auth0.com/delegation"
+  const AUTH_AUTHORIZE_URL = "https://neo4j-sandbox.auth0.com/authorize"
+  const AUTH_USERINFO_URL = "https://neo4j-sandbox.auth0.com/userinfo"
 
   var pollInterval;
   var usecases = false;
@@ -14,6 +16,7 @@
   var emailVerificationNotNeeded = false;
   var emailVerified = false;
   var activeInstances = [];
+  var authRenewPeriod = 1000 * 60 * 60;
 
   var shaObj = new jsSHA("SHA-256", "TEXT");
 
@@ -343,7 +346,7 @@
     $.ajax
     ({
       type: "GET",
-      url: `https://neo4j-sandbox.auth0.com/userinfo`,
+      url: AUTH_USERINFO_URL,
       dataType: 'json',
       async: true,
       headers: {
@@ -376,6 +379,24 @@
           console.log(errorThrown);
         }
       });
+  }
+  
+  var attemptRenewToken = function(silent, nextTimeout, nextTimeoutSilent) {
+    var access_token = localStorage.getItem('access_token');
+    var iframe = $('<iframe>')
+     .attr("id", "browser-iframe")
+     .attr("width", "0") 
+     .attr("height", "0") 
+     .attr("frameborder", "0");
+
+    iframe.on('load', function() {
+      win = document.getElementById("browser-iframe").contentWindow;
+      win.postMessage("hellow", "*"); 
+    });
+    
+    iframe.attr("src", "/renew-iframe.html") 
+    $('body').append(iframe);
+
   }
 
   var retrieve_update_instances = function(retry=true) {
@@ -840,28 +861,53 @@ $(document).ready(function() {
     e.preventDefault();
     logout();
   })
+
+  /* Clipboard for copying passwords */
   new Clipboard('.copybtn');
+
+  /* Check to see if user is already logged in */
   var profile = localStorage.getItem('profile');
   if (profile) {
     ga('send', 'event', 'auth', 'loaded from localstorage');
     profileObj = JSON.parse(profile);
     updateIdentity();
 
-    $('.jumbotron').fadeOut("fast");
-    $('.marketing').fadeOut("fast");
-    $('.btn-login').hide();
-    $('.btn-logout').show();
-
-    emailVerificationCheck();
 
     if (localStorage.getItem('id_token')) {
       ga('send', 'event', 'auth', 'have id_token');
+
+      // check if token is expired;
+      var token = localStorage.getItem('id_token');
+      var expiresIn = getTimeDiff(Date.now(), (jwt_decode(token).exp) * 1000);
+      if (expiresIn.days < 0 || expiresIn.hours < 0 || expiresIn.mins < 0) {
+        // token is already expired, log user out 
+        logout();
+      } else if (expiresIn.days == 0 && expiresIn.hours == 0 || expiresIn.mins < 30) {
+        // expiring soon, let's immediately get a new token
+        attemptRenewToken(true, authRenewPeriod, false);
+
+        // still signed in so no need to wait for this
+        $('.jumbotron').fadeOut("fast");
+        $('.marketing').fadeOut("fast");
+        $('.btn-login').hide();
+        $('.btn-logout').show();
+        emailVerificationCheck();
+      } else {
+        setTimeout(
+          function () {
+            attemptRenewToken(false, authRenewPeriod, false)
+          }, 
+          authRenewPeriod
+        );
+      }
 
       shaObj.update(profileObj['sub']);
       hash = shaObj.getHash("HEX");
       ga('set', 'userId', hash);
     }
   }
+
+  /* Extend sandboxes form and processing */
   var form = ($('#extend-sandboxes'))[0];
   var validator = new window.Validator(form, {
     namespace: 'sb',
@@ -885,7 +931,7 @@ $(document).ready(function() {
       input.parentNode.classList.add('has-warning');
       input.nextElementSibling.classList.remove('glyphicon-ok');
       input.nextElementSibling.classList.add('glyphicon-remove');
-    },
+    }
   });
   $("#extend-button").click(
     function(e) {
@@ -906,4 +952,3 @@ $(document).ready(function() {
     }
   );
 });
-

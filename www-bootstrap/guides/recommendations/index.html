@@ -1,0 +1,351 @@
+<style type="text/css" media="screen">
+/*
+.nodes-image {
+	margin:-100;
+}
+*/	
+@import url("//maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css");
+
+.imageblock .content img, .image img {max-width: 900px;max-height: 300px;}
+.deck h3, .deck h4 {display: block !important;margin-bottom:8px;margin-top:5px;}
+.listingblock {margin:8px;}
+.pull-bottom {position:relative;bottom:1em;}
+.admonitionblock td.icon [class^="fa icon-"]{font-size:2.5em;text-shadow:1px 1px 2px rgba(0,0,0,.5);cursor:default}
+.admonitionblock td.icon .icon-note:before{content:"\f05a";color:#19407c}
+.admonitionblock td.icon .icon-tip:before{content:"\f0eb";text-shadow:1px 1px 2px rgba(155,155,0,.8);color:#111}
+.admonitionblock td.icon .icon-warning:before{content:"\f071";color:#bf6900}
+.admonitionblock td.icon .icon-caution:before{content:"\f06d";color:#bf3400}
+.admonitionblock td.icon .icon-important:before{content:"\f06a";color:#bf0000}
+.admonitionblock.note.speaker { display:none; }
+</style>
+<style type="text/css" media="screen">
+/* #editor.maximize-editor .CodeMirror-code { font-size:24px; line-height:26px; } */
+</style>
+<article class="guide" ng-controller="AdLibDataController">
+  <carousel class="deck container-fluid">
+    <!--slide class="row-fluid">
+      <div class="col-sm-3">
+        <h3>Recommendations</h3>
+        <p class="lead">Information</p>
+			<!dl>
+				
+				
+				
+				
+				
+			</dl>
+		</div>
+      <div class="col-sm-9">
+        <figure>
+          <img style="width:300px" src=""/>
+        </figure>
+      </div>
+    </slide-->
+    
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>The Open Movie Graph</h3>
+    <br/>
+    <div>
+      <div class="imageblock">
+<div class="content">
+<img src="http://guides.neo4j.com/sandbox/recommendations/img/openmoviegraph.png" alt="openmoviegraph">
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Recommendations with neo4j</h3>
+    <br/>
+    <div>
+      <div class="imageblock">
+<div class="content">
+<img src="http://guides.neo4j.com/sandbox/recommendations/img/datamodel.png" alt="datamodel">
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->CALL db.schema();<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Intro To Cypher</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Cypher is the query language for graphs.</p>
+</div>
+
+
+
+   <h4>MATCH</h4>
+   
+
+
+
+   <h4>Graph Patterns</h4>
+   
+
+
+
+   <h4>WHERE predicates</h4>
+   <div class="paragraph">
+<p>That&#8217;s just a basic introduction to Cypher, we can do a log more co</p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Recommendations</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Now let&#8217;s start generating some recommendations.</p>
+</div>
+<div class="paragraph">
+<p>There are two basic approaches to recommendations:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>Content based</code> - recommend items that are similar to those that a user previously liked.</p>
+</li>
+<li>
+<p><code>Collaborative filtering</code> - use the preferences of other users in the network to find items to recommend.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>In reality most recommender systems in production are a blend of these two approaches</p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Similar Movies</h3>
+    <br/>
+    <div>
+      <div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->// Find movies similar to Matrix movies
+MATCH (m:Movie) WHERE m.title CONTAINS "Matrix"
+MATCH (m)-[:IN_GENRE]-&gt;(g:Genre)&lt;-[:IN_GENRE]-(rec:Movie)
+RETURN rec, count(*) AS num ORDER BY num DESC LIMIT 10;<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Content recommendation by overlapping genres</h3>
+    <br/>
+    <div>
+      <div class="imageblock">
+<div class="content">
+<img src="http://guides.neo4j.com/sandbox/recommendations/img/genres.png" alt="genres">
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->// Content recommendation by overlapping genres
+MATCH (u:User {name: "Misty Williams"})
+MATCH (u)-[r:RATED]-&gt;(m:Movie)
+MATCH (m)-[:IN_GENRE]-&gt;(g:Genre)&lt;-[:IN_GENRE]-(rec:Movie)
+RETURN rec.title, COUNT(*) AS score ORDER BY score DESC LIMIT 10;<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Movie ratings</h3>
+    <br/>
+    <div>
+      
+
+
+   <h4>Show all ratings by Misty Williams</h4>
+   <div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->// Show all ratings by Misty Williams
+MATCH (u:User {name: "Misty Williams"})
+MATCH (u)-[r:RATED]-&gt;(m:Movie)
+RETURN *;<!--/code--></pre>
+</div>
+</div>
+
+
+
+   <h4>Find Misty&#8217;s average rating</h4>
+   <div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->// Show all ratings by Misty Williams
+MATCH (u:User {name: "Misty Williams"})
+MATCH (u)-[r:RATED]-&gt;(m:Movie)
+RETURN avg(r.rating) AS average;<!--/code--></pre>
+</div>
+</div>
+
+
+
+   <h4>What are the movies that Misty liked more than average?</h4>
+   <div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->// What are the movies that Misty liked more than average?
+MATCH (u:User {name: "Misty Williams"})
+MATCH (u)-[r:RATED]-&gt;(m:Movie)
+WITH u, avg(r.rating) AS average
+MATCH (u)-[r:RATED]-&gt;(m:Movie)
+WHERE r.rating &gt; average
+RETURN *;<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Finding similar users</h3>
+    <br/>
+    <div>
+      <div class="ulist">
+<ul>
+<li>
+<p>Jaccard Similarity</p>
+</li>
+<li>
+<p>Pearson correlation</p>
+</li>
+<li>
+<p>Cosine distance</p>
+</li>
+</ul>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Jaccard Similarity</h3>
+    <br/>
+    <div>
+      <div class="imageblock">
+<div class="content">
+<img src="http://guides.neo4j.com/sandbox/recommendations/img/jaccard.png" alt="jaccard">
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->TODO: jaccard<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Pearson similarity</h3>
+    <br/>
+    <div>
+      <div class="imageblock">
+<div class="content">
+<img src="http://guides.neo4j.com/sandbox/recommendations/img/pearson.png" alt="pearson">
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (u1:User), (u2:User) WHERE u1 &lt;&gt; u2
+MATCH (u1)-[r:Reviewed]-&gt;(rest) WITH 1.0*sum(r.stars)/count(r) AS u1_mean, u1, u2
+MATCH (u2)-[r:Reviewed]-&gt;(rest) WITH 1.0*sum(r.stars)/count(r) AS u2_mean, u1_mean, u1, u2
+MATCH (u1)-[r1:Reviewed]-&gt;(rest)&lt;-[r2:Reviewed]-(u2) WITH sum((r1.stars-u1_mean)*(r2.stars-u2_mean)) AS num, sqrt(sum((r1.stars-u1_mean)^2) * sum((r2.stars-u2_mean)^2)) AS denom, u1, u2
+WHERE denom &lt;&gt;0 CREATE (u1)&lt;-[:Similarity{coef: (num/denom)}]-(u2)
+//WHERE denom &lt;&gt; 0 RETURN (num)/(denom) as pearson, u1, u2<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Cosine similarity</h3>
+    <br/>
+    <div>
+      <div class="imageblock">
+<div class="content">
+<img src="http://guides.neo4j.com/sandbox/recommendations/img/cosine.png" alt="cosine">
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->// Most similar users using Cosine similarity
+MATCH (p1:User {name: "{user_name}"})-[x:RATED]-&gt;(m:Movie)&lt;-[y:RATED]-(p2:User)
+WITH SUM(x.rating * y.rating) AS xyDotProduct,
+SQRT(REDUCE(xDot = 0.0, a IN COLLECT(x.rating) | xDot + a^2)) AS xLength,
+SQRT(REDUCE(yDot = 0.0, b IN COLLECT(y.rating) | yDot + b^2)) AS yLength,
+p1, p2
+RETURN p1, p2, xyDotProduct / (xLength * yLength) AS sim ORDER BY sim DESC;<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>kNN</h3>
+    <br/>
+    <div>
+      <div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"--><!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+  </carousel>
+</article>

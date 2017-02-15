@@ -1,0 +1,263 @@
+<style type="text/css" media="screen">
+/*
+.nodes-image {
+	margin:-100;
+}
+*/	
+@import url("//maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css");
+
+.imageblock .content img, .image img {max-width: 900px;max-height: 300px;}
+.deck h3, .deck h4 {display: block !important;margin-bottom:8px;margin-top:5px;}
+.listingblock {margin:8px;}
+.pull-bottom {position:relative;bottom:1em;}
+.admonitionblock td.icon [class^="fa icon-"]{font-size:2.5em;text-shadow:1px 1px 2px rgba(0,0,0,.5);cursor:default}
+.admonitionblock td.icon .icon-note:before{content:"\f05a";color:#19407c}
+.admonitionblock td.icon .icon-tip:before{content:"\f0eb";text-shadow:1px 1px 2px rgba(155,155,0,.8);color:#111}
+.admonitionblock td.icon .icon-warning:before{content:"\f071";color:#bf6900}
+.admonitionblock td.icon .icon-caution:before{content:"\f06d";color:#bf3400}
+.admonitionblock td.icon .icon-important:before{content:"\f06a";color:#bf0000}
+.admonitionblock.note.speaker { display:none; }
+</style>
+<style type="text/css" media="screen">
+/* #editor.maximize-editor .CodeMirror-code { font-size:24px; line-height:26px; } */
+</style>
+<article class="guide" ng-controller="AdLibDataController">
+  <carousel class="deck container-fluid">
+    <!--slide class="row-fluid">
+      <div class="col-sm-3">
+        <h3>Retail Recommendations</h3>
+        <p class="lead">Information</p>
+			<!dl>
+				
+				
+				
+				
+				
+			</dl>
+		</div>
+      <div class="col-sm-9">
+        <figure>
+          <img style="width:300px" src=""/>
+        </figure>
+      </div>
+    </slide-->
+    
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Product Silo</h3>
+    <br/>
+    <div>
+      <div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->// Load product catalog
+LOAD CSV WITH HEADERS FROM "https://docs.google.com/spreadsheets/u/0/d/1wb7obY4WF08aeb4ey-NUsiB4BZzRHTDoGKZEH-jmv_k/export?format=csv&amp;id=1wb7obY4WF08aeb4ey-NUsiB4BZzRHTDoGKZEH-jmv_k&amp;gid=0" AS row
+MERGE (parent_category:Category {name: row.parent_category})
+MERGE (category:Category {name: row.category})
+MERGE (category)-[:PARENT_CATEGORY]-&gt;(parent_category)
+MERGE (p:Product {sku: row.sku})
+SET p.name  = row.name,
+    p.price = toFloat(row.price)
+MERGE (p)-[:IN_CATEGORY]-&gt;(category)
+MERGE (d:Designer {name: row.designer})
+MERGE (p)-[:DESIGNED_BY]-(d)
+RETURN *;<!--/code--></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->CALL db.schema();<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Recommendation queries - Product Catalog</h3>
+    <br/>
+    <div>
+      <div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->// Recommend from same category
+MATCH (p:Product {sku: "4839321"})
+MATCH (p)-[:IN_CATEGORY]-&gt;(:Category)&lt;-[:IN_CATEGORY]-(rec:Product)
+RETURN rec;<!--/code--></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->// Recommend from same category
+// Overlapping designer
+MATCH (p:Product {sku: "4839321"})
+MATCH (p)-[:IN_CATEGORY]-&gt;(c:Category)&lt;-[:IN_CATEGORY]-(rec:Product)
+MATCH (p)-[:DESIGNED_BY]-&gt;(d:Designer)&lt;-[:DESIGNED_BY]-(rec)
+RETURN *;<!--/code--></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->// Walk the hierarchy of product categories
+MATCH (p:Product {sku: "4839321"})
+MATCH (p)-[*1..2]-&gt;(c:Category)&lt;-[*1..2]-(rec:Product)
+RETURN *;<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Customer and Transaction Silo</h3>
+    <br/>
+    <div>
+      <div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->// Load customers
+LOAD CSV WITH HEADERS FROM "https://docs.google.com/spreadsheets/u/0/d/1wb7obY4WF08aeb4ey-NUsiB4BZzRHTDoGKZEH-jmv_k/export?format=csv&amp;id=1wb7obY4WF08aeb4ey-NUsiB4BZzRHTDoGKZEH-jmv_k&amp;gid=573101337" AS row
+MERGE (c:Customer {customerid: row.customerid})
+SET c.name = row.Name
+MERGE (city:City {name: row.City})
+MERGE (c)-[:LIVES_IN]-&gt;(city)
+RETURN *;<!--/code--></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->// Load orders
+LOAD CSV WITH HEADERS FROM "https://docs.google.com/spreadsheets/u/0/d/1wb7obY4WF08aeb4ey-NUsiB4BZzRHTDoGKZEH-jmv_k/export?format=csv&amp;id=1wb7obY4WF08aeb4ey-NUsiB4BZzRHTDoGKZEH-jmv_k&amp;gid=749858493" AS row
+MERGE (o:Order {orderid: row.orderid})
+WITH *
+MATCH (c:Customer {customerid: row.customerid})
+MATCH (p:Product {sku: row.sku})
+MERGE (c)-[:PLACED]-&gt;(o)
+MERGE (o)-[:CONTAINS]-&gt;(p)
+RETURN *;<!--/code--></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->CALL db.schema();<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Collaborative Filtering Recommendations</h3>
+    <br/>
+    <div>
+      <div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (c:Customer {name: "Nicole Ramsey"})
+MATCH (c)-[:PLACED]-&gt;(:Order)-[:CONTAINS]-&gt;(p:Product)
+MATCH (p)&lt;-[:CONTAINS]-(:Order)&lt;-[:PLACED]-(u:Customer)
+MATCH (u)-[:PLACED]-&gt;(:Order)-[:CONTAINS]-&gt;(rec:Product)
+RETURN rec.sku AS sku, rec.name AS name, rec.price AS price, COUNT(*) AS score ORDER BY score DESC LIMIT 5<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Customer Review System Silo</h3>
+    <br/>
+    <div>
+      <div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->// Load customer reviews
+LOAD CSV WITH HEADERS FROM "https://docs.google.com/spreadsheets/u/0/d/1wb7obY4WF08aeb4ey-NUsiB4BZzRHTDoGKZEH-jmv_k/export?format=csv&amp;id=1wb7obY4WF08aeb4ey-NUsiB4BZzRHTDoGKZEH-jmv_k&amp;gid=749858493" AS row
+MATCH (c:Customer {customerid: row.customerid})
+MATCH (p:Product {sku: row.sku})
+MERGE (c)-[r:REVIEWED]-&gt;(p)
+SET r.rating = round(toFloat(row.review))
+RETURN *;<!--/code--></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (c:Customer {name: "Nicole Ramsey"})
+MATCH (c)-[r:REVIEWED]-&gt;(p)&lt;-[:REVIEWED]-(u:Customer)
+MATCH (u)-[r2:REVIEWED]-&gt;(rec:Product)
+WHERE r.rating &gt; 2 AND r2.rating &gt; 3
+RETURN DISTINCT rec.sku AS sku, rec.name AS name, rec.price, r2.rating AS rating;<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Inventory Silo</h3>
+    <br/>
+    <div>
+      <div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->// Load inventory
+LOAD CSV WITH HEADERS FROM "https://docs.google.com/spreadsheets/u/0/d/1wb7obY4WF08aeb4ey-NUsiB4BZzRHTDoGKZEH-jmv_k/export?format=csv&amp;id=1wb7obY4WF08aeb4ey-NUsiB4BZzRHTDoGKZEH-jmv_k&amp;gid=966157202" AS row
+MERGE (s:Store {name: row.store})
+WITH *
+MATCH (c:City {name: row.store})
+MERGE (s)-[:IN_CITY]-(c)
+WITH *
+MATCH (p:Product {sku: row.sku})
+MERGE (p)-[r:INVENTORY]-&gt;(s)
+SET r.count = toInt(row.number)
+RETURN *;<!--/code--></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (c:Customer {name: "Nicole Ramsey"})
+MATCH (c)-[r:REVIEWED]-&gt;(p)&lt;-[:REVIEWED]-(u:Customer)
+MATCH (u)-[r2:REVIEWED]-&gt;(rec:Product)
+WHERE r.rating &gt; 2 AND r2.rating &gt; 3
+MATCH (rec)-[i:INVENTORY]-&gt;(s:Store)-[:IN_CITY]-&gt;(:City)&lt;-[:LIVES_IN]-(c)
+WHERE i.count &gt; 0
+RETURN DISTINCT rec.sku AS sku, rec.name AS name, rec.price, r2.rating AS rating<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>In-Store Transaction Silo</h3>
+    <br/>
+    <div>
+      <div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->// TODO: LOAD IN-STORE TRANSACTIONS<!--/code--></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->// TODO: combine in-store with online purchases based on CC for more relevant recommendations<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+  </carousel>
+</article>

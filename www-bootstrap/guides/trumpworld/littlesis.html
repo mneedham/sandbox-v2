@@ -1,0 +1,175 @@
+<style type="text/css" media="screen">
+/*
+.nodes-image {
+	margin:-100;
+}
+*/	
+@import url("//maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css");
+
+.imageblock .content img, .image img {max-width: 900px;max-height: 300px;}
+.deck h3, .deck h4 {display: block !important;margin-bottom:8px;margin-top:5px;}
+.listingblock {margin:8px;}
+.pull-bottom {position:relative;bottom:1em;}
+.admonitionblock td.icon [class^="fa icon-"]{font-size:2.5em;text-shadow:1px 1px 2px rgba(0,0,0,.5);cursor:default}
+.admonitionblock td.icon .icon-note:before{content:"\f05a";color:#19407c}
+.admonitionblock td.icon .icon-tip:before{content:"\f0eb";text-shadow:1px 1px 2px rgba(155,155,0,.8);color:#111}
+.admonitionblock td.icon .icon-warning:before{content:"\f071";color:#bf6900}
+.admonitionblock td.icon .icon-caution:before{content:"\f06d";color:#bf3400}
+.admonitionblock td.icon .icon-important:before{content:"\f06a";color:#bf0000}
+.admonitionblock.note.speaker { display:none; }
+</style>
+<style type="text/css" media="screen">
+/* #editor.maximize-editor .CodeMirror-code { font-size:24px; line-height:26px; } */
+</style>
+<article class="guide" ng-controller="AdLibDataController">
+  <carousel class="deck container-fluid">
+    <!--slide class="row-fluid">
+      <div class="col-sm-3">
+        <h3>Extending The Data Model - LittleSis</h3>
+        <p class="lead">Information</p>
+			<!dl>
+				
+				
+				
+				
+				
+			</dl>
+		</div>
+      <div class="col-sm-9">
+        <figure>
+          <img style="width:300px" src=""/>
+        </figure>
+      </div>
+    </slide-->
+    
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Extending The Network - LittleSis People and organizations</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>One of the benefits of the graph data model is the ability to combine datasets and query across them. Next we will look at how we can extend the graph by adding new entities from the LittleSis data set. The model will not change as we will only bring people and organizations.</p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>LittleSis.org</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Data can be explored online at <a href="https://littlesis.org/lists">littlesis.org</a></p>
+</div>
+<div class="paragraph">
+<p><span class="image"><img src="http://guides.neo4j.com/sandbox/trumpworld/img/littlesis.png" alt="littlesis"></span></p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>The Data</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>We are going to use a small portion of the data. You can find them as CSV files at <a href="https://github.com/johnymontana/neo4j-datasets/tree/master/trumpworld/data">https://github.com/johnymontana/neo4j-datasets/tree/master/trumpworld/data</a></p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Extending The Datamodel</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Load connections between people and organizations</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->WITH "https://raw.githubusercontent.com/johnymontana/neo4j-datasets/master/trumpworld/data/littlesis-trump-pers.csv" AS url
+LOAD CSV WITH HEADERS FROM url AS row
+WITH row WHERE row.relatedEntytyType = 'Org'
+MATCH (p:Person { name : row.name })
+MERGE (o:Organization { name : row.relatedEntityName })
+ON CREATE SET o.source = 'LittleSis'
+WITH p, o, row
+CALL apoc.create.relationship(p,upper(row.reltype), {source:'LittleSis',reldesc : row.reldesc},o) YIELD rel
+RETURN COUNT(rel)<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Now between people</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->WITH "https://raw.githubusercontent.com/johnymontana/neo4j-datasets/master/trumpworld/data/littlesis-trump-pers.csv" AS url
+LOAD CSV WITH HEADERS FROM url AS row
+WITH row WHERE row.relatedEntytyType = 'Person'
+MATCH (p:Person { name : row.name })
+MERGE (o:Person { name : row.relatedEntityName })
+ON CREATE SET o.source = 'LittleSis'
+WITH p, o, row
+CALL apoc.create.relationship(p,upper(row.reltype), {source:'LittleSis',reldesc : row.reldesc},o) YIELD rel
+RETURN COUNT(rel)<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Organizations and people</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->WITH "https://raw.githubusercontent.com/johnymontana/neo4j-datasets/master/trumpworld/data/littlesis-trump-org.csv" AS url
+LOAD CSV WITH HEADERS FROM url AS row
+WITH row WHERE row.relatedEntytyType = 'Person'
+MATCH (p:Organization { name : row.name })
+MERGE (o:Person { name : row.relatedEntityName })
+ON CREATE SET o.source = 'LittleSis'
+WITH p, o, row
+CALL apoc.create.relationship(p,upper(row.reltype), {source:'LittleSis',reldesc : row.reldesc},o) YIELD rel
+RETURN COUNT(rel)<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>And finally Organizations</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->WITH "https://raw.githubusercontent.com/johnymontana/neo4j-datasets/master/trumpworld/data/littlesis-trump-org.csv" AS url
+LOAD CSV WITH HEADERS FROM url AS row
+WITH row WHERE row.relatedEntytyType = 'Org'
+MATCH (p:Organization { name : row.name })
+MERGE (o:Organization { name : row.relatedEntityName })
+ON CREATE SET o.source = 'LittleSis'
+WITH p, o, row
+CALL apoc.create.relationship(p,upper(row.reltype), {source:'LittleSis',reldesc : row.reldesc},o) YIELD rel
+RETURN COUNT(rel)<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s have a quick look at the LittleSis graph:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (a)-[r {source: 'LittleSis' }]-(b)
+RETURN *
+LIMIT 500<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+  </carousel>
+</article>
