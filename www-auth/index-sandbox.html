@@ -93,12 +93,12 @@
       auth: {
         params: {
           scope: 'openid email',
-          redirectUrl: 'https://auth.neo4jsandbox.com',
+          redirectUrl: 'https://auth.neo4j.com/index-sandbox.html',
           responseType: 'token'
         }
       }
     }
-    var lock = new Auth0Lock('hraAZfwc1LVcKvfGiCE2gMq8f2JuHlPM', 'neo4j-sandbox.auth0.com', options);
+    var lock = new Auth0Lock('DxhmiF8TCeznI7Xoi08UyYScLGZnk4ke', 'neo4j-sync.auth0.com', options);
     var userProfile = null;
 
     window.addEventListener('message',function(event) {
