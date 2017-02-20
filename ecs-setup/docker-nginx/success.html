@@ -8,16 +8,17 @@
     <p id="auth-attempt">Attempting signin to Neo4j Sandbox</p>
     <p id="auth-error" style="display: none">You've reached this page in error. Redirecting you to the Neo4j Sandbox. Contact devrel@neo4j.com if you have any questions or problems.</p>
     <script>
-     var aft = window.setTimeout(authFailure, 1000);
+     var aft = window.setTimeout(authFailure, 3000);
 
      function authFailure() {
        $('#auth-attempt').hide();
        $('#auth-error').show();
-       window.setTimeout(function() { window.location="https://neo4jsandbox.com/" }, 2000);
+       window.setTimeout(function() { window.location="https://neo4j.com/sandbox-v2/" }, 2000);
      }
 
      function receiveMessage(event) {
-       var re = /^https:.*\.neo4jsandbox\.com$/i;
+       //var re = /^https:.*\.neo4jsandbox\.com$/i;
+       var re = /^https:\/\/neo4j\.com$/i;
        if (re.test(event.origin)) {
          if (event.data.authkey.length > 5) {
            window.clearTimeout(aft);
@@ -42,7 +43,7 @@
        win.postMessage("hellow", "*"); 
      });
         
-     iframe.attr("src", "https://dev.neo4jsandbox.com/browser-iframe.html") 
+     iframe.attr("src", "https://neo4j.com/sandbox-v2/browser-iframe/");
 
      $('body').append(iframe);
 
