@@ -1,60 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>Neo4j Sandbox - ALPHA</title>
 
-    <!-- Bootstrap
-    <link href="//neo4jsandbox.com/css/bootstrap.min.css" rel="stylesheet">
-    -->
-    <link href="//neo4jsandbox.com/css/bootstrap-iso.css" rel="stylesheet">
+    <!-- Bootstrap -->
+    <link href="css/bootstrap-iso.css" rel="stylesheet">
 
-    <link href="//fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
 
     <!-- Bootstrap Theme -->
-    <link href="//neo4jsandbox.com/css/bootstrap-theme.min.css" rel="stylesheet">
-    <link href="//neo4jsandbox.com/css/theme.css" rel="stylesheet">
+    <link href="css/bootstrap-theme.min.css" rel="stylesheet">
+    <link href="css/theme.css" rel="stylesheet">
 
     <!-- Jumbotron -->
-    <link href="//neo4jsandbox.com/css/jumbotron-narrow.css" rel="stylesheet">
+    <link href="css/jumbotron-narrow.css" rel="stylesheet">
 
     <!-- jquery tabs for code -->
-    <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
-    <link rel="stylesheet" href="//neo4jsandbox.com/css/jq-style.css">
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+    <link rel="stylesheet" href="css/jq-style.css">
 
 
     <!-- codemirror -->
-    <script src="//neo4jsandbox.com/cm/lib/codemirror.js"></script>
-    <link rel="stylesheet" href="//neo4jsandbox.com/cm/theme/paraiso-dark.css">
-    <link rel="stylesheet" href="//neo4jsandbox.com/cm/lib/codemirror.css">
-    <script src="//neo4jsandbox.com/cm/mode/javascript/javascript.js"></script>
-    <script src="//neo4jsandbox.com/cm/mode/python/python.js"></script>
-    <script src="//neo4jsandbox.com/cm/mode/php/php.js"></script>
-    <script src="//neo4jsandbox.com/js/cm-autorefresh.js"></script>
+    <script src="cm/lib/codemirror.js"></script>
+    <link rel="stylesheet" href="cm/theme/paraiso-dark.css">
+    <link rel="stylesheet" href="cm/lib/codemirror.css">
+    <script src="cm/mode/javascript/javascript.js"></script>
+    <script src="cm/mode/python/python.js"></script>
+    <script src="cm/mode/php/php.js"></script>
+    <script src="js/cm-autorefresh.js"></script>
 
     <!-- clippy -->
-    <script src="//neo4jsandbox.com/js/clipboard.min.js"></script>
+    <script src="js/clipboard.min.js"></script>
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
-      <script src="//oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
-      <script src="//oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
     <script>
       (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
       (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
       m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
     
       ga('create', 'UA-1192232-37', 'auto');
       ga('send', 'pageview');
     </script>
-    <script type="text/javascript" src="//neo4jsandbox.com/js/sha256.js"></script>
+    <script type="text/javascript" src="js/sha256.js"></script>
+    <script src="js/jwt-decode.min.js"></script>
   </head>
   <body>
 
+<div class="bootstrap-iso" style="width: 100%">
 
-  <div class="bootstrap-iso" style="width: 100%">
-<!--
       <div class="marquee-neo2">
          <div class="container" style="height: 100px;">
              <h1 style="padding-top: 10px; color: white; font-family: Open Sans,Helvetica Neue,Helvetica; font-weight: 300; font-style: normal; text-rendering: optimizeLegibility;">Neo4j Sandbox ALPHA</h3>
@@ -64,7 +67,6 @@
           </div>
         </div>
       </div>
--->
 
     <div class="container">
 
@@ -93,37 +95,37 @@
   <!-- Wrapper for slides -->
   <div class="carousel-inner" role="listbox">
     <div class="item active">
-      <img src="//neo4jsandbox.com/img/caroussel_guides.png" alt="...">
+      <img src="/img/caroussel_guides.png" alt="...">
       <div class="carousel-caption">
         A Sandbox provides an interactive experience for trying out Neo4j.
       </div>
     </div>
     <div class="item">
-      <img src="//neo4jsandbox.com/img/caroussel_auth.png" alt="...">
+      <img src="/img/caroussel_auth.png" alt="...">
       <div class="carousel-caption">
         First you authenticate using Google, Twitter, GitHub or more, or create a new password.
       </div>
     </div>
     <div class="item">
-      <img src="//neo4jsandbox.com/img/caroussel_launch.png" alt="...">
+      <img src="/img/caroussel_launch.png" alt="...">
       <div class="carousel-caption">
         Then you launch your own instance of Neo4j Enterprise on our infrastructure.  It's a free trial for an extendable 3 day period.
       </div>
     </div>
     <div class="item">
-      <img src="//neo4jsandbox.com/img/caroussel_sandbox_list.png" alt="...">
+      <img src="/img/caroussel_sandbox_list.png" alt="...">
       <div class="carousel-caption">
         Your instance comes pre-loaded with data.  We provide a username and password to login to the Neo4j Browser.
       </div>
     </div>
     <div class="item">
-      <img src="//neo4jsandbox.com/img/caroussel_queries.png" alt="...">
+      <img src="/img/caroussel_queries.png" alt="...">
       <div class="carousel-caption">
         An interactive guide will walk you through Cypher queries of the data.  Cypher is a declarative query language similar to SQL, but optimized for graphs.
       </div>
     </div>
     <div class="item">
-      <img src="//neo4jsandbox.com/img/caroussel_code.png" alt="...">
+      <img src="/img/caroussel_code.png" alt="...">
       <div class="carousel-caption">
         After experiencing Cypher, get started writing code in your favorite language. Code snippets for each usecase, with your credentials, are included.
       </div>
@@ -636,28 +638,28 @@
   </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
 
-      <div style="align: center;">
+
+      <footer class="footer">
         <p><a href="//neo4j.com/privacy-policy/">Privacy Policy</a> - <a href="//neo4j.com/terms/">General Terms</a> - <a href="//neo4j.com/terms/online-trial-agreement/">Online Trial Terms</a></p>
-      </div>
+      </footer>
 
     </div> <!-- /container -->
+</div>
 
 
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-    <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
  
     <!-- Include all compiled plugins (below), or include individual files as needed -->
-    <script src="//neo4jsandbox.com/js/bootstrap.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
 
     <!-- Form validation -->
-    <script src="//neo4jsandbox.com/js/validator.min.js"></script>
-
-    <!-- JWT decoder: ONLY USE TO SEE UN-VERIFIED VALUES -->
-    <script src="//neo4jsandbox.com/js/jwt-decode.min.js"></script>
+    <script src="js/validator.min.js"></script>
 
     <!-- Load applicatino code -->
-    <script src="//neo4jsandbox.com/js/app.js"></script>
+    <script src="js/app.js"></script>
 
-</div>
+  </body>
+</html>

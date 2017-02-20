@@ -45,7 +45,7 @@
         ga('set', 'userId', hash);
       }
 
-      emailVerificationCheck();
+      emailVerificationCheck(false);
       event.source.close();
     }
   }
@@ -142,7 +142,7 @@
         // TODO: Be smarter about refreshes - don't need net calls, but can count divs
         // TODO: Rebalance columns
         //$("#modalLaunchInstance").modal();
-        return launchInstance(e.target.dataset['usecase']);
+        return launchInstance(e.target.dataset['usecase'], 5000);
       }
     });
   }
@@ -238,11 +238,11 @@
   var updateUx = function() {
     activeInstancesUpdated = false;
     activeUsecases = [];
-    retrieve_update_instances();
+    retrieve_update_instances(true);
     conditional_update_usecases();
   }
 
-  var launchInstance = function(usecase, errorTimeout=5000) {
+  var launchInstance = function(usecase, errorTimeout ) {
     ga('send', 'event', 'sandbox', 'launching', usecase);
     var id_token = localStorage.getItem('id_token');
 
@@ -294,7 +294,7 @@
     });
   }
 
-  var emailVerificationCheck = function( calledFromUpdateProfile = false ) {
+  var emailVerificationCheck = function( calledFromUpdateProfile ) {
     var profile = localStorage.getItem('profile');
     if (profile) {
       profileObj = JSON.parse(profile);
@@ -306,7 +306,7 @@
       if (emailVerified || emailVerificationNotNeeded) {
         $('.need-verification').hide();
         retrieve_usecases();
-        retrieve_update_instances();
+        retrieve_update_instances(true);
         conditional_update_usecases();
       } else {
         ga('send', 'event', 'auth', 'email verification needed');
@@ -399,7 +399,7 @@
 
   }
 
-  var retrieve_update_instances = function(retry=true) {
+  var retrieve_update_instances = function(retry) {
     var id_token = localStorage.getItem('id_token');
     if (id_token) {
         $('.btn-login').hide();
@@ -728,7 +728,11 @@
                 .attr('width', '175')
                 .attr('style', 'float: left; margin-right: 15px;')
         );
-        proxyUrl = "https://" + instance.privip.replace(/\./g, "-") + "-" + instance.port + ".neo4jsandbox.com"
+        if ('privip' in instance) {
+          browserUrl = "https://" + instance.privip.replace(/\./g, "-") + "-" + instance.port + ".neo4jsandbox.com/";
+        } else {
+          browserUrl = "http://" + instance.ip + ":" + instance.port + "/browser/";
+        }
         connectionDiv.append(
             $('<p/>')
               .append(
@@ -736,9 +740,9 @@
               .append(
                 $('<b/>')
                 .append($('<a/>')
-                  .attr('href', `${proxyUrl}`)
+                  .attr('href', `${browserUrl}`)
                   .attr('target', '_blank')
-                  .text(`${proxyUrl}/`)
+                  .text(`${browserUrl}`)
               )))
             .append($('<p/>')
               .html(`<b>Username:</b> ${instance.username}<br />` +
@@ -792,7 +796,7 @@
     }
 
     if (shouldUpdateInstances) {
-        setTimeout(function() { retrieve_update_instances() }, 2000);
+        setTimeout(function() { retrieve_update_instances(true) }, 2000);
     }
 
     activeInstancesUpdated = true;
@@ -892,7 +896,7 @@ $(document).ready(function() {
         $('.marketing').fadeOut("fast");
         $('.btn-login').hide();
         $('.btn-logout').show();
-        emailVerificationCheck();
+        emailVerificationCheck(false);
       } else {
         setTimeout(
           function () {
@@ -905,7 +909,7 @@ $(document).ready(function() {
         $('.marketing').fadeOut("fast");
         $('.btn-login').hide();
         $('.btn-logout').show();
-        emailVerificationCheck();
+        emailVerificationCheck(false);
       }
 
       shaObj.update(profileObj['sub']);

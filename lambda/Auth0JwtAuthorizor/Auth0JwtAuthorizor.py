@@ -1,7 +1,6 @@
 from __future__ import print_function
 import json
 import os
-import jwt
 import base64
 import re
 import urllib2
@@ -11,8 +10,14 @@ import logging
 import sblambda
 from awspol import AuthPolicy, HttpVerb
 import ast
+import jwt
+from cryptography.x509 import load_pem_x509_certificate
+from cryptography.hazmat.backends import default_backend
 
 logger = None
+AUTH0_AUDIENCE = os.environ["AUTH0_AUDIENCE"]
+AUTH0_CREDS_BUCKET = os.environ["AUTH0_CREDS_BUCKET"]
+AUTH0_CREDS_OBJECT = os.environ["AUTH0_CREDS_OBJECT"]
 
 if 'LOGGING_LEVEL' in os.environ:
   LOGGING_LEVEL = int(os.environ["LOGGING_LEVEL"])
@@ -27,7 +32,7 @@ else:
 logger = logging.getLogger()
 logger.setLevel(LOGGING_LEVEL)
 
-def add_update_user(user, jwt):
+def add_update_user(user, jwt, decodedjwt):
     global REVALIDATE_USER
 
     data = { "id_token": jwt }
@@ -42,7 +47,7 @@ def add_update_user(user, jwt):
 
     try:
       req = urllib2.Request(
-          	url = 'https://neo4j-sandbox.auth0.com/tokeninfo',
+          	url = '%s%s' % (decodedjwt['iss'], 'tokeninfo'),
           	headers = {"Content-type": "application/json"},
   	        data = json.dumps(data))
         
@@ -98,24 +103,42 @@ def add_update_user(user, jwt):
 
     return True
 
+def get_public_key():
+    global AUTH0_CREDS_BUCKET, AUTH0_CREDS_OBJECT
+
+    s3 = boto3.client('s3')
+    response = s3.get_object(Bucket=AUTH0_CREDS_BUCKET,Key=AUTH0_CREDS_OBJECT)
+    contents = response['Body'].read()
+    return contents
 
 def lambda_handler(event, context):
-    global LOGGING_LEVEL, logger
+    global LOGGING_LEVEL, AUTH0_AUDIENCE, logger
 
 
     creds = sblambda.get_creds('auth0')
     secret = creds['auth0_secret']
     encoded = event['authorizationToken']
+    orig_audience = creds['auth0_audience']
 
     # TODO Handle expired signatures 
     # https://console.aws.amazon.com/cloudwatch/home?region=us-east-1#logEventViewer:group=/aws/lambda/Auth0JwtAuthorizor;stream=2017/01/23/%5B$LATEST%5D04afd1c304614be18654a7972aa6e935
 
     try:
-      decoded = jwt.decode(encoded, secret, algorithms=['HS256'], audience=creds['auth0_audience'])
+      decoded_without_verification = jwt.decode(encoded, verify=False)
+      logger.info('JWT token decoded: %s' % (json.dumps(decoded_without_verification)))
+
+      if decoded_without_verification['aud'] == orig_audience:
+        decoded = jwt.decode(encoded, secret, algorithms=['HS256'], audience=orig_audience)
+      elif decoded_without_verification['aud'] == AUTH0_AUDIENCE:
+        cert_obj = load_pem_x509_certificate(get_public_key(), default_backend())
+        public_key = cert_obj.public_key()
+        decoded = jwt.decode(encoded, public_key, algorithms=['RS256'], audience=AUTH0_AUDIENCE)
+      else:
+        raise jwt.InvalidAudienceError
    
       # don't skip adding user on read only 
       # if re.search("SandboxRunInstance$", event['methodArn']):
-      add_update_user(decoded['sub'], encoded)    
+      add_update_user(decoded['sub'], encoded, decoded)
 
       tmp = event['methodArn'].split(':')
       apiGatewayArnTmp = tmp[5].split('/')

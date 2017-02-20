@@ -188,6 +188,34 @@ RETURN rec.title, COUNT(*) AS score ORDER BY score DESC LIMIT 10;<!--/code--></p
 
 <slide class="row-fluid">
   <div class="col-sm-12">
+    <h3>Content based similarity metrics</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>TODO: threshold of overlapping genres?</p>
+</div>
+
+
+
+   <h4>Jaccard index</h4>
+   <div class="imageblock">
+<div class="content">
+<img src="http://guides.neo4j.com/sandbox/recommendations/img/jaccard.png" alt="jaccard">
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->// TODO: Jaccard for genre similarity<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
     <h3>Movie ratings</h3>
     <br/>
     <div>
@@ -339,10 +367,53 @@ RETURN p1, p2, xyDotProduct / (xLength * yLength) AS sim ORDER BY sim DESC;<!--/
     <h3>kNN</h3>
     <br/>
     <div>
-      <div class="listingblock">
+      <div class="ulist">
+<ul>
+<li>
+<p>Neigborhood based recommendation</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
 <div class="content">
 <pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"--><!--/code--></pre>
 </div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Group Recommender System</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Is it possible to make recommendations to a group of users? In the context of this example, can we recommend a restaurant that takes into account information about the individual users likes and dislikes? There are many strategies for aggregating a group of users preferences. This is an example of the application of "Social Choice Theory". For example:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Plurality voting</p>
+</li>
+<li>
+<p>Average</p>
+</li>
+<li>
+<p>Multiplicative</p>
+</li>
+<li>
+<p>Borda Count</p>
+</li>
+<li>
+<p>Least misery</p>
+</li>
+<li>
+<p>Most Pleasure</p>
+</li>
+</ul>
 </div>
 	</div>
   </div>
