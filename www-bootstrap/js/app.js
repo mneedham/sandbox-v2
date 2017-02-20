@@ -1,10 +1,12 @@
   const API_PATH = "https://ppriuj7e7i.execute-api.us-east-1.amazonaws.com/dev";
-  const AUTH_URL = "https://auth.neo4jsandbox.com";
+  const AUTH_URL_ORIGIN = "https://auth.neo4j.com";
+  const AUTH_URL = "https://auth.neo4j.com/index-sandbox.html";
   const CODE_SNIPPETS_PATH = "https://s3.amazonaws.com/neo4j-sandbox-code-snippets";
-  const AUTH_CLIENT_ID = "CK4MU2kBWYkDXdWcKs5mj0GbgzEDfifL";
-  const AUTH_DELEGATION_URL = "https://neo4j-sandbox.auth0.com/delegation"
-  const AUTH_AUTHORIZE_URL = "https://neo4j-sandbox.auth0.com/authorize"
-  const AUTH_USERINFO_URL = "https://neo4j-sandbox.auth0.com/userinfo"
+  const AUTH_CLIENT_ID = "DxhmiF8TCeznI7Xoi08UyYScLGZnk4ke";
+
+  const AUTH_DELEGATION_URL = "https://neo4j-sync.auth0.com/delegation"
+  const AUTH_AUTHORIZE_URL = "https://neo4j-sync.auth0.com/authorize"
+  const AUTH_USERINFO_URL = "https://neo4j-sync.auth0.com/userinfo"
 
   var pollInterval;
   var usecases = false;
@@ -21,7 +23,7 @@
   var shaObj = new jsSHA("SHA-256", "TEXT");
 
   var listener = function(event) {
-    if (event.origin == AUTH_URL) {
+    if (event.origin == AUTH_URL_ORIGIN) {
       ga('send', 'event', 'auth', 'webevent back from auth0');
       $('.jumbotron').fadeOut("fast");
       $('.marketing').fadeOut("fast");
@@ -107,7 +109,7 @@
   var loginButtonAction = function(e) {
     ga('send', 'event', 'auth', 'clicked login button');
     $('.btn-login').hide();
-    win = window.open(AUTH_URL + "/",
+    win = window.open(AUTH_URL,
                 "_blank",
                 "location=1,status=0,scrollbars=0, width=1080,height=720");
     try {
@@ -325,21 +327,6 @@
     }
   }
 
-  /*
-  var toCamelCase = function(object, exceptions) {
-    if (typeof object !== 'object' || object === null) {
-      return object;
-    }
-  
-    exceptions = exceptions || [];
-  
-    return Object.keys(object).reduce(function (p, key) {
-      var newKey = exceptions.indexOf(key) === -1 ? snakeToCamel(key) : key;
-      p[newKey] = toCamelCase(object[key]);
-      return p;
-    }, {});
-  }
-  */
   
   var updateProfile = function() {
     var access_token = localStorage.getItem('access_token');
@@ -394,7 +381,7 @@
       win.postMessage("hellow", "*"); 
     });
     
-    iframe.attr("src", "/renew-iframe.html") 
+    iframe.attr("src", AUTH_AUTHORIZE_URL + "?response_type=token,client_id=" + AUTH_CLIENT_ID  ) 
     $('body').append(iframe);
 
   }
@@ -630,6 +617,7 @@
     $("#usecaseListContainer").show();
     if (availableForLaunchCount > 0) {
       $('#usecaseListAlert').hide();
+      $('#usecaseList').show();
     } else {
       $('#usecaseListAlert').show();
     }
@@ -673,9 +661,11 @@
       .attr('data-sandboxhashkey', instance.sandboxHashKey);
       sandboxDiv.find('.navbar-brand').text(thisUsecase.long_name);
 
+
       sandboxDiv.find('.connection a').click(update_sandbox_panel('connection', instance.sandboxId));
       var connectionDiv = sandboxDiv.find('.panel-body-content').find('.connection');
       connectionDiv.empty();
+
       dateDiff = getTimeDiff(Date.now(), instance.expires);
       if (dateDiff['days'] == 1) {
         daysStr = 'day';
@@ -708,14 +698,20 @@
 
       if ('status' in instance && instance['status'] == 'PENDING') {
         newLaunch = true;
+        connectionDiv.append($('<p/>').text('Did you know you can fit 520,769,230,760 grains of sand into a freight container?').attr("style", "font-family: 'Lora', serif; font-size: 200%; text-shadow: 2px 2px 1px rgba(0,0,0, 0.25);"));
+        connectionDiv.append($('<p/>').text(''));
         connectionDiv.append($('<p/>').text('Launching! Will show connection info when available.'));
         shouldUpdateInstances = true;
       } else if (instance.ip == null) {
         newLaunch = false;
+        connectionDiv.append($('<p/>').text('Did you know you can fit 520,769,230,760 grains of sand into a freight container?').attr("style", "font-family: 'Lora', serif; font-size: 200%; text-shadow: 2px 2px 1px  rgba(0,0,0, 0.25);"));
+        connectionDiv.append($('<p/>').text(''));
         connectionDiv.append($('<p/>').text('Launching! Will show connection info when available.'));
         shouldUpdateInstances = true;
       } else if ((instance['connectionVerified'] != true) && $.inArray(instance.sandboxHashKey,activeInstances) == -1){
         newLaunch = false;
+        connectionDiv.append($('<p/>').html('Did you know the first paper on graph theory was published in 1736 by Leonhard Euler?  It is titled <i>Seven Bridges of Königsberg</i>.').attr("style", "font-family: 'Lora', serif; font-size: 200%; text-shadow: 2px 2px 1px rgba(0,0,0, 0.25);"));
+        connectionDiv.append($('<p/>').text(''));
         connectionDiv.append($('<p/>').text('Connecting to sandbox.'));
         checkIfInstanceActive(instance.sandboxHashKey);
         shouldUpdateInstances = true;
@@ -733,6 +729,85 @@
         } else {
           browserUrl = "http://" + instance.ip + ":" + instance.port + "/browser/";
         }
+        sandboxDiv.find('.get-started a').click(update_sandbox_panel('get-started', instance.sandboxId));
+        var getStartedDiv = sandboxDiv.find('.panel-body-content').find('.get-started');
+        getStartedDiv.empty();
+  
+        var rowDiv = $('<div>').attr('class', 'row');
+        rowDiv.append(
+          $('<div>').attr('class', 'col-md-3')
+            .append(
+              $('<img/>')
+               .attr('src', thisUsecase['logo'])
+               .attr('height', '175')
+               .attr('width', '175')
+               .attr('style', 'float: left; margin-right: 15px;')
+              )
+        );
+        rowDiv.append(
+          $('<div>').attr('class', 'col-md-9')
+            .append(
+              $('<div>').attr('class', 'row')
+              .append(
+                $('<div>').attr('class', 'col-md-12')
+                .append(
+                  $('<h4>').text('Get Started with your Neo4j Sandbox')
+                )
+              )
+            )
+            .append(
+              $('<div>').attr('class', 'row')
+              .append(
+                $('<div>').attr('class', 'col-md-1 col-bullet')
+                .append(
+                  $('<div>').attr('class', 'image-bullet')
+                    .append( $('<img>').attr('src', '//dev.neo4jsandbox.com/img/image-bullet.svg') )
+                    .append( $('<div>').attr('class', 'image-bullet-text').text('1') )
+                )
+              )
+              .append(
+                $('<div>').attr('class', 'col-md-11 col-bullet-para')
+                .append(
+                  $('<p>').html(`Visit the <a href="${browserUrl}">Neo4j Browser</a>. A tutorial will guide you through the datamodel and example data, while teaching you how property graphs work in real-world use cases.`)
+                )
+              )
+            )
+            .append(
+              $('<div>').attr('class', 'row')
+              .append(
+                $('<div>').attr('class', 'col-md-1 col-bullet')
+                .append(
+                  $('<div>').attr('class', 'image-bullet')
+                    .append( $('<img>').attr('src', '//dev.neo4jsandbox.com/img/image-bullet.svg') )
+                    .append( $('<div>').attr('class', 'image-bullet-text').text('2') )
+                )
+              )
+              .append(
+                $('<div>').attr('class', 'col-md-11 col-bullet-para')
+                .append(
+                  $('<p>').html(`Start building your application backed by Neo4j. Write your own code, in PHP, Java, JavaScript, Python, or one of any number of other languages, using <a id="code-templates-link" href="">templates provided</a>.`)
+                )
+              )
+            )
+            .append(
+              $('<div>').attr('class', 'row')
+              .append(
+                $('<div>').attr('class', 'col-md-1 col-bullet')
+                .append(
+                  $('<div>').attr('class', 'image-bullet')
+                    .append( $('<img>').attr('src', '//dev.neo4jsandbox.com/img/image-bullet.svg') )
+                    .append( $('<div>').attr('class', 'image-bullet-text').text('3') )
+                )
+              )
+              .append(
+                $('<div>').attr('class', 'col-md-11 col-bullet-para')
+                .append(
+                  $('<p>').html(`<a href="//neo4j.com/download/">Download Neo4j</a> to your own computer, or start a long-living Neo4j instance in the cloud on <a href="//neo4j.com/developer/guide-cloud-deployment/">AWS or other hosting platforms</a>.`)
+                )
+              )
+            )
+        );
+        getStartedDiv.append(rowDiv);
         connectionDiv.append(
             $('<p/>')
               .append(
@@ -766,6 +841,9 @@
                           .attr('width', '100%'));
 
 
+      sandboxDiv.find('#code-templates-link').click(
+        show_code_panel(sandboxDiv)
+      );
       sandboxDiv.find('.code a').click(update_sandbox_panel('code', instance.sandboxId));
       var codeDiv = sandboxDiv.find('.panel-body-content').find('.code');
       codeDiv.empty().append($('<div/>')
@@ -814,6 +892,12 @@
         }
         event.preventDefault();
         //bar
+    }
+  }
+  var show_code_panel = function(sandboxDiv) {
+     return  function(e) {
+      sandboxDiv.find('.code a').click()
+      e.preventDefault()
     }
   }
 

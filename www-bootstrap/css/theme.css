@@ -16,3 +16,34 @@ body {
 .theme-showcase .navbar .container {
   width: auto;
 }
+
+.image-bullet {
+  position: relative;
+}
+
+.image-bullet img {
+  width: 35px;
+  height: 35px;
+  padding-top: 10px;
+}
+
+.image-bullet-text {
+   position: absolute;
+   color: white;
+   font-size: 20px;
+   font-weight: bold;
+   top: 9px;
+   left: 12px;
+   width: 100%;
+   margin: 0 auto;
+   width: 15px;
+   height: 20px;
+}
+
+.col-bullet {
+  padding: 0px !important;
+}
+
+.col-bullet-para {
+  padding: 5px 0px 0px 0px !important;
+}

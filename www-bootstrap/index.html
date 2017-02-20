@@ -10,7 +10,9 @@
     <!-- Bootstrap -->
     <link href="css/bootstrap-iso.css" rel="stylesheet">
 
+    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Lora:400i" rel="stylesheet">
 
     <!-- Bootstrap Theme -->
     <link href="css/bootstrap-theme.min.css" rel="stylesheet">
@@ -218,7 +220,8 @@
           </div>
           <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
-              <li class="active connection"><a href="#">Sandbox Info</a></li>
+              <li class="active get-started"><a href="#">Get Started</a></li>
+              <li class="connection"><a href="#">Details</a></li>
               <li class="datamodel"><a href="#">Data Model</a></li>
               <li class="code"><a href="#">Code</a></li>
               <li class="dropdown">
@@ -236,7 +239,8 @@
       </div>
       <div class="panel-body" style="min-height: 200px">
         <div class="panel-body-content">
-          <div class="connection"></div>
+          <div class="get-started"></div>
+          <div class="connection" style="display: none"></div>
           <div class="datamodel" style="display: none"></div>
           <div class="code" style="display: none"></div>
         </div>
@@ -289,7 +293,7 @@
     <div class="row" id="usecaseListContainer" style="display: none">
       <h3>Launch a New Sandbox</h3>
       <p>Each sandbox includes data, interactive guides with example queries, and sample code.</p>
-      <div id="usecaseList" style="padding-top: 20px;">
+      <div id="usecaseList" style="padding-top: 20px; display:none;">
         <div class="row">
           <div class="col-md-6 uc-col-1"></div>
           <div class="col-md-6 uc-col-2"></div>

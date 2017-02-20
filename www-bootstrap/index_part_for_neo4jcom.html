@@ -3,7 +3,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- Bootstrap
-    <link href="//neo4jsandbox.com/css/bootstrap.min.css" rel="stylesheet">
+    <link href="//neo4jsandbox.com/css/bootstrap.min.css" rel="stylesheet"> 
     -->
     <link href="//neo4jsandbox.com/css/bootstrap-iso.css" rel="stylesheet">
 
@@ -11,10 +11,10 @@
 
     <!-- Bootstrap Theme -->
     <link href="//neo4jsandbox.com/css/bootstrap-theme.min.css" rel="stylesheet">
-    <link href="//neo4jsandbox.com/css/theme.css" rel="stylesheet">
+    <link href="//dev.neo4jsandbox.com/css/theme.css" rel="stylesheet">
 
     <!-- Jumbotron -->
-    <link href="//neo4jsandbox.com/css/jumbotron-narrow.css" rel="stylesheet">
+    <link href="//dev.neo4jsandbox.com/css/jumbotron-narrow.css" rel="stylesheet">
 
     <!-- jquery tabs for code -->
     <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
@@ -50,19 +50,19 @@
     </script>
     <script type="text/javascript" src="//neo4jsandbox.com/js/sha256.js"></script>
 
+  <div id="auth-button-holder" style="display: none; height: 61px; text-align:center;line-height:61px; width: 10%; float: right;">
+    <span class="bootstrap-iso">
+      <button type="button" class="btn btn-success btn-login" style="vertical-align: middle;">Login</button>
+      <button type="button" class="btn btn-primary btn-logout" style="display: none; vertical-align: middle;">Logout</button>
+    </span>
+  </div>
 
-  <div class="bootstrap-iso" style="width: 100%">
-<!--
-      <div class="marquee-neo2">
-         <div class="container" style="height: 100px;">
-             <h1 style="padding-top: 10px; color: white; font-family: Open Sans,Helvetica Neue,Helvetica; font-weight: 300; font-style: normal; text-rendering: optimizeLegibility;">Neo4j Sandbox ALPHA</h3>
-          <div style="position: relative; top: -45px; float: right;">
-            <button type="button" class="btn btn-success btn-login">Login</button>
-            <button type="button" class="btn btn-primary btn-logout" style="display: none;">Logout</button>
-          </div>
-        </div>
-      </div>
--->
+  <script>
+    $('.marquee-neo .row .columns').attr('style', 'width: 90%');
+    $('#auth-button-holder').appendTo( $('.marquee-neo .row') ).show();
+  </script>
+
+    <span class="bootstrap-iso">
 
     <div class="container">
 
@@ -214,7 +214,8 @@
           </div>
           <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
-              <li class="active connection"><a href="#">Sandbox Info</a></li>
+              <li class="active get-started"><a href="#">Get Started</a></li>
+              <li class="connection"><a href="#">Details</a></li>
               <li class="datamodel"><a href="#">Data Model</a></li>
               <li class="code"><a href="#">Code</a></li>
               <li class="dropdown">
@@ -232,7 +233,8 @@
       </div>
       <div class="panel-body" style="min-height: 200px">
         <div class="panel-body-content">
-          <div class="connection"></div>
+          <div class="get-started"></div>
+          <div class="connection" style="display: none"></div>
           <div class="datamodel" style="display: none"></div>
           <div class="code" style="display: none"></div>
         </div>
@@ -639,7 +641,7 @@
       </div>
 
     </div> <!-- /container -->
-
+  </span>
 
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
@@ -655,7 +657,7 @@
     <!-- JWT decoder: ONLY USE TO SEE UN-VERIFIED VALUES -->
     <script src="//neo4jsandbox.com/js/jwt-decode.min.js"></script>
 
-    <!-- Load applicatino code -->
+    <!-- Load application code -->
     <script src="//dev.neo4jsandbox.com/js/app.js"></script>
 
 </div>
