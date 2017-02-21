@@ -17,6 +17,7 @@ DB_HOST = os.environ["DB_HOST"]
 DB_CREDS_BUCKET = os.environ["DB_CREDS_BUCKET"]
 DB_CREDS_OBJECT = os.environ["DB_CREDS_OBJECT"]
 EMAIL_TEMPLATES_BUCKET = os.environ["EMAIL_TEMPLATES_BUCKET"]
+SANDBOX_URL = os.environ["SANDBOX_URL"]
 
 class MyEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -168,6 +169,8 @@ def set_sandboxes_email_status_created(sandbox_ids, status):
 
 
 def send_email_created(sandboxes):
+    global SANDBOX_URL
+
     s3 = boto3.client('s3')
     response = s3.get_object(Bucket=EMAIL_TEMPLATES_BUCKET,Key="%s.txt" % ('created'))
     templatePlainText = response['Body'].read()
@@ -179,7 +182,7 @@ def send_email_created(sandboxes):
     client = boto3.client('ses')
     for sandbox in sandboxes:
       try:
-        bodyPlainText = templateObj.substitute(sburl='https://neo4jsandbox.com/', greeting=sandbox['name'])
+        bodyPlainText = templateObj.substitute(sburl=SANDBOX_URL, greeting=sandbox['name'])
         response = client.send_email(
             Source = 'Neo4j DevRel <devrel+sandbox@neo4j.com>',
             SourceArn = 'arn:aws:ses:us-east-1:128916679330:identity/neo4j.com',
