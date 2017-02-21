@@ -767,7 +767,7 @@
               .append(
                 $('<div>').attr('class', 'col-xs-11 col-bullet-para')
                 .append(
-                  $('<p>').html(`Visit the <a href="${browserUrl}">Neo4j Browser</a>. A tutorial will guide you through the datamodel and example data, while teaching you how property graphs work in real-world use cases.`)
+                  $('<p>').html(`Visit the <a href="${browserUrl}" target="_blank">Neo4j Browser</a>. A tutorial will guide you through the datamodel and example data, while teaching you how property graphs work in real-world use cases.`)
                 )
               )
             )
