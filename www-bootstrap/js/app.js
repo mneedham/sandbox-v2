@@ -1,4 +1,4 @@
-  const API_PATH = "https://ppriuj7e7i.execute-api.us-east-1.amazonaws.com/dev";
+  const API_PATH = "https://ppriuj7e7i.execute-api.us-east-1.amazonaws.com/prod";
   const AUTH_URL_ORIGIN = "https://auth.neo4j.com";
   const AUTH_URL = "https://auth.neo4j.com/index-sandbox.html";
   const CODE_SNIPPETS_PATH = "https://s3.amazonaws.com/neo4j-sandbox-code-snippets";
@@ -479,7 +479,7 @@
   var retrieve_show_code_snippets = function(usecase, username, password, ip, httpPort, boltPort, tabjq) {
     tabjq.attr('style', 'min-height: 400px');
     var languages = ['php', 'py', 'java', 'js'];
-    var tabs = tabjq.tabs({heightStyle: "content", activate: function() {codeTabActivate(usecase, language)}}).css({'min-height':'300px'});
+    var tabs = tabjq.tabs({heightStyle: "content"}).css({'min-height':'300px'});
     for (var langId in languages) {
       language = languages[langId];
       (function(language, usecase, username, password, ip, httpPort, boltPort, tabjq) {
@@ -493,7 +493,7 @@
           },
           success: function (data) {
               var ul = tabs.find( "ul" );
-              tabs.on( "tabscreate", function( event, ui ) {codeTabActivate(usecase, language);} );
+              tabs.on( "tabsactivate", codeTabActivate(usecase, language) );
               var code = data.replace("<USERNAME>", username)
                 .replace("<PASSWORD>", password)
                 .replace("<HOST>", ip)
@@ -518,7 +518,6 @@
                 mode = 'application/x-httpd-php';
               }
               editors[usecase + '-' + language] = CodeMirror.fromTextArea(textarea.get()[0], {mode: 'javascript', autoRefresh: true, theme: "paraiso-dark"})
-
               if (tabs.data("ui-tabs")) {
                 tabs.tabs('option', 'active', 0); 
                 tabs.tabs("refresh"); 
@@ -593,7 +592,7 @@
       /* always show blank sandbox for testing TODO remove */
       if (! (ucname in activeUsecases)) {
         columnNum = (availableForLaunchCount % 2 ) + 1;
-        panelDiv = $('<div/>').attr('class', 'panel panel-primary').attr('style', 'height: 150px')
+        panelDiv = $('<div/>').attr('class', 'panel panel-primary').attr('style', 'height: 160px')
           .append(
             $('<div/>').attr('class', 'panel-heading').text(usecase.long_name)
           )
@@ -602,7 +601,7 @@
               .append(
                 $('<p/>').attr('style', 'height: 40px').text(usecase.description))
               .append(
-                $('<div/>').attr('class', '').append(
+                $('<div/>').attr('style', 'padding-top: 10px; margin-bottom: 5px;').append(
                   $('<button/>').attr('type','button').attr('class','btn btn-sm btn-success btn-launch')
                   .attr('data-usecase', ucname)
                   .text('Launch Sandbox')
@@ -735,7 +734,7 @@
   
         var rowDiv = $('<div>').attr('class', 'row');
         rowDiv.append(
-          $('<div>').attr('class', 'col-md-3')
+          $('<div>').attr('class', 'col-sm-3 hidden-xs')
             .append(
               $('<img/>')
                .attr('src', thisUsecase['logo'])
@@ -745,7 +744,7 @@
               )
         );
         rowDiv.append(
-          $('<div>').attr('class', 'col-md-9')
+          $('<div>').attr('class', 'col-sm-9 col-xs-12')
             .append(
               $('<div>').attr('class', 'row')
               .append(
@@ -758,7 +757,7 @@
             .append(
               $('<div>').attr('class', 'row')
               .append(
-                $('<div>').attr('class', 'col-md-1 col-bullet')
+                $('<div>').attr('class', 'col-xs-1 col-bullet')
                 .append(
                   $('<div>').attr('class', 'image-bullet')
                     .append( $('<img>').attr('src', '//dev.neo4jsandbox.com/img/image-bullet.svg') )
@@ -766,7 +765,7 @@
                 )
               )
               .append(
-                $('<div>').attr('class', 'col-md-11 col-bullet-para')
+                $('<div>').attr('class', 'col-xs-11 col-bullet-para')
                 .append(
                   $('<p>').html(`Visit the <a href="${browserUrl}">Neo4j Browser</a>. A tutorial will guide you through the datamodel and example data, while teaching you how property graphs work in real-world use cases.`)
                 )
@@ -775,7 +774,7 @@
             .append(
               $('<div>').attr('class', 'row')
               .append(
-                $('<div>').attr('class', 'col-md-1 col-bullet')
+                $('<div>').attr('class', 'col-xs-1 col-bullet')
                 .append(
                   $('<div>').attr('class', 'image-bullet')
                     .append( $('<img>').attr('src', '//dev.neo4jsandbox.com/img/image-bullet.svg') )
@@ -783,7 +782,7 @@
                 )
               )
               .append(
-                $('<div>').attr('class', 'col-md-11 col-bullet-para')
+                $('<div>').attr('class', 'col-xs-11 col-bullet-para')
                 .append(
                   $('<p>').html(`Start building your application backed by Neo4j. Write your own code, in PHP, Java, JavaScript, Python, or one of any number of other languages, using <a id="code-templates-link" href="">templates provided</a>.`)
                 )
@@ -792,7 +791,7 @@
             .append(
               $('<div>').attr('class', 'row')
               .append(
-                $('<div>').attr('class', 'col-md-1 col-bullet')
+                $('<div>').attr('class', 'col-xs-1 col-bullet')
                 .append(
                   $('<div>').attr('class', 'image-bullet')
                     .append( $('<img>').attr('src', '//dev.neo4jsandbox.com/img/image-bullet.svg') )
@@ -800,7 +799,7 @@
                 )
               )
               .append(
-                $('<div>').attr('class', 'col-md-11 col-bullet-para')
+                $('<div>').attr('class', 'col-xs-11 col-bullet-para')
                 .append(
                   $('<p>').html(`<a href="//neo4j.com/download/">Download Neo4j</a> to your own computer, or start a long-living Neo4j instance in the cloud on <a href="//neo4j.com/developer/guide-cloud-deployment/">AWS or other hosting platforms</a>.`)
                 )
@@ -853,6 +852,7 @@
       
       retrieve_show_code_snippets(instance.usecase, instance.username, instance.password, instance.ip, instance.port, instance.boltPort, codeDiv.find(`.tabs-code-${instance.usecase}`));
 
+
       shutdownInstanceAction(sandboxDiv, instance, sandboxDiv.find('.shutdown a') );
       backupInstanceAction(sandboxDiv, instance, sandboxDiv.find('.backup a') );
       sandboxDiv.hide();
@@ -882,6 +882,13 @@
 
   var update_sandbox_panel = function(panelName, sandboxId) {
     return function (event) {
+        if (panelName == 'code') {
+	   setTimeout( function() {
+              for (var key in editors) {
+                  (editors[key]).refresh()
+              }
+           }, 500);
+        } 
         if (! event.target.parentElement.classList.contains('active')) {
             // this element isn't active, set it active and update content
             $( event.target.parentElement.parentElement ).find('li').removeClass('active');
