@@ -11,10 +11,11 @@ chmod -R 755 /neo4j-extension
 
 # copy neo4j 3.1.1 datastores
 aws s3 cp s3://neo4j-sandbox-usecase-datastores/v3_1_1/ /neo4j-sandbox-usecase-datastores --recursive
-cd /neo4j-sandbox-usecase-datastores/; unzip *.zip
+cd /neo4j-sandbox-usecase-datastores/; unzip '*.zip'
 chmod -R 755 /neo4j-sandbox-usecase-datastores
 
 echo ECS_CLUSTER=sandbox-v2 > /etc/ecs/ecs.config
 docker pull ryguyrg/neo4j-importer:sandbox-v2.1.1
-docker pull ryguyrg/neo4j-sandbox-3.1
-docker pull nginx:stable-alpine
+docker pull ryguyrg/neo4j-sandbox-3.1:sandbox-v2.1.3
+docker pull ryguyrg/neo4j-sandbox-twitter:sandbox-v2.1.1
+docker pull ryguyrg/nginx-sandbox:sandbox-v2.1.11
