@@ -5,21 +5,23 @@
   </head>
   <body>
     <h1>Neo4j Sandbox Browser</h1>
-    <p id="auth-attempt">Attempting signin to Neo4j Sandbox</p>
-    <p id="auth-error" style="display: none">You've reached this page in error. Redirecting you to the Neo4j Sandbox. Contact devrel@neo4j.com if you have any questions or problems.</p>
+    <p id="auth-attempt">Attempting automatic signin to Neo4j Sandbox</p>
+    <p id="auth-error" style="display: none">Unable to automatically sign you into your Neo4j Sandbox. Please try logging into your Neo4j Sandbox using the credentials found under the "Details" tab at <a href="https://neo4j.com/sandbox-v2/">neo4j.com/sandbox-v2/</a>. Contact devrel@neo4j.com if you have any questions or problems.</p>
     <script>
-     var aft = window.setTimeout(authFailure, 3000);
+     var aft = window.setTimeout(authFailure, 5000);
 
      function authFailure() {
        $('#auth-attempt').hide();
        $('#auth-error').show();
-       window.setTimeout(function() { window.location="https://neo4j.com/sandbox-v2/" }, 2000);
+       /* window.setTimeout(function() { 
+         window.location="https://neo4j.com/sandbox-v2/" }, 2000);
+       */
      }
 
      function receiveMessage(event) {
        //var re = /^https:.*\.neo4jsandbox\.com$/i;
        var re = /^https:\/\/neo4j\.com$/i;
-       if (re.test(event.origin)) {
+       if (re.test(event.origin) && 'object' == typeof event.data && 'undefined' != typeof event.data.authkey ) {
          if (event.data.authkey.length > 5) {
            window.clearTimeout(aft);
            localStorage.setItem("neo4j.authorization_data", btoa(event.data.authkey));
@@ -31,22 +33,27 @@
        }
      }
 
-     window.addEventListener("message", receiveMessage, false);
-     var iframe = $('<iframe>')
-       .attr("id", "browser-iframe")
-       .attr("width", "0") 
-       .attr("height", "0") 
-       .attr("frameborder", "0");
-
-     iframe.on('load', function() {
-       win = document.getElementById("browser-iframe").contentWindow;
-       win.postMessage("hellow", "*"); 
-     });
-        
-     iframe.attr("src", "https://neo4j.com/sandbox-v2/browser-iframe/");
-
-     $('body').append(iframe);
-
+     if (window.location.hash && window.location.hash.length > 10) {
+       window.clearTimeout(aft);
+       localStorage.setItem("neo4j.authorization_data", btoa('jwt:' + window.location.hash.substring(1)));
+       window.location="/browser/";
+     } else {
+       window.addEventListener("message", receiveMessage, false);
+       var iframe = $('<iframe>')
+         .attr("id", "browser-iframe")
+         .attr("width", "0") 
+         .attr("height", "0") 
+         .attr("frameborder", "0");
+  
+       iframe.on('load', function() {
+         win = document.getElementById("browser-iframe").contentWindow;
+         win.postMessage("hellow", "*"); 
+       });
+          
+       iframe.attr("src", "https://neo4j.com/sandbox-v2/browser-iframe/");
+  
+       $('body').append(iframe);
+     } 
     </script>
   </body>
 </html>
