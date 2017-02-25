@@ -60,12 +60,18 @@ def lambda_handler(event, context):
     logger.setLevel(LOGGING_LEVEL)
     
     session = get_db_session()
+
+    if event['requestContext']['stage'] == 'dev':
+      enabled_status = [True,False]
+    else:
+      enabled_status = [True]
+
     
     usecases_query = """
     MATCH 
       (uc:Usecase)
     WHERE 
-      uc.enabled=True
+      uc.enabled IN {enabled_status}
     RETURN 
       uc.name AS name, uc.long_name AS long_name, uc.model_image AS model_image, uc.logo AS logo, uc.description AS description 
     """
@@ -74,7 +80,7 @@ def lambda_handler(event, context):
     statusCode = 200
     contentType = 'application/json'
     
-    results = session.run(usecases_query)
+    results = session.run(usecases_query, {'enabled_status': enabled_status})
     resultjson = []
     tasks = []
     for record in results:

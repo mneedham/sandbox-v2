@@ -7,6 +7,8 @@ import time
 import sblambda
 import socket
 
+# TODO this code needs re-written/tested
+
 def get_task_info(taskArray):
     client = boto3.client('ecs')
     response = client.describe_tasks(
@@ -191,7 +193,19 @@ def lambda_handler(event, context):
           statusCode = 404
       else:
         # no need to verify connection
-        body = '%s:%s' % (record['ip'], record['boltPort']) 
+        if (record["ip"] and record["boltPort"]):
+            body = '%s:%s' % (record['ip'], record['boltPort'])
+            statusCode = 200
+        else:
+            results = session.run(instances_query, parameters={"sandbox_hash_key": sandbox_hash_key})
+            for record in results:
+                record = dict((el[0], el[1]) for el in record.items())
+            if (record["ip"] and record["boltPort"]):
+                body = '%s:%s' % (record['ip'], record['boltPort'])
+                statusCode = 200
+            else:
+                body = 'Found sandbox, but no ip/port'
+                statusCode = 404
     if not foundRecord:
         body = 'Sandbox not found'
         statusCode = 404
