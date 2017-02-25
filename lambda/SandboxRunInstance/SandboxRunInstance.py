@@ -11,7 +11,7 @@ import random
 import sys
 import hashlib
 import logging
-
+import urllib2
 
 db_creds = None
 glob_session = None
@@ -22,7 +22,14 @@ DB_CREDS_OBJECT = os.environ["DB_CREDS_OBJECT"]
 SANDBOX_TASK_DEFINITION = os.environ["SANDBOX_TASK_DEFINITION"]
 SANDBOX_CLUSTER_NAME = os.environ["SANDBOX_CLUSTER_NAME"]
 LOGGING_LEVEL = int(os.environ["LOGGING_LEVEL"])
+AUTH0_MANAGEMENT_CREDS_OBJECT = os.environ["AUTH0_MANAGEMENT_CREDS_OBJECT"]
+AUTH0_MANAGEMENT_CREDS_BUCKET = os.environ["AUTH0_MANAGEMENT_CREDS_BUCKET"]
+SANDBOX_TWITTER_TASK_DEFINITION = os.environ["SANDBOX_TWITTER_TASK_DEFINITION"]
+TWITTER_APP_CREDS_OBJECT = os.environ["TWITTER_APP_CREDS_OBJECT"]
+TWITTER_APP_CREDS_BUCKET = os.environ["TWITTER_APP_CREDS_BUCKET"]
 
+logger = logging.getLogger()
+logger.setLevel(LOGGING_LEVEL)
 
 class MyEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -35,6 +42,18 @@ def encrypt_user_creds(password):
     kms = boto3.client('kms')
     return base64.b64encode( (kms.encrypt(KeyId='alias/sandbox-neo4j-usercreds', Plaintext=password))['CiphertextBlob']  )
 
+def get_encrypted_object(bucket, key):
+    s3 = boto3.client('s3')
+    kms = boto3.client('kms')
+    response = s3.get_object(Bucket=bucket,Key=key)
+    contents = response['Body'].read()
+    
+    encryptedData = base64.b64decode(contents)
+    decryptedResponse = kms.decrypt(CiphertextBlob = encryptedData)
+    decryptedData = decryptedResponse['Plaintext']
+    creds = json.loads(decryptedData)
+    return creds
+        
 def get_db_creds():
     global db_creds
     global DB_CREDS_BUCKET
@@ -43,17 +62,16 @@ def get_db_creds():
     if db_creds:
         return db_creds
     else:
-        s3 = boto3.client('s3')
-        kms = boto3.client('kms')
-        response = s3.get_object(Bucket=DB_CREDS_BUCKET,Key=DB_CREDS_OBJECT)
-        contents = response['Body'].read()
-    
-        encryptedData = base64.b64decode(contents)
-        decryptedResponse = kms.decrypt(CiphertextBlob = encryptedData)
-        decryptedData = decryptedResponse['Plaintext']
-        db_creds = json.loads(decryptedData)
-        return db_creds
-        
+        return get_encrypted_object(DB_CREDS_BUCKET, DB_CREDS_OBJECT)
+
+def get_auth0_management_clientinfo():
+    global AUTH0_MANAGEMENT_CREDS_OBJECT, AUTH0_MANAGEMENT_CREDS_BUCKET
+    return get_encrypted_object(AUTH0_MANAGEMENT_CREDS_BUCKET, AUTH0_MANAGEMENT_CREDS_OBJECT)
+
+def get_twitter_app_creds():
+    global TWITTER_APP_CREDS_OBJECT, TWITTER_APP_CREDS_BUCKET
+    return get_encrypted_object(TWITTER_APP_CREDS_BUCKET, TWITTER_APP_CREDS_OBJECT)
+     
 def get_db_session():
     global DB_HOST, glob_session
 
@@ -65,6 +83,55 @@ def get_db_session():
         session = driver.session()
         glob_session = session
     return session
+
+def get_auth0_management_token():
+    authci = get_auth0_management_clientinfo()
+    clientSecret = authci['client_secret']
+    clientId = authci['client_id']
+    audience = authci['audience']
+    tokenEndpoint = authci['token_endpoint']
+    apiEndpoint = authci['api_endpoint']
+
+    payload_obj = {
+      "grant_type": "client_credentials",
+      "client_id": clientId,
+      "client_secret": clientSecret,
+      "audience": audience
+    }
+    req = urllib2.Request(
+              url = tokenEndpoint,
+              headers = {"Content-type": "application/json"},
+              data = json.dumps(payload_obj))
+
+    f = urllib2.urlopen(url = req)
+    data = f.read()
+    data_obj = json.loads(data.decode("utf-8"))
+    return_obj = {
+      "access_token": data_obj["access_token"],
+      "api_endpoint": apiEndpoint
+    }
+    return return_obj
+
+def get_twitter_user_creds(user):
+    global LOGGING_LEVEL
+
+    apiInfo = get_auth0_management_token()
+
+    if LOGGING_LEVEL == 0:
+      urllib2.install_opener(urllib2.build_opener(urllib2.HTTPSHandler(debuglevel=1)))
+
+    req = urllib2.Request(
+              url = '%susers/%s' % (apiInfo['api_endpoint'], user),
+              headers = {"Authorization": "bearer %s" % apiInfo['access_token'] })
+
+    f = urllib2.urlopen(url = req)
+    jsonProfile = f.read()
+    profile = json.loads(jsonProfile)
+    logger.debug(json.dumps(profile))
+    for identity in profile['identities']:
+        if identity['provider'] == 'twitter':
+            return identity
+    return false
 
 def get_generated_password():
     rw = RandomWords()
@@ -151,11 +218,8 @@ def add_sandbox_to_db(user, usecase, taskid, password, sandboxHashKey):
     return results
     
 def lambda_handler(event, context):
-    global SANDBOX_TASK_DEFINITION, SANDBOX_CLUSTER_NAME, LOGGING_LEVEL
+    global SANDBOX_TASK_DEFINITION, SANDBOX_CLUSTER_NAME, LOGGING_LEVEL, SANDBOX_TWITTER_TASK_DEFINITION
     
-    logger = logging.getLogger()
-    
-    logger.setLevel(LOGGING_LEVEL)
     
     logger.debug('Starting lambda_handler')
     
@@ -196,39 +260,82 @@ def lambda_handler(event, context):
         # RunTask operation: No Container Instances were found in your 
         # cluster.: InvalidParameterException
 
-        response = client.run_task(
-            cluster=SANDBOX_CLUSTER_NAME,
-            taskDefinition=SANDBOX_TASK_DEFINITION,
-            overrides={"containerOverrides": [{
-                "name": "neo4j-enterprise-db-only",
-                "environment":
-                    [
-                        { "name": "USECASE",
-                          "value": usecase},
-                        { "name": "EXTENSION_SCRIPT",
-                          "value": "extension/extension_script.sh"},
-                        { "name": "SANDBOX_USER",
-                          "value": user},
-                        { "name": "NEO4J_AUTH",
-                          "value": "neo4j/%s" % (userDbPassword)},
-                        { "name": "SANDBOX_HASHKEY",
-                          "value": "%s" % (sandboxHashKey)}
-                    ]
-            },
-            {
-                "name": "neo4j-importer",
-                "environment":
-                    [
-                        { "name": "USECASE",
-                          "value": usecase},
-                        { "name": "NEO4J_AUTH",
-                          "value": "neo4j/%s" % (userDbPassword)}
-                    ]
-            }
-            ]},
-            placementStrategy=[ {"type": "spread", "field": "instanceId"} ],
-            startedBy=('SB("%s","%s")' % (user, usecase))[:36]
-        )
+        if usecase == 'twitter' and user[0:8] == 'twitter|':
+          twitterUserCreds = get_twitter_user_creds(user)
+          twitterAppCreds = get_twitter_app_creds()
+          response = client.run_task(
+              cluster=SANDBOX_CLUSTER_NAME,
+              taskDefinition=SANDBOX_TWITTER_TASK_DEFINITION,
+              overrides={"containerOverrides": [{
+                  "name": "neo4j-enterprise-db-only",
+                  "environment":
+                      [
+                          { "name": "USECASE",
+                            "value": usecase},
+                          { "name": "EXTENSION_SCRIPT",
+                            "value": "extension/extension_script.sh"},
+                          { "name": "SANDBOX_USER",
+                            "value": user},
+                          { "name": "NEO4J_AUTH",
+                            "value": "neo4j/%s" % (userDbPassword)},
+                          { "name": "SANDBOX_HASHKEY",
+                            "value": "%s" % (sandboxHashKey)}
+                      ]
+              },
+              {
+                  "name": "neo4j-twitter",
+                  "environment":
+                      [
+                          { "name": "TWITTER_CONSUMER_KEY",
+                            "value": twitterAppCreds['consumer_key']},
+                          { "name": "TWITTER_CONSUMER_SECRET",
+                            "value": twitterAppCreds['consumer_secret']},
+                          { "name": "TWITTER_USER_KEY",
+                            "value": twitterUserCreds['access_token']},
+                          { "name": "TWITTER_USER_SECRET",
+                            "value": twitterUserCreds['access_token_secret']},
+                          { "name": "NEO4J_AUTH",
+                            "value": "neo4j/%s" % (userDbPassword)}
+                      ]
+              }
+              ]},
+              placementStrategy=[ {"type": "spread", "field": "instanceId"} ],
+              startedBy=('SB("%s","%s")' % (user, usecase))[:36]
+          )
+        else:
+          response = client.run_task(
+              cluster=SANDBOX_CLUSTER_NAME,
+              taskDefinition=SANDBOX_TASK_DEFINITION,
+              overrides={"containerOverrides": [{
+                  "name": "neo4j-enterprise-db-only",
+                  "environment":
+                      [
+                          { "name": "USECASE",
+                            "value": usecase},
+                          { "name": "EXTENSION_SCRIPT",
+                            "value": "extension/extension_script.sh"},
+                          { "name": "SANDBOX_USER",
+                            "value": user},
+                          { "name": "NEO4J_AUTH",
+                            "value": "neo4j/%s" % (userDbPassword)},
+                          { "name": "SANDBOX_HASHKEY",
+                            "value": "%s" % (sandboxHashKey)}
+                      ]
+              },
+              {
+                  "name": "neo4j-importer",
+                  "environment":
+                      [
+                          { "name": "USECASE",
+                            "value": usecase},
+                          { "name": "NEO4J_AUTH",
+                            "value": "neo4j/%s" % (userDbPassword)}
+                      ]
+              }
+              ]},
+              placementStrategy=[ {"type": "spread", "field": "instanceId"} ],
+              startedBy=('SB("%s","%s")' % (user, usecase))[:36]
+          )
         logger.debug('Adding sandbox to database')
         if 'tasks' in response and len(response['tasks']) > 0:
           res = add_sandbox_to_db(user, usecase, response['tasks'][0]['taskArn'], encrypt_user_creds(userDbPassword), sandboxHashKey)
