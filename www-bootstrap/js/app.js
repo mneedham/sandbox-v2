@@ -1,12 +1,13 @@
-  const API_PATH = "https://ppriuj7e7i.execute-api.us-east-1.amazonaws.com/prod";
+  const API_PATH = "https://ppriuj7e7i.execute-api.us-east-1.amazonaws.com/dev";
+  const CODE_SNIPPETS_PATH = "https://s3.amazonaws.com/neo4j-sandbox-code-snippets";
+
   const AUTH_URL_ORIGIN = "https://auth.neo4j.com";
   const AUTH_URL = "https://auth.neo4j.com/index-sandbox.html";
-  const CODE_SNIPPETS_PATH = "https://s3.amazonaws.com/neo4j-sandbox-code-snippets";
   const AUTH_CLIENT_ID = "DxhmiF8TCeznI7Xoi08UyYScLGZnk4ke";
-
   const AUTH_DELEGATION_URL = "https://neo4j-sync.auth0.com/delegation"
   const AUTH_AUTHORIZE_URL = "https://neo4j-sync.auth0.com/authorize"
   const AUTH_USERINFO_URL = "https://neo4j-sync.auth0.com/userinfo"
+  const AUTH_BROWSER_TARGET = "4cOfw0H4nyxcZH4JV2FU4HYKnn9Oz6os";
 
   var pollInterval;
   var usecases = false;
@@ -19,11 +20,17 @@
   var emailVerified = false;
   var activeInstances = [];
   var authRenewPeriod = 1000 * 60 * 60;
+  var refreshingAuth = false;
+  var browserIdToken = false;
 
   var shaObj = new jsSHA("SHA-256", "TEXT");
 
   var listener = function(event) {
-    if (event.origin == AUTH_URL_ORIGIN) {
+    if (event.origin == AUTH_URL_ORIGIN && event.data instanceof Object && 'fromRenew' in event.data && event.data.fromRenew ) {
+      ga('send', 'event', 'auth', 'renew webevent back from auth0');
+      localStorage.setItem('id_token', event.data.idToken)
+      localStorage.setItem('access_token', event.data.accessToken)
+    } else if (event.origin == AUTH_URL_ORIGIN) {
       ga('send', 'event', 'auth', 'webevent back from auth0');
       $('.jumbotron').fadeOut("fast");
       $('.marketing').fadeOut("fast");
@@ -35,6 +42,7 @@
       localStorage.setItem('profile', JSON.stringify(event.data.profile))
       localStorage.setItem('access_token', event.data.accessToken)
       localStorage.setItem('refresh_token', event.data.refreshToken)
+      getBrowserToken(true, authRenewPeriod);
       updateIdentity();
       profileObj = event.data.profile
       if ('user_id' in profileObj) {
@@ -50,6 +58,38 @@
       emailVerificationCheck(false);
       event.source.close();
     }
+  }
+
+  var getBrowserToken = function(retryOnce, nextTimeout) {
+    $.ajax
+    ({
+      type: "POST",
+      url: AUTH_DELEGATION_URL,
+      contentType: "application/json",
+      dataType: 'json',
+      async: true,
+      data: JSON.stringify(
+        { "client_id": AUTH_CLIENT_ID,
+          "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
+          "target": AUTH_BROWSER_TARGET,
+          "id_token": localStorage.getItem('id_token')
+        }),
+      success: function (data){
+        browserIdToken = data.id_token;
+        if (nextTimeout) {
+          setTimeout(
+            function () {
+              getBrowserToken(true, nextTimeout)
+            }, nextTimeout
+          )
+        }
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        if (retryOnce) {
+          getBrowserToken(false, false);
+        } 
+      }
+    });
   }
 
   var updateIdentity = function() {
@@ -247,7 +287,12 @@
   var launchInstance = function(usecase, errorTimeout ) {
     ga('send', 'event', 'sandbox', 'launching', usecase);
     var id_token = localStorage.getItem('id_token');
+    var instance = {}
+    instance['status'] = 'PENDING';
+    instance['usecase'] = usecase;
+    instance['sandboxHashKey'] = usecase + '-**launching**';
 
+    update_instances(instance, usecases);
     $.ajax
     ({
       type: "POST",
@@ -376,14 +421,24 @@
      .attr("height", "0") 
      .attr("frameborder", "0");
 
+    refreshingAuth = true;
     iframe.on('load', function() {
       win = document.getElementById("browser-iframe").contentWindow;
       win.postMessage("hellow", "*"); 
     });
     
-    iframe.attr("src", AUTH_AUTHORIZE_URL + "?response_type=token,client_id=" + AUTH_CLIENT_ID  ) 
+    // iframe.attr("src", AUTH_AUTHORIZE_URL + "?response_type=token&client_id=" + AUTH_CLIENT_ID  ) 
+    iframe.attr("src", AUTH_URL_ORIGIN + "/sandbox-noprompt.html");
     $('body').append(iframe);
-
+  
+    if (nextTimeout) {
+        setTimeout(
+          function () {
+            attemptRenewToken(nextTimeoutSilent, nextTimeout, nextTimeoutSilent);
+          }, nextTimeout
+        ); 
+    }
+    // TODO: If fails to get a token, should logout
   }
 
   var retrieve_update_instances = function(retry) {
@@ -509,7 +564,7 @@
               div.appendTo( tabs );
               var mode = 'clike';
               if (language == 'py') {
-                mode = 'text/x-cython';
+                mode = 'text/x-python';
               } else if (language == 'java') {
                 mode = 'text/x-java';
               } else if (language == 'js') {
@@ -517,7 +572,7 @@
               } else if (language == 'php') {
                 mode = 'application/x-httpd-php';
               }
-              editors[usecase + '-' + language] = CodeMirror.fromTextArea(textarea.get()[0], {mode: 'javascript', autoRefresh: true, theme: "paraiso-dark"})
+              editors[usecase + '-' + language] = CodeMirror.fromTextArea(textarea.get()[0], {mode: mode, autoRefresh: true, theme: "paraiso-dark"})
               if (tabs.data("ui-tabs")) {
                 tabs.tabs('option', 'active', 0); 
                 tabs.tabs("refresh"); 
@@ -583,6 +638,11 @@
   }
 
   var update_usecases = function(usecases) {
+    var profile = localStorage.getItem('profile');
+    var profileObj = JSON.parse(profile);
+    var sub = profileObj['sub']
+    var authProvider = sub.substr(0, sub.indexOf('|'));
+
     availableForLaunchCount = 0;
     $('#usecaseList').find('.col-md-6').empty();
     for (var usecaseNum in usecases) {
@@ -592,14 +652,19 @@
       /* always show blank sandbox for testing TODO remove */
       if (! (ucname in activeUsecases)) {
         columnNum = (availableForLaunchCount % 2 ) + 1;
-        panelDiv = $('<div/>').attr('class', 'panel panel-primary').attr('style', 'height: 160px')
+        panelDiv = $('<div/>').attr('class', 'panel panel-primary')
           .append(
             $('<div/>').attr('class', 'panel-heading').text(usecase.long_name)
           )
           .append(
-            $('<div/>').attr('class', 'panel-body')
+            $('<div/>').attr('class', 'panel-body').attr('style', 'height: 130px')
+              .append($('<img/>')
+                .attr('src', usecase.logo)
+                .attr('height', '100')
+                .attr('width', '100')
+                .attr('style', 'float: left; margin-right: 15px; margin-bottom: 15px;'))
               .append(
-                $('<p/>').attr('style', 'height: 40px').text(usecase.description))
+                $('<p/>').attr('style', 'font-size: 0.8rem; line-height: 1.3').text(usecase.description))
               .append(
                 $('<div/>').attr('style', 'padding-top: 10px; margin-bottom: 5px;').append(
                   $('<button/>').attr('type','button').attr('class','btn btn-sm btn-success btn-launch')
@@ -608,9 +673,16 @@
                 )
               )
           );
-        $('.uc-col-' + columnNum).append(panelDiv) 
-        launchButtonAction(panelDiv.find('.btn-launch'));
-        availableForLaunchCount++;
+        if (ucname == 'twitter' && authProvider != 'twitter') {
+          panelDiv.fadeTo(400, 0.6);
+          panelDiv.attr('style', '-webkit-filter: grayscale(1);');
+          panelDiv.find('.btn-launch').prop('disabled', true);
+          $('.uc-col-' + columnNum).append(panelDiv) 
+        } else {
+          $('.uc-col-' + columnNum).append(panelDiv) 
+          launchButtonAction(panelDiv.find('.btn-launch'));
+          availableForLaunchCount++;
+        }
       }
     }
     $("#usecaseListContainer").show();
@@ -618,6 +690,7 @@
       $('#usecaseListAlert').hide();
       $('#usecaseList').show();
     } else {
+      $('#usecaseList').hide();
       $('#usecaseListAlert').show();
     }
   }
@@ -634,7 +707,8 @@
 
 
     for (var instanceNum in instances) {
-      var instance = instances[instanceNum]
+      var instance = instances[instanceNum];
+      var thisUsecase = false;
       instance.username = 'neo4j';
 
       activeUsecases[instance.usecase] = true;
@@ -645,10 +719,18 @@
         }
       }
 
+      templateSandbox = null;
       existingSandbox = sandboxListDiv.find(`[data-sandboxhashkey='${instance.sandboxHashKey}']`);
+      if (existingSandbox.length == 0) {
+        templateSandbox = sandboxListDiv.find("[data-sandboxhashkey='" + instance.usecase + "-**launching**']");
+      }
 
       if ('status' in instance && instance['status'] == 'PENDING') {
-        sandboxDiv = $("#sandbox_launching_template").clone();
+        if (templateSandbox && templateSandbox.length > 0) {
+          sandboxDiv = templateSandbox;
+        } else {
+          sandboxDiv = $("#sandbox_launching_template").clone();
+        }
       } else if ((instance['connectionVerified'] != true) && $.inArray(instance.sandboxHashKey,activeInstances) == -1) {
         sandboxDiv = $("#sandbox_launching_template").clone();
       } else {
@@ -656,10 +738,14 @@
       }
       sandboxDiv
       .removeAttr('id')
+      .removeAttr('data-sandboxid')
+      .removeAttr('data-sandboxhashkey')
       .attr('data-sandboxid', instance.sandboxId)
       .attr('data-sandboxhashkey', instance.sandboxHashKey);
-      sandboxDiv.find('.navbar-brand').text(thisUsecase.long_name);
-
+     
+      if (thisUsecase && 'long_name' in thisUsecase) {
+        sandboxDiv.find('.navbar-brand').text(thisUsecase.long_name);
+      }
 
       sandboxDiv.find('.connection a').click(update_sandbox_panel('connection', instance.sandboxId));
       var connectionDiv = sandboxDiv.find('.panel-body-content').find('.connection');
@@ -696,7 +782,11 @@
       }
 
       if ('status' in instance && instance['status'] == 'PENDING') {
-        newLaunch = true;
+        if (templateSandbox && templateSandbox.length >= 1) {
+          newLaunch = false;
+        } else {
+          newLaunch = true;
+        }
         connectionDiv.append($('<p/>').text('Did you know you can fit 520,769,230,760 grains of sand into a freight container?').attr("style", "font-family: 'Lora', serif; font-size: 200%; text-shadow: 2px 2px 1px rgba(0,0,0, 0.25);"));
         connectionDiv.append($('<p/>').text(''));
         connectionDiv.append($('<p/>').text('Launching! Will show connection info when available.'));
@@ -767,7 +857,7 @@
               .append(
                 $('<div>').attr('class', 'col-xs-11 col-bullet-para')
                 .append(
-                  $('<p>').html(`Visit the <a href="${browserUrl}" target="_blank">Neo4j Browser</a>. A tutorial will guide you through the datamodel and example data, while teaching you how property graphs work in real-world use cases.`)
+                  $('<p>').html(`Visit the <a href="${browserUrl}" onclick="window.open('${browserUrl}' + '#' + browserIdToken); return false;" target="_blank">Neo4j Browser</a>. Login with the credentials found under the "Details" tab above. A tutorial will guide you through the datamodel and example data, while teaching you how property graphs work in real-world use cases.`)
                 )
               )
             )
@@ -801,7 +891,7 @@
               .append(
                 $('<div>').attr('class', 'col-xs-11 col-bullet-para')
                 .append(
-                  $('<p>').html(`<a href="//neo4j.com/download/">Download Neo4j</a> to your own computer, or start a long-living Neo4j instance in the cloud on <a href="//neo4j.com/developer/guide-cloud-deployment/">AWS or other hosting platforms</a>.`)
+                  $('<p>').html(`<a href="//neo4j.com/download/" target="_blank">Download Neo4j</a> to your own computer, or start a long-living Neo4j instance in the cloud on <a href="//neo4j.com/developer/guide-cloud-deployment/" target="_blank">AWS or other hosting platforms</a>.`)
                 )
               )
             )
@@ -815,6 +905,7 @@
                 $('<b/>')
                 .append($('<a/>')
                   .attr('href', `${browserUrl}`)
+                  .attr('onclick', `window.open('${browserUrl}' + '#' + browserIdToken); return false;`)
                   .attr('target', '_blank')
                   .text(`${browserUrl}`)
               )))
@@ -856,7 +947,9 @@
       shutdownInstanceAction(sandboxDiv, instance, sandboxDiv.find('.shutdown a') );
       backupInstanceAction(sandboxDiv, instance, sandboxDiv.find('.backup a') );
       sandboxDiv.hide();
-      if (existingSandbox.length == 0) {
+      if (templateSandbox && templateSandbox.length > 0){
+        templateSandbox.replaceWith(sandboxDiv);
+      } else if (existingSandbox.length == 0) {
         sandboxListDiv.append(sandboxDiv);
       } else {
         // sandbox already here, update as necessary
@@ -938,6 +1031,12 @@
   };
 
 $(document).ready(function() {
+  // load codemirror late, after neo4j.com codemirror
+  $.getScript("//neo4jsandbox.com/cm/mode/javascript/javascript.js");
+  $.getScript("//neo4jsandbox.com/cm/mode/python/python.js");
+  $.getScript("//neo4jsandbox.com/cm/mode/php/php.js");
+  $.getScript("//neo4jsandbox.com/js/cm-autorefresh.js");
+
   $('.carousel-inner .item .carousel-caption')
     .attr("style", "background-color: rgba(0, 0, 0, 0.4); padding: 5px 5px 5px 5px");
 
@@ -963,7 +1062,7 @@ $(document).ready(function() {
 
   /* Check to see if user is already logged in */
   var profile = localStorage.getItem('profile');
-  if (profile) {
+  if (profile && profile != 'undefined') {
     ga('send', 'event', 'auth', 'loaded from localstorage');
     profileObj = JSON.parse(profile);
     updateIdentity();
@@ -981,6 +1080,15 @@ $(document).ready(function() {
       } else if (expiresIn.days == 0 && expiresIn.hours == 0 || expiresIn.mins < 30) {
         // expiring soon, let's immediately get a new token
         attemptRenewToken(true, authRenewPeriod, false);
+        getBrowserToken(true, authRenewPeriod)
+
+        setTimeout(
+          function () {
+            attemptRenewToken(false, authRenewPeriod, false)
+            getBrowserToken(true, authRenewPeriod)
+          }, 
+          authRenewPeriod
+        );
 
         // still signed in so no need to wait for this
         $('.jumbotron').fadeOut("fast");
@@ -989,9 +1097,11 @@ $(document).ready(function() {
         $('.btn-logout').show();
         emailVerificationCheck(false);
       } else {
+        getBrowserToken(true, authRenewPeriod)
         setTimeout(
           function () {
             attemptRenewToken(false, authRenewPeriod, false)
+            getBrowserToken(true, authRenewPeriod)
           }, 
           authRenewPeriod
         );
