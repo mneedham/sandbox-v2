@@ -59,7 +59,7 @@ public class SandboxAuthPlugin extends AuthPlugin.Adapter
                    .withSubject(sandboxUser)
                    .withAudience(jwtAudience)
                    .build().verify(token);
-                api.log().info("JWT successfully verified");
+                api.log().info("JWT successfully verified for sandbox user: " + sandboxUser);
                 return AuthInfo.of( "neo4j", Collections.singleton( PredefinedRoles.ADMIN ) );
               } catch (JWTVerificationException ex){
                 api.log().info("JWT verification exception: " + ex.getMessage());
@@ -77,6 +77,13 @@ public class SandboxAuthPlugin extends AuthPlugin.Adapter
     public void initialize( AuthProviderOperations authProviderOperations )
     {
         api = authProviderOperations;
+
+        /* 
+         * verification of a JWT is cheap. exceptions for expired authorization
+         * cache aren't handled well by Neo4j Browser, so disable for now
+         */
+        api.setAuthenticationCachingEnabled(false);
+        api.setAuthorizationCachingEnabled(false);
         api.log().info( "initialized!" );
 
         loadConfig();
