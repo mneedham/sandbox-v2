@@ -9,5 +9,27 @@ if [ -d "/usecase-datastores-ro/$USECASE.db" ]; then
 fi
 
 echo "browser.post_connect_cmd=play https://neo4jsandbox.com/guides/$USECASE/" >> $PWD/conf/neo4j.conf
-echo "dbms.connector.bolt.advertised_address=`curl -s \"https://ppriuj7e7i.execute-api.us-east-1.amazonaws.com/prod/SandboxGetInstanceByHashKey?sandboxHashKey=$SANDBOX_HASHKEY\"`" >> $PWD/conf/neo4j.conf
-python /backup-server.py &
+
+TRYCOUNT=5
+IP_SUCCESS=false
+
+while [ $TRYCOUNT -gt 0 ]; do
+    let "TRYCOUNT = TRYCOUNT-1"
+    resp=`curl -fs "https://ppriuj7e7i.execute-api.us-east-1.amazonaws.com/prod/SandboxGetInstanceByHashKey?sandboxHashKey=$SANDBOX_HASHKEY"`
+    if [ $? -eq 0 ]; then
+        let "TRYCOUNT = 0"
+        IP_SUCCESS=true
+    else
+        IP_SUCCESS=false
+        sleep 3
+    fi
+done
+
+if [ $IP_SUCCESS == true ]; then
+  echo "IP_SUCCESS: Setting IP/port for bolt to: $resp"
+  echo "dbms.connector.bolt.advertised_address=$resp" >> $PWD/conf/neo4j.conf
+  python /backup-server.py &
+else
+  echo "ERROR: Failed to retrieve IP/port combination for bolt from SandboxGetInstanceByHashKey"
+  exit 1
+fi
