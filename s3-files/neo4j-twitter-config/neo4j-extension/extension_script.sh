@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 
 cp /conf-base/neo4j.conf $PWD/conf/neo4j.conf
 cp -R /conf-base/certs $PWD/conf/
@@ -17,11 +17,11 @@ while [ $TRYCOUNT -gt 0 ]; do
     let "TRYCOUNT = TRYCOUNT-1"
     resp=`curl -fs "https://ppriuj7e7i.execute-api.us-east-1.amazonaws.com/prod/SandboxGetInstanceByHashKey?sandboxHashKey=$SANDBOX_HASHKEY"`
     if [ $? -eq 0 ]; then
-        let "TRYCOUNT = 0"
+        TRYCOUNT=0
         IP_SUCCESS=true
     else
         IP_SUCCESS=false
-        sleep 3
+        sleep 2
     fi
 done
 
