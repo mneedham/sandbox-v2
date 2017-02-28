@@ -1,0 +1,18 @@
+// npm install --save neo4j
+var neo4j = require('neo4j');
+var db = new neo4j.GraphDatabase('http://<USERNAME>:<PASSWORD>@<HOST>:<HTTPPORT>');
+
+// Most influential followers
+var query = "MATCH \
+  (follower:User)-[:FOLLOWS]->(u:User:Me) \
+  RETURN  \
+  follower.screen_name AS user, follower.followers AS followers \
+  ORDER BY \
+  followers DESC";
+
+var params = {};
+db.cypher({ query: query, params: params}, 
+  function(err, results) {
+    if (err || !results) throw err;
+    results.forEach(function(row) { console.log(row['user'] + " - " + row['followers']) });
+  });

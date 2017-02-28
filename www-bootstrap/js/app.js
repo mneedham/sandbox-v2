@@ -1,4 +1,4 @@
-  const API_PATH = "https://ppriuj7e7i.execute-api.us-east-1.amazonaws.com/dev";
+  const API_PATH = "https://ppriuj7e7i.execute-api.us-east-1.amazonaws.com/prod";
   const CODE_SNIPPETS_PATH = "https://s3.amazonaws.com/neo4j-sandbox-code-snippets";
 
   const AUTH_URL_ORIGIN = "https://auth.neo4j.com";
@@ -30,7 +30,7 @@
       ga('send', 'event', 'auth', 'renew webevent back from auth0');
       localStorage.setItem('id_token', event.data.idToken)
       localStorage.setItem('access_token', event.data.accessToken)
-    } else if (event.origin == AUTH_URL_ORIGIN) {
+    } else if (event.origin == AUTH_URL_ORIGIN && event.data instanceof Object) {
       ga('send', 'event', 'auth', 'webevent back from auth0');
       $('.jumbotron').fadeOut("fast");
       $('.marketing').fadeOut("fast");
@@ -517,8 +517,7 @@
   }
 
   var retrieve_usecases = function() {
-    $.ajax
-    ({
+    ajaxOptions = {
       type: "GET",
       url: `${API_PATH}/SandboxGetUsecases`,
       dataType: 'json',
@@ -528,7 +527,19 @@
       success: function (data){
         usecases = data;
       }
-    });
+    }
+    additionalUc = localStorage.getItem("sandbox.additionalUc");
+    if (additionalUc) {
+      try {
+        ajaxOptions.data = {"additionalUc": additionalUc};
+      } catch (e) {
+        console.log(e);
+      }
+    }
+    $.ajax
+    (
+      ajaxOptions
+    );
   }
 
   var retrieve_show_code_snippets = function(usecase, username, password, ip, httpPort, boltPort, tabjq) {
@@ -678,6 +689,7 @@
           panelDiv.attr('style', '-webkit-filter: grayscale(1);');
           panelDiv.find('.btn-launch').prop('disabled', true);
           $('.uc-col-' + columnNum).append(panelDiv) 
+          availableForLaunchCount++;
         } else {
           $('.uc-col-' + columnNum).append(panelDiv) 
           launchButtonAction(panelDiv.find('.btn-launch'));
@@ -813,11 +825,8 @@
                 .attr('width', '175')
                 .attr('style', 'float: left; margin-right: 15px;')
         );
-        if ('privip' in instance) {
-          browserUrl = "https://" + instance.privip.replace(/\./g, "-") + "-" + instance.port + ".neo4jsandbox.com/";
-        } else {
-          browserUrl = "http://" + instance.ip + ":" + instance.port + "/browser/";
-        }
+        browserUrl = "https://" + instance.privip.replace(/\./g, "-") + "-" + instance.port + ".neo4jsandbox.com/";
+        directBrowserUrl = "http://" + instance.ip + ":" + instance.port + "/browser/";
         sandboxDiv.find('.get-started a').click(update_sandbox_panel('get-started', instance.sandboxId));
         var getStartedDiv = sandboxDiv.find('.panel-body-content').find('.get-started');
         getStartedDiv.empty();
@@ -908,6 +917,16 @@
                   .attr('onclick', `window.open('${browserUrl}' + '#' + browserIdToken); return false;`)
                   .attr('target', '_blank')
                   .text(`${browserUrl}`)
+              )))
+            .append($('<p/>')
+              .append(
+                $('<b/>').text('Direct Neo4j HTTP: '))
+              .append(
+                $('<b/>')
+                .append($('<a/>')
+                  .attr('href', `${directBrowserUrl}`)
+                  .attr('target', '_blank')
+                  .text(`${directBrowserUrl}`)
               )))
             .append($('<p/>')
               .html(`<b>Username:</b> ${instance.username}<br />` +

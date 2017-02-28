@@ -191,7 +191,7 @@ def mark_tasks_for_email():
       AND
       NOT EXISTS (s.sendEmailReminderOne)
       AND
-      s.expires < (timestamp() + 1000 * 60 * 60 * 24 * 3)
+      s.expires < (timestamp() + 1000 * 60 * 60 * 24 * 1)
     SET
       s.sendEmailReminderOne='Q'
     """

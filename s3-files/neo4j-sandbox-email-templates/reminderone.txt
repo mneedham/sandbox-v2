@@ -1,0 +1,17 @@
+${greeting},
+
+We hope you've enjoyed learning Neo4j using the Neo4j Sandbox. 
+
+Your sandbox for "${usecase}" expires within 24 hours, but you extend it for another 7 days by providing some more information about yourself and your usecase for Neo4j.
+
+This sandbox expires at:
+${expires}
+
+Please visit the Sandbox at the following URL, and click the blue 'Extend Sandbox' button:
+${sburl}
+
+Please feel free to reach out should you have any questions.
+
+Cheers,
+Neo4j Developer Relations Team
+devrel@neo4j.com

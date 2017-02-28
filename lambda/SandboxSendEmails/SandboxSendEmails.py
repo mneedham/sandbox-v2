@@ -63,13 +63,13 @@ def get_sandboxes_for_email_reminderone():
 
     instances_query = """
     MATCH 
-      (s:Sandbox)
+      (uc:Usecase)<-[:IS_INSTANCE_OF]-(s:Sandbox)<-[:IS_ALLOCATED]-(u:User)
     WHERE 
       s.running = True
       AND
       s.sendEmailReminderOne = 'Q'
     RETURN
-      s.usecase, s.ip, s.port, s.boltPort, s.expires, id(s) AS id
+      s.usecase AS usecase, s.ip, s.port, s.boltPort, s.expires AS expires, id(s) AS id, u.name AS name, u.email AS email, uc.long_name AS uc_long_name
     """
     results = session.run(instances_query)
 
@@ -105,22 +105,38 @@ def set_sandboxes_email_status_reminderone(sandbox_ids, status):
 
 
 def send_email_reminderone(sandboxes):
+    global SANDBOX_URL
+
+    s3 = boto3.client('s3')
+    response = s3.get_object(Bucket=EMAIL_TEMPLATES_BUCKET,Key="%s.txt" % ('reminderone'))
+    templatePlainText = response['Body'].read()
+
+    templateObj = Template(templatePlainText)
+
+    print(templatePlainText)
+
     client = boto3.client('ses')
     for sandbox in sandboxes:
+      try:
+        dt = datetime.datetime.utcfromtimestamp(int(sandbox['expires']) / 1000)
+        expiresStr = "%s GMT" % (dt.strftime("%A, %d. %B %Y %I:%M%p"))
+
+        bodyPlainText = templateObj.substitute(sburl=SANDBOX_URL, greeting=sandbox['name'], expires=expiresStr, usecase=sandbox['uc_long_name'])
         response = client.send_email(
-            Source = 'devrel+sandbox@neo4j.com',
+            Source = 'Neo4j DevRel <devrel+sandbox@neo4j.com>',
             SourceArn = 'arn:aws:ses:us-east-1:128916679330:identity/neo4j.com',
             Destination = {
-                'ToAddresses': [ 'ryan@neo4j.com' ]
+                'ToAddresses': [ sandbox['email'] ]
             },
             Message = {
-                'Subject': { 'Data': 'EMAIL ONE' },
-                'Body': { 'Text': { 'Data': 'EMAIL ONE DATA' } }
+                'Subject': { 'Data': 'Your New Neo4j Sandbox expires soon - Extend today' },
+                'Body': { 'Text': { 'Data': bodyPlainText } }
             }
         )
         print(response)
-        
-        
+      except:
+        logging.error(traceback.format_exc())
+
 
 def get_sandboxes_for_email_created():
     session = get_db_session()
@@ -213,7 +229,7 @@ def lambda_handler(event, context):
     try:
       sbs = get_sandboxes_for_email_reminderone()
       # don't actually send this email yet
-      #send_email_reminderone(sbs)
+      send_email_reminderone(sbs)
     except:
       logging.error(traceback.format_exc())
       print('Error in sending email -setting status as M')

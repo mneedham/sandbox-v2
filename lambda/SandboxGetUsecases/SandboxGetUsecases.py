@@ -7,6 +7,7 @@ import time
 import base64
 import os
 import logging
+import traceback
 
 db_creds = None
 glob_session = None
@@ -62,25 +63,40 @@ def lambda_handler(event, context):
     session = get_db_session()
 
     if event['requestContext']['stage'] == 'dev':
-      enabled_status = [True,False]
+      enabledStatus = [True,False]
     else:
-      enabled_status = [True]
+      enabledStatus = [True]
 
+    try:
+      logger.error("QueryString: %s" % (event['queryStringParameters']))
+      if 'queryStringParameters' in event and event['queryStringParameters'] and 'additionalUc' in event['queryStringParameters']:
+        logger.info("Additional usecases requested: %s" % (json.loads(event['queryStringParameters']['additionalUc'])))
+        additionalUc = json.loads(event['queryStringParameters']['additionalUc'])
+      else:
+        logger.debug("No additional usecases requested: %s" % event['queryStringParameters'])
+        additionalUc = []
+    except Exception as ex:
+      logger.error(traceback.format_exc())
+      additionalUc = []
     
     usecases_query = """
     MATCH 
       (uc:Usecase)
     WHERE 
       uc.enabled IN {enabled_status}
+      OR
+      uc.name IN {additional_uc}
     RETURN 
       uc.name AS name, uc.long_name AS long_name, uc.model_image AS model_image, uc.logo AS logo, uc.description AS description 
+    ORDER BY 
+      uc.priority DESC
     """
 
     body = ""
     statusCode = 200
     contentType = 'application/json'
     
-    results = session.run(usecases_query, {'enabled_status': enabled_status})
+    results = session.run(usecases_query, {'enabled_status': enabledStatus, 'additional_uc': additionalUc})
     resultjson = []
     tasks = []
     for record in results:

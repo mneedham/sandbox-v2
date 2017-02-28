@@ -1,0 +1,469 @@
+<style type="text/css" media="screen">
+/*
+.nodes-image {
+	margin:-100;
+}
+*/	
+    .imageblock .content img {
+        max-width: 900px;
+        max-height: 300px;
+    }
+	.deck h3 {
+		display: block !important;
+		margin-bottom:8px;
+		margin-top:5px;
+	}
+	.deck h4 {
+		display: block !important;
+		margin-bottom:8px;
+		margin-top:20px;
+	}
+	.listingblock {
+		margin:8px;
+	}
+	.pull-bottom {
+		position:relative;
+		bottom:1em;
+	}
+</style>
+<style type="text/css" media="screen">
+#editor.maximize-editor .CodeMirror-code {
+ font-size:40px;
+ line-height:45px;
+}
+</style><article class="guide">
+  <carousel class="deck container-fluid">
+    <!--slide class="row-fluid">
+      <div class="col-sm-3">
+        <h3>Data types</h3>
+        <p class="lead">Information</p>
+			<!dl>
+				
+				
+				
+				
+				
+			</dl>
+		</div>
+      <div class="col-sm-9">
+        <figure>
+          <img style="width:300px" src=""/>
+        </figure>
+      </div>
+    </slide-->
+    
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Data types</h3>
+    <br/>
+    <div>
+      <div class="ulist">
+<ul>
+<li>
+<p>decimal: floating point or integer (hexadecimal and octal as well)</p>
+</li>
+<li>
+<p>string</p>
+</li>
+<li>
+<p>boolean</p>
+</li>
+<li>
+<p>lists: <code>[3, 4, 5]</code></p>
+</li>
+<li>
+<p>maps: <code>{name: "Alice", email: "<a href="mailto:alice@miller.com">alice@miller.com</a>"}</code></p>
+</li>
+</ul>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Collections</h3>
+    <br/>
+    <div>
+      <div class="ulist">
+<ul>
+<li>
+<p>can be handled with predicates and collection functions</p>
+</li>
+<li>
+<p>support concatenation</p>
+</li>
+<li>
+<p>allow subscripts: <code>coll[1], coll[1..4], coll[0..-3]</code></p>
+</li>
+<li>
+<p>access to <code>size(coll)</code> and <code>keys(map)</code></p>
+</li>
+<li>
+<p>dynamic keys: <code>person['name']</code></p>
+</li>
+</ul>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Operators</h3>
+    <br/>
+    <div>
+      <div class="ulist">
+<ul>
+<li>
+<p>mathematical: <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>%</code>, <code>^</code></p>
+</li>
+<li>
+<p>comparison: <code>=</code>, <code>&lt;&gt;</code>, <code>&lt;</code>, <code>&gt;</code>, <code>&#8656;</code>, <code>&gt;=</code>, <code>IS NULL</code>, <code>IS NOT NULL</code></p>
+</li>
+<li>
+<p>ranges as: <code>0 &lt; a &lt; 10</code></p>
+</li>
+<li>
+<p>boolean: <code>AND</code>, <code>OR</code>, <code>XOR</code>, <code>NOT</code></p>
+</li>
+<li>
+<p>collections: <code>+</code>, <code>IN</code></p>
+</li>
+</ul>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>String Operators</h3>
+    <br/>
+    <div>
+      <div class="ulist">
+<ul>
+<li>
+<p><code>STARTS WITH</code> is index supported_</p>
+</li>
+<li>
+<p><code>CONTAINS</code>, <code>ENDS WITH</code></p>
+</li>
+<li>
+<p>concatenation with <code>+</code></p>
+</li>
+<li>
+<p>comparision operators also for <em>index supported range search</em></p>
+</li>
+<li>
+<p>regular expressions: <code>=~</code></p>
+</li>
+</ul>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Advanced Filtering</h3>
+    <br/>
+    <div>
+      <div class="ulist">
+<ul>
+<li>
+<p><code>"string" =~ "regexp"</code></p>
+</li>
+<li>
+<p>use flags for lowercase <code>(?i)s</code></p>
+</li>
+<li>
+<p>escape sub-terms: <code>'(?i).<strong>'{term}'.</strong>'</code></p>
+</li>
+<li>
+<p>(better use <code>STARTS WITH</code> for performance)</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable code runnable"><code class="cypher language-cypher">MATCH (d:Dept), (p:Person)
+WHERE p.name =~ "A.*" AND exists((d)-[:LEAD_BY]-&gt;(p))
+RETURN p.name, d.name;</code></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Scalar Functions</h3>
+    <br/>
+    <div>
+      <div class="ulist">
+<ul>
+<li>
+<p><code>length(x)</code>: the length of a path or collection</p>
+</li>
+<li>
+<p><code>type(r)</code>: the type of an relationship</p>
+</li>
+<li>
+<p><code>id(x)</code>: the ID of a node or relationship</p>
+</li>
+<li>
+<p><code>timestamp()</code>: the milliseconds since January 1, 1970 UTC (will be same during the entire query)</p>
+</li>
+<li>
+<p><code>coalesce(x1, x2, &#8230;&#8203;)</code>: the first non-null argument</p>
+</li>
+<li>
+<p><code>head(c)</code> / <code>last(c)</code>: the first / last element of the collection</p>
+</li>
+<li>
+<p><code>startnode(r)</code> / <code>endnode(r)</code>: start / end node of a relationship</p>
+</li>
+</ul>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Mathematical and String Functions</h3>
+    <br/>
+    <div>
+      <div class="ulist">
+<ul>
+<li>
+<p>math: <code>abs</code>, <code>sin</code>, <code>floor</code>, <code>sqrt</code>, &#8230;&#8203;</p>
+</li>
+<li>
+<p>string: <code>trim</code>, substring, <code>replace</code>, <code>split</code>, <code>length</code>, <code>reverse</code> &#8230;&#8203;</p>
+</li>
+<li>
+<p>conversion:`toInt` / <code>toFloat</code> / <code>toString</code></p>
+</li>
+</ul>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Predicates</h3>
+    <br/>
+    <div>
+      <div class="ulist">
+<ul>
+<li>
+<p><code>ALL(x IN coll WHERE pred)</code>: tests if pred is true for all values in coll</p>
+</li>
+<li>
+<p><code>ANY(x IN coll WHERE pred)</code>: tests if pred is true for at least one value in coll</p>
+</li>
+<li>
+<p><code>NONE(x IN coll WHERE pred)</code>: tests if pred is true for no value in coll</p>
+</li>
+<li>
+<p><code>SINGLE(x IN coll WHERE pred)</code>: tests if pred is true for exactly one value in coll</p>
+</li>
+</ul>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Predicates (cont.)</h3>
+    <br/>
+    <div>
+      <div class="ulist">
+<ul>
+<li>
+<p><code>EXISTS(x.prop)</code>: tests if x has the property prop</p>
+</li>
+<li>
+<p><code>EXISTS(pattern)</code>: tests if the given pattern exists</p>
+</li>
+</ul>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Collection Functions</h3>
+    <br/>
+    <div>
+      <div class="ulist">
+<ul>
+<li>
+<p><code>nodes(p)</code> / <code>relationships(p)</code>: nodes / relationships of a path</p>
+</li>
+<li>
+<p><code>labels(n)</code>: labels of a node</p>
+</li>
+<li>
+<p><code>range(start, end [,step])</code>: integer values in the given range with optional step</p>
+</li>
+</ul>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Collection Functions</h3>
+    <br/>
+    <div>
+      <div class="ulist">
+<ul>
+<li>
+<p><code>tail(c)</code>: all but the first element of a collection</p>
+</li>
+<li>
+<p><code>extract(x IN coll | expr)</code>: maps all values in coll using expr</p>
+</li>
+<li>
+<p><code>filter(x IN coll WHERE pred)</code>: returns a collection with all elements for that pred is true</p>
+</li>
+<li>
+<p><code>[x in coll WHERE pred | expr]</code> combines filter and extract in one construct</p>
+</li>
+<li>
+<p><code>reduce(acc = inital, x IN coll | expr)</code>: reduces values in coll using acc and expr</p>
+</li>
+</ul>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Matching multiple Relationships</h3>
+    <br/>
+    <div>
+      <div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable code runnable"><code class="cypher language-cypher">MATCH (p:Person)-[:WORKS_AT|:LEAD_BY]-(d:Dept)
+return p, d;</code></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Shortest Path</h3>
+    <br/>
+    <div>
+      <div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable code runnable"><code class="cypher language-cypher">MATCH (p1:Person {name: "Alice"}),
+      (p2:Person {name: "Charlene"}),
+  path=shortestPath((p1)-[:WORKS_AT|:LEAD_BY*..20]-(p2))
+RETURN length(path);</code></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>More Cypher Features</h3>
+    <br/>
+    <div>
+      <div class="ulist">
+<ul>
+<li>
+<p><code>WITH</code></p>
+</li>
+<li>
+<p><code>UNION</code></p>
+</li>
+<li>
+<p><code>UNWIND</code></p>
+</li>
+<li>
+<p><code>FOREACH</code></p>
+</li>
+<li>
+<p><code>START</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Check out the Cypher Refcard <a href="http://neo4j.com/docs/stable/cypher-refcard" class="bare">http://neo4j.com/docs/stable/cypher-refcard</a></p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Your Turn</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p><a play-topic='http://guides.neo4j.com/fundamentals/lab_03.html'>Proceed to the next</a></p>
+</div>
+	</div>
+  </div>
+</slide>
+
+  </carousel>
+</article>

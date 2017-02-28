@@ -10,8 +10,7 @@
        domain:       'neo4j-sync.auth0.com',
        clientID:     'DxhmiF8TCeznI7Xoi08UyYScLGZnk4ke'
      });
-     var hash = window.location && window.location.hash;
-     if (hash && hash.length > 1) {
+     if ('location' in window && 'hash' in window.location && window.location.hash.length > 1) {
       var result = webAuth.parseHash(window.location.hash, function(err, data) {
         parent.postMessage(err || data, "https://auth.neo4j.com/");
       });

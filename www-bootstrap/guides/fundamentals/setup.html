@@ -1,0 +1,541 @@
+<style type="text/css" media="screen">
+/*
+.nodes-image {
+	margin:-100;
+}
+*/	
+    .imageblock .content img {
+        max-width: 900px;
+        max-height: 300px;
+    }
+	.deck h3 {
+		display: block !important;
+		margin-bottom:8px;
+		margin-top:5px;
+	}
+	.deck h4 {
+		display: block !important;
+		margin-bottom:8px;
+		margin-top:20px;
+	}
+	.listingblock {
+		margin:8px;
+	}
+	.pull-bottom {
+		position:relative;
+		bottom:1em;
+	}
+</style>
+<style type="text/css" media="screen">
+#editor.maximize-editor .CodeMirror-code {
+ font-size:40px;
+ line-height:45px;
+}
+</style><article class="guide">
+  <carousel class="deck container-fluid">
+    <!--slide class="row-fluid">
+      <div class="col-sm-3">
+        <h3>Setup our Domain Data</h3>
+        <p class="lead">Information</p>
+			<!dl>
+				
+				
+				
+				
+				
+			</dl>
+		</div>
+      <div class="col-sm-9">
+        <figure>
+          <img style="width:300px" src=""/>
+        </figure>
+      </div>
+    </slide-->
+    
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Setup our Domain Data</h3>
+    <br/>
+    <div>
+      <div class="imageblock" style="float: right">
+<div class="content">
+<img src="http://guides.neo4j.com/intro/img/domain-graph-model.svg" alt="domain graph model" width="700">
+</div>
+</div>
+<div class="ulist small">
+<ul>
+<li>
+<p>Create the statements manually</p>
+</li>
+<li>
+<p>Or, &#8230;&#8203; import it from CSV-files</p>
+</li>
+</ul>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>LOAD CSV is an ETL Power Tool</h3>
+    <br/>
+    <div>
+      <div class="ulist">
+<ul>
+<li>
+<p>Load CSV data from a http/file URL</p>
+</li>
+<li>
+<p>Find / Create / Update Graph Structures</p>
+</li>
+<li>
+<p>Transform values</p>
+</li>
+<li>
+<p>Allows to import <strong>into</strong> your graph model</p>
+</li>
+<li>
+<p>Up to 10M nodes &amp; relationships</p>
+</li>
+</ul>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>LOAD CSV - Data Inspection</h3>
+    <br/>
+    <div>
+      
+
+
+   <h4>Row Count</h4>
+   <div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable code runnable"><code class="cypher language-cypher">LOAD CSV FROM
+     'http://data.neo4j.com/intro/data/orgs.csv' AS row
+RETURN count(*);</code></pre>
+</div>
+</div>
+
+
+
+
+   <h4>Data</h4>
+   <div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable code runnable"><code class="cypher language-cypher">LOAD CSV FROM
+     'http://data.neo4j.com/intro/data/orgs.csv' AS row
+RETURN * LIMIT 5;</code></pre>
+</div>
+</div>
+
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>LOAD CSV - WITH HEADERS</h3>
+    <br/>
+    <div>
+      
+
+
+   <h4>Data</h4>
+   <div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable code runnable"><code class="cypher language-cypher">LOAD CSV WITH HEADERS FROM
+     'http://data.neo4j.com/intro/data/orgs.csv' AS row
+RETURN row LIMIT 5;</code></pre>
+</div>
+</div>
+
+
+
+
+   <h4>Data Conversion</h4>
+   <div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable code runnable"><code class="cypher language-cypher">LOAD CSV WITH HEADERS FROM
+     'http://data.neo4j.com/intro/data/depts-member.csv' AS row
+FIELDTERMINATOR ";"
+WITH row.person as person, toInt(row.hours) as hours, row.department as dept, row.company = "GraphIT" as `is graph-it`
+ORDER BY row.company LIMIT 10
+RETURN *;</code></pre>
+</div>
+</div>
+
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>LOAD CSV - Create Nodes</h3>
+    <br/>
+    <div>
+      
+
+
+   <h4>CREATE Orgs</h4>
+   <div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable code runnable"><code class="cypher language-cypher">LOAD CSV WITH HEADERS FROM
+     'http://data.neo4j.com/intro/data/orgs.csv' AS row
+CREATE (o:Org {name: row.name});</code></pre>
+</div>
+</div>
+
+
+
+
+   <h4>MERGE People</h4>
+   <div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable code runnable"><code class="cypher language-cypher">LOAD CSV WITH HEADERS FROM
+     'http://data.neo4j.com/intro/data/persons.csv' AS row
+MERGE (p:Person {name: row.name});</code></pre>
+</div>
+</div>
+
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>LOAD CSV - Create Relationships</h3>
+    <br/>
+    <div>
+      <div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable code runnable"><code class="cypher language-cypher">LOAD CSV WITH HEADERS FROM
+     'http://data.neo4j.com/intro/data/depts-member.csv' AS row
+MATCH  (p:Person {name: row.person })
+MATCH  (o:Org    {name: row.company})
+CREATE (p)-[:WORKS_AT]->(o);</code></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Try it!</h3>
+    <br/>
+    <div>
+      <div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable code runnable"><code class="cypher language-cypher">MATCH (p:Person)-[:WORKS_AT]->(o:Org)
+RETURN p, o</code></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Alternatively as one big cypher command</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>First: click and run to <strong>clean out your database</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable code runnable"><code class="cypher language-cypher">MATCH (n)
+DETACH DELETE n;</code></pre>
+</div>
+</div>
+
+
+
+   <h4>Import our Domain Data</h4>
+   <div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable code runnable"><code class="cypher language-cypher">create (_0:`Person`:`Entity` {`name`:"Alice"})
+create (_1:`Person`:`Entity` {`name`:"Bob"})
+create (_2:`Person`:`Entity` {`name`:"Charlene"})
+create (_3:`Person`:`Entity` {`name`:"Daniel"})
+create (_4:`Person`:`Entity` {`name`:"Eric"})
+create (_5:`Person`:`Entity` {`name`:"Eve"})
+create (_6:`Person`:`Entity` {`name`:"Emma"})
+create (_7:`Person`:`Entity` {`name`:"Elliot"})
+create (_8:`Person`:`Entity` {`name`:"Evan"})
+create (_9:`Person`:`Entity` {`name`:"Anna"})
+create (_10:`Person`:`Entity` {`name`:"Ashton"})
+create (_11:`Person`:`Entity` {`name`:"Alex"})
+create (_12:`Person`:`Entity` {`name`:"Holly"})
+create (_13:`Person`:`Entity` {`name`:"Joe"})
+create (_14:`Person`:`Entity` {`name`:"Julia"})
+create (_15:`Person`:`Entity` {`name`:"Rachel"})
+create (_16:`Person`:`Entity` {`name`:"Frank"})
+create (_17:`Person`:`Entity` {`name`:"Jill"})
+create (_18:`Person`:`Entity` {`name`:"Adam"})
+create (_19:`Person`:`Entity` {`name`:"Andrew"})
+create (_20:`Person`:`Entity` {`name`:"Bruce"})
+create (_21:`Person`:`Entity` {`name`:"Carter"})
+create (_22:`Person`:`Entity` {`name`:"Martin"})
+create (_23:`Person`:`Entity` {`name`:"Oscar"})
+create (_24:`Person`:`Entity` {`name`:"Owen"})
+create (_25:`Person`:`Entity` {`name`:"Steven"})
+create (_26:`Person`:`Entity` {`name`:"Simon"})
+create (_27:`Person`:`Entity` {`name`:"Thomas"})
+create (_28:`Person`:`Entity` {`name`:"Olivia"})
+create (_29:`Person`:`Entity` {`name`:"Amber"})
+create (_30:`Person`:`Entity` {`name`:"Beth"})
+create (_31:`Person`:`Entity` {`name`:"Heather"})
+create (_32:`Person`:`Entity` {`name`:"Naomi"})
+create (_33:`Person`:`Entity` {`name`:"Kimber"})
+create (_34:`Person`:`Entity` {`name`:"Carie"})
+create (_35:`Person`:`Entity` {`name`:"Titus"})
+create (_36:`Person`:`Entity` {`name`:"Madeleine"})
+create (_37:`Person`:`Entity` {`name`:"Ronald"})
+create (_38:`Person`:`Entity` {`name`:"Melody"})
+create (_39:`Person`:`Entity` {`name`:"Antoine"})
+create (_40:`Person`:`Entity` {`name`:"Allan"})
+create (_41:`Person`:`Entity` {`name`:"Gabriele"})
+create (_42:`Person`:`Entity` {`name`:"Jerry"})
+create (_43:`Person`:`Entity` {`name`:"Linda"})
+create (_44:`Person`:`Entity` {`name`:"Rolf"})
+create (_45:`Person`:`Entity` {`name`:"Audrey"})
+create (_46:`Person`:`Entity` {`name`:"Joshua"})
+create (_47:`Person`:`Entity` {`name`:"Scot"})
+create (_48:`Person`:`Entity` {`name`:"Douglas"})
+create (_49:`Person`:`Entity` {`name`:"Gordon"})
+create (_50:`Person`:`Entity` {`name`:"Bobby"})
+create (_51:`Person`:`Entity` {`name`:"Harry"})
+create (_52:`Person`:`Entity` {`name`:"Maxwell"})
+create (_53:`Person`:`Entity` {`name`:"Edgar"})
+create (_54:`Person`:`Entity` {`name`:"Robert"})
+create (_55:`Person`:`Entity` {`name`:"Marcus"})
+create (_56:`Person`:`Entity` {`name`:"Dirk"})
+create (_57:`Person`:`Entity` {`name`:""})
+create (_58:`Entity`:`Org`:`Dept` {`name`:"GraphIT"})
+create (_59:`Entity`:`Org`:`Dept` {`name`:"Graphora"})
+create (_60:`Entity`:`Org`:`Dept` {`name`:"Graphisto"})
+create (_61:`Entity`:`Org`:`Dept` {`name`:"MyGraph"})
+create (_62:`Entity`:`Org`:`Dept` {`name`:"GraphUniversity"})
+create (_63:`Dept` {`name`:"IT-Department"})
+create (_64:`Dept` {`name`:"QA"})
+create (_65:`Dept` {`name`:"Marketing"})
+create (_66:`Dept` {`name`:"Human Resources"})
+create (_67:`Dept` {`name`:"Web"})
+create (_68:`Dept` {`name`:"Accounting"})
+create (_69:`Dept` {`name`:"Dev"})
+create (_70:`Dept` {`name`:"Media"})
+create (_71:`Dept` {`name`:"HR"})
+create (_72:`Dept` {`name`:"Sale"})
+create (_73:`Dept` {`name`:"IT"})
+create (_74:`Dept` {`name`:"Sale"})
+create (_75:`Dept` {`name`:"Research"})
+create (_76:`Dept` {`name`:"Production"})
+create (_77:`Dept` {`name`:"Mobile Apps"})
+create (_78:`Dept` {`name`:"Operations"})
+create (_79:`Dept` {`name`:"ERP"})
+create (_80:`Dept` {`name`:"Design"})
+create (_81:`Dept` {`name`:"Backend"})
+create (_82:`Dept` {`name`:"Audits"})
+create (_83:`Dept` {`name`:"Testing"})
+create (_84:`City` {`name`:"Berlin"})
+create (_85:`Country` {`name`:"Germany"})
+create (_86:`City` {`name`:"Cologne"})
+create (_87:`City` {`name`:"Munich"})
+create (_88:`City` {`name`:"Bordeaux"})
+create (_89:`Country` {`name`:"France"})
+create (_90:`City` {`name`:"Vienna"})
+create (_91:`Country` {`name`:"Austria"})
+create (_92:`City` {`name`:"Paris"})
+create (_93:`Office`)
+create (_94:`Office`)
+create (_95:`Office`)
+create (_96:`Office`)
+create (_97:`Office`)
+create (_98:`Office`)
+create (_99:`City` {`name`:"Rome"})
+create (_100:`Country` {`name`:"Italy"})
+create (_101:`Office`)
+create (_102:`Office`)
+create (_103:`City` {`name`:"Milano"})
+create (_104:`Office`)
+create (_105:`Office`)
+create (_106:`Office`)
+create (_107:`City` {`name`:"Madrid"})
+create (_108:`Country` {`name`:"Spain"})
+create (_109:`Office`)
+create (_110:`Office`)
+create (_111:`Project` {`name`:"The next big thing"})
+create (_112:`Project` {`name`:"Project X"})
+create (_113:`Project` {`name`:"Project Y"})
+create (_114:`Project` {`name`:"Project X"})
+create _3-[:`WORKS_AT` {`hoursPerWeek`:20}]-&gt;_83
+create _3-[:`WORKS_AT` {`hoursPerWeek`:20}]-&gt;_63
+create _4-[:`WORKS_AT` {`hoursPerWeek`:30}]-&gt;_83
+create _4-[:`WORKS_AT` {`hoursPerWeek`:10}]-&gt;_64
+create _5-[:`WORKS_AT` {`hoursPerWeek`:40}]-&gt;_83
+create _6-[:`WORKS_AT` {`hoursPerWeek`:40}]-&gt;_77
+create _7-[:`WORKS_AT` {`hoursPerWeek`:40}]-&gt;_77
+create _8-[:`WORKS_AT` {`hoursPerWeek`:40}]-&gt;_77
+create _9-[:`WORKS_AT` {`hoursPerWeek`:40}]-&gt;_81
+create _10-[:`WORKS_AT` {`hoursPerWeek`:20}]-&gt;_81
+create _11-[:`WORKS_AT` {`hoursPerWeek`:40}]-&gt;_72
+create _12-[:`WORKS_AT` {`hoursPerWeek`:40}]-&gt;_65
+create _14-[:`WORKS_AT` {`hoursPerWeek`:40}]-&gt;_65
+create _16-[:`WORKS_AT` {`hoursPerWeek`:40}]-&gt;_63
+create _19-[:`WORKS_AT` {`hoursPerWeek`:15}]-&gt;_63
+create _20-[:`WORKS_AT` {`hoursPerWeek`:40}]-&gt;_63
+create _21-[:`WORKS_AT` {`hoursPerWeek`:10}]-&gt;_66
+create _23-[:`WORKS_AT` {`hoursPerWeek`:40}]-&gt;_66
+create _27-[:`WORKS_AT` {`hoursPerWeek`:40}]-&gt;_66
+create _29-[:`WORKS_AT` {`hoursPerWeek`:40}]-&gt;_78
+create _30-[:`WORKS_AT` {`hoursPerWeek`:40}]-&gt;_78
+create _33-[:`WORKS_AT` {`hoursPerWeek`:40}]-&gt;_78
+create _34-[:`WORKS_AT` {`hoursPerWeek`:40}]-&gt;_79
+create _36-[:`WORKS_AT` {`hoursPerWeek`:40}]-&gt;_79
+create _38-[:`WORKS_AT` {`hoursPerWeek`:40}]-&gt;_79
+create _39-[:`WORKS_AT` {`hoursPerWeek`:40}]-&gt;_64
+create _41-[:`WORKS_AT` {`hoursPerWeek`:40}]-&gt;_64
+create _42-[:`WORKS_AT` {`hoursPerWeek`:40}]-&gt;_64
+create _58-[:`HAS_SITE`]-&gt;_93
+create _58-[:`HAS_SITE`]-&gt;_94
+create _58-[:`HAS_SITE`]-&gt;_95
+create _58-[:`HAS_SITE`]-&gt;_96
+create _58-[:`HAS_SITE`]-&gt;_97
+create _58-[:`HAS_SITE`]-&gt;_98
+create _59-[:`HAS_SITE`]-&gt;_101
+create _59-[:`HAS_SITE`]-&gt;_102
+create _60-[:`HAS_SITE`]-&gt;_104
+create _60-[:`HAS_SITE`]-&gt;_105
+create _60-[:`HAS_SITE`]-&gt;_106
+create _61-[:`HAS_SITE`]-&gt;_109
+create _62-[:`HAS_SITE`]-&gt;_110
+create _63-[:`IS_PART_OF`]-&gt;_58
+create _63-[:`LEAD_BY`]-&gt;_2
+create _64-[:`IS_PART_OF`]-&gt;_58
+create _64-[:`LEAD_BY`]-&gt;_0
+create _65-[:`IS_PART_OF`]-&gt;_58
+create _65-[:`LEAD_BY`]-&gt;_28
+create _66-[:`IS_PART_OF`]-&gt;_58
+create _66-[:`LEAD_BY`]-&gt;_1
+create _67-[:`IS_PART_OF`]-&gt;_59
+create _67-[:`LEAD_BY`]-&gt;_15
+create _68-[:`IS_PART_OF`]-&gt;_59
+create _68-[:`LEAD_BY`]-&gt;_32
+create _69-[:`IS_PART_OF`]-&gt;_59
+create _69-[:`LEAD_BY`]-&gt;_26
+create _70-[:`IS_PART_OF`]-&gt;_59
+create _70-[:`LEAD_BY`]-&gt;_13
+create _71-[:`IS_PART_OF`]-&gt;_59
+create _71-[:`LEAD_BY`]-&gt;_18
+create _72-[:`IS_PART_OF`]-&gt;_60
+create _72-[:`LEAD_BY`]-&gt;_31
+create _73-[:`IS_PART_OF`]-&gt;_60
+create _73-[:`LEAD_BY`]-&gt;_17
+create _74-[:`IS_PART_OF`]-&gt;_61
+create _74-[:`LEAD_BY`]-&gt;_25
+create _75-[:`IS_PART_OF`]-&gt;_61
+create _75-[:`LEAD_BY`]-&gt;_22
+create _76-[:`IS_PART_OF`]-&gt;_61
+create _76-[:`LEAD_BY`]-&gt;_24
+create _77-[:`IS_PART_OF`]-&gt;_63
+create _77-[:`LEAD_BY`]-&gt;_50
+create _78-[:`IS_PART_OF`]-&gt;_63
+create _78-[:`LEAD_BY`]-&gt;_55
+create _79-[:`IS_PART_OF`]-&gt;_63
+create _79-[:`LEAD_BY`]-&gt;_43
+create _80-[:`IS_PART_OF`]-&gt;_67
+create _80-[:`LEAD_BY`]-&gt;_37
+create _81-[:`IS_PART_OF`]-&gt;_67
+create _81-[:`LEAD_BY`]-&gt;_47
+create _82-[:`IS_PART_OF`]-&gt;_64
+create _82-[:`LEAD_BY`]-&gt;_35
+create _83-[:`IS_PART_OF`]-&gt;_64
+create _83-[:`LEAD_BY`]-&gt;_40
+create _84-[:`IS_IN`]-&gt;_85
+create _86-[:`IS_IN`]-&gt;_85
+create _87-[:`IS_IN`]-&gt;_85
+create _88-[:`IS_IN`]-&gt;_89
+create _90-[:`IS_IN`]-&gt;_91
+create _92-[:`IS_IN`]-&gt;_89
+create _93-[:`IS_LOCATED_IN`]-&gt;_84
+create _94-[:`IS_LOCATED_IN`]-&gt;_86
+create _95-[:`IS_LOCATED_IN`]-&gt;_87
+create _96-[:`IS_LOCATED_IN`]-&gt;_88
+create _97-[:`IS_LOCATED_IN`]-&gt;_90
+create _98-[:`IS_LOCATED_IN`]-&gt;_92
+create _99-[:`IS_IN`]-&gt;_100
+create _101-[:`IS_LOCATED_IN`]-&gt;_99
+create _102-[:`IS_LOCATED_IN`]-&gt;_92
+create _103-[:`IS_IN`]-&gt;_100
+create _104-[:`IS_LOCATED_IN`]-&gt;_103
+create _105-[:`IS_LOCATED_IN`]-&gt;_86
+create _106-[:`IS_LOCATED_IN`]-&gt;_92
+create _107-[:`IS_IN`]-&gt;_108
+create _109-[:`IS_LOCATED_IN`]-&gt;_107
+create _110-[:`IS_LOCATED_IN`]-&gt;_84
+create _111-[:`BELONGS_TO`]-&gt;_63
+create _111-[:`HAS_MEMBER` {`role`:"product owner"}]-&gt;_2
+create _112-[:`BELONGS_TO`]-&gt;_77
+create _112-[:`HAS_MEMBER` {`role`:"product owner"}]-&gt;_8
+create _112-[:`HAS_MEMBER` {`role`:"developer"}]-&gt;_7
+create _112-[:`HAS_MEMBER` {`role`:"scrum master"}]-&gt;_6
+create _113-[:`BELONGS_TO`]-&gt;_77
+create _113-[:`HAS_MEMBER` {`role`:"product owner"}]-&gt;_8
+create _113-[:`HAS_MEMBER` {`role`:"scrum master"}]-&gt;_7
+create _114-[:`BELONGS_TO`]-&gt;_81
+create _114-[:`HAS_MEMBER` {`role`:"product owner"}]-&gt;_9
+create _114-[:`HAS_MEMBER` {`role`:"developer"}]-&gt;_10
+;</code></pre>
+</div>
+</div>
+
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Well done! Let&#8217;s keep going&#8230;&#8203;</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p><a play-topic='http://guides.neo4j.com/fundamentals/intro.html'>Proceed to the next</a></p>
+</div>
+	</div>
+  </div>
+</slide>
+
+  </carousel>
+</article>

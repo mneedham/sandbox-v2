@@ -1,0 +1,24 @@
+# pip install neo4j-driver
+
+from neo4j.v1 import GraphDatabase, basic_auth
+
+driver = GraphDatabase.driver(
+    "bolt://<HOST>:<BOLTPORT>", 
+    auth=basic_auth("<USERNAME>", "<PASSWORD>"))
+session = driver.session()
+
+# Most influential followers
+cypher_query = '''
+MATCH 
+  (follower:User)-[:FOLLOWS]->(u:User:Me)
+RETURN 
+  follower.screen_name AS user, follower.followers AS followers
+ORDER BY
+  followers DESC
+'''
+
+results = session.run(cypher_query,
+  parameters={})
+
+for record in results:
+  print("%s - %s" % (record['user'], record['followers']))

@@ -1,0 +1,37 @@
+<?php
+/**
+ * To install Neo4j-PHP-Client, we use Composer
+ *
+ * $ curl -sS https://getcomposer.org/installer | php
+ * $ php composer.phar require graphaware/neo4j-php-client
+ *
+ */
+
+require __DIR__.'/vendor/autoload.php';
+
+use GraphAware\Neo4j\Client\ClientBuilder;
+
+// change to your hostname, port, username, password
+$neo4j_url = "bolt://<USERNAME>:<PASSWORD>@<HOST>:<BOLTPORT>";
+
+// setup connection
+$client = ClientBuilder::create()
+    ->addConnection('default', $neo4j_url)
+    ->build();
+
+// Most influential followers
+$cypher_query = <<<EOQ
+MATCH 
+  (follower:User)-[:FOLLOWS]->(u:User:Me)
+RETURN 
+  follower.screen_name AS user, follower.followers AS followers
+ORDER BY
+  followers DESC
+EOQ;
+
+$params = [];
+$result = $client->run($cypher_query, $params);
+
+foreach ($result->records() as $record) {
+  echo $record->get('user') . " - " . $record->get('followers') . PHP_EOL;
+}

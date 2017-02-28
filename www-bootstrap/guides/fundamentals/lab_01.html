@@ -1,0 +1,369 @@
+<style type="text/css" media="screen">
+/*
+.nodes-image {
+	margin:-100;
+}
+*/	
+    .imageblock .content img {
+        max-width: 900px;
+        max-height: 300px;
+    }
+	.deck h3 {
+		display: block !important;
+		margin-bottom:8px;
+		margin-top:5px;
+	}
+	.deck h4 {
+		display: block !important;
+		margin-bottom:8px;
+		margin-top:20px;
+	}
+	.listingblock {
+		margin:8px;
+	}
+	.pull-bottom {
+		position:relative;
+		bottom:1em;
+	}
+</style>
+<style type="text/css" media="screen">
+#editor.maximize-editor .CodeMirror-code {
+ font-size:40px;
+ line-height:45px;
+}
+</style><article class="guide">
+  <carousel class="deck container-fluid">
+    <!--slide class="row-fluid">
+      <div class="col-sm-3">
+        <h3>Lab: Starter</h3>
+        <p class="lead">Information</p>
+			<!dl>
+				
+				
+				
+				
+				
+			</dl>
+		</div>
+      <div class="col-sm-9">
+        <figure>
+          <img style="width:300px" src=""/>
+        </figure>
+      </div>
+    </slide-->
+    
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Lab: Starter</h3>
+    <br/>
+    <div>
+      <div class="imageblock" style="float: right">
+<div class="content">
+<a class="image" href="http://guides.neo4j.com/intro/img/domain-graph-model.svg"><img src="http://guides.neo4j.com/intro/img/domain-graph-model.svg" alt="domain graph model"></a>
+</div>
+</div>
+<div class="olist arabic small">
+<ol class="arabic">
+<li>
+<p>Find the names of all organizations!</p>
+</li>
+<li>
+<p>Which organizations have offices in Paris?</p>
+</li>
+<li>
+<p>In which countries has "GraphIT" offices?</p>
+</li>
+<li>
+<p>Who works in the same departments as Daniel?</p>
+</li>
+</ol>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>1. Task: Find all organizations</h3>
+    <br/>
+    <div>
+      <div class="imageblock" style="float: right">
+<div class="content">
+<a class="image" href="http://guides.neo4j.com/intro/img/domain-graph-model.svg"><img src="http://guides.neo4j.com/intro/img/domain-graph-model.svg" alt="domain graph model"></a>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>Find all organization nodes in the graph and return their names!</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable code runnable"><code class="cypher language-cypher">MATCH ...
+RETURN ...</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Don&#8217;t forget to use <em>label</em> and <em>property-name</em>.</p>
+</div>
+<div class="paragraph">
+<p><em>Solution on next slide.</em></p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>1. Solution: Find all organizations</h3>
+    <br/>
+    <div>
+      
+
+
+   <h4>Pattern</h4>
+   <div class="imageblock" style="float: right">
+<div class="content">
+<img src="http://guides.neo4j.com/intro/img/01_org.jpg" alt="01 org">
+</div>
+</div>
+
+
+
+
+   <h4>Cypher</h4>
+   <div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable code runnable"><code class="cypher language-cypher">MATCH (o:Org)
+RETURN o.name</code></pre>
+</div>
+</div>
+
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>2. Task: Organizations with offices in Paris</h3>
+    <br/>
+    <div>
+      <div class="imageblock" style="float: right">
+<div class="content">
+<a class="image" href="http://guides.neo4j.com/intro/img/domain-graph-model.svg"><img src="http://guides.neo4j.com/intro/img/domain-graph-model.svg" alt="domain graph model"></a>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>Find all organizations that have sites with offices located in <em>Paris</em> and return their names!</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable code runnable"><code class="cypher language-cypher">MATCH ... (pattern) ...
+WHERE ...
+RETURN ..</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Use the described <em>pattern</em> and <em>filter by location</em>.</p>
+</div>
+<div class="paragraph">
+<p><em>Solution on next slide.</em></p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>2. Solution: Organizations with offices in Paris</h3>
+    <br/>
+    <div>
+      
+
+
+   <h4>Pattern</h4>
+   <div class="imageblock">
+<div class="content">
+<img src="http://guides.neo4j.com/intro/img/02_org_office_city.jpg" alt="02 org office city">
+</div>
+</div>
+
+
+
+
+   <h4>Cypher</h4>
+   <div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable code runnable"><code class="cypher language-cypher">MATCH (o:Org)-[:HAS_SITE]-&gt;(:Office)-[:IS_LOCATED_IN]-&gt;(c:City)
+WHERE c.name = "Paris"
+RETURN o.name</code></pre>
+</div>
+</div>
+
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>3. Task: Countries with "GraphIT" offices</h3>
+    <br/>
+    <div>
+      <div class="imageblock" style="float: right">
+<div class="content">
+<a class="image" href="http://guides.neo4j.com/intro/img/domain-graph-model.svg"><img src="http://guides.neo4j.com/intro/img/domain-graph-model.svg" alt="domain graph model"></a>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>Find all countries that have cities with offices that are sites of "GraphIT" and return their names!</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable code runnable"><code class="cypher language-cypher">MATCH ... (complex pattern) ...
+RETURN ..</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Use the described <em>pattern</em> and <em>filter compactly by organization</em>.</p>
+</div>
+<div class="paragraph">
+<p><em>Solution on next slide.</em></p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>3. Solution: Countries with "GraphIT" offices</h3>
+    <br/>
+    <div>
+      
+
+
+   <h4>Pattern</h4>
+   <div class="imageblock">
+<div class="content">
+<img src="http://guides.neo4j.com/intro/img/03_org_office_city_country.jpg" alt="03 org office city country">
+</div>
+</div>
+
+
+
+
+   <h4>Cypher</h4>
+   <div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable code runnable"><code class="cypher language-cypher">MATCH (o:Org {name:"GraphIT"})-[:HAS_SITE]-&gt;(office:Office),
+      (office)-[:IS_LOCATED_IN]-&gt;(:City)-[:IS_IN]-&gt;(c:Country)
+RETURN c.name</code></pre>
+</div>
+</div>
+
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>3. Task: Colleagues of Daniel</h3>
+    <br/>
+    <div>
+      <div class="imageblock" style="float: right">
+<div class="content">
+<a class="image" href="http://guides.neo4j.com/intro/img/domain-graph-model.svg"><img src="http://guides.neo4j.com/intro/img/domain-graph-model.svg" alt="domain graph model"></a>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>Find all people that work in the same department as <em>Daniel</em> and return their names!</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable code runnable"><code class="cypher language-cypher">MATCH ... (pattern) ...
+WHERE ...
+RETURN ..</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Use the described <em>pattern</em> and <em>filter by name</em>.</p>
+</div>
+<div class="paragraph">
+<p><em>Solution on next slide.</em></p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>4. Solution:Colleagues of Daniel</h3>
+    <br/>
+    <div>
+      
+
+
+   <h4>Pattern</h4>
+   <div class="imageblock">
+<div class="content">
+<img src="http://guides.neo4j.com/intro/img/04_person_dept_person.jpg" alt="04 person dept person">
+</div>
+</div>
+
+
+
+
+   <h4>Cypher</h4>
+   <div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable code runnable"><code class="cypher language-cypher">MATCH (p:Person)-[:WORKS_AT]-&gt;(d:Dept),
+      (d)&lt;-[:WORKS_AT]-(b:Person)
+WHERE p.name = "Daniel"
+RETURN b.name</code></pre>
+</div>
+</div>
+
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Great Work!</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p><a play-topic='http://guides.neo4j.com/fundamentals/advanced.html'>Proceed to the next</a></p>
+</div>
+	</div>
+  </div>
+</slide>
+
+  </carousel>
+</article>

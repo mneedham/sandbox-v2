@@ -1,0 +1,370 @@
+<style type="text/css" media="screen">
+/*
+.nodes-image {
+	margin:-100;
+}
+*/	
+    .imageblock .content img {
+        max-width: 900px;
+        max-height: 300px;
+    }
+	.deck h3 {
+		display: block !important;
+		margin-bottom:8px;
+		margin-top:5px;
+	}
+	.deck h4 {
+		display: block !important;
+		margin-bottom:8px;
+		margin-top:20px;
+	}
+	.listingblock {
+		margin:8px;
+	}
+	.pull-bottom {
+		position:relative;
+		bottom:1em;
+	}
+</style>
+<style type="text/css" media="screen">
+#editor.maximize-editor .CodeMirror-code {
+ font-size:40px;
+ line-height:45px;
+}
+</style><article class="guide">
+  <carousel class="deck container-fluid">
+    <!--slide class="row-fluid">
+      <div class="col-sm-3">
+        <h3>Lab: Expert</h3>
+        <p class="lead">Information</p>
+			<!dl>
+				
+				
+				
+				
+				
+			</dl>
+		</div>
+      <div class="col-sm-9">
+        <figure>
+          <img style="width:300px" src=""/>
+        </figure>
+      </div>
+    </slide-->
+    
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Lab: Expert</h3>
+    <br/>
+    <div>
+      <div class="imageblock" style="float: right">
+<div class="content">
+<img src="http://guides.neo4j.com/intro/img/domain-graph-model.svg" alt="domain graph model">
+</div>
+</div>
+<div class="olist arabic small">
+<ol class="arabic">
+<li>
+<p>List all departments of "GraphIT" and their employees.</p>
+</li>
+<li>
+<p>Who is working for at least two departments?</p>
+</li>
+<li>
+<p>Find all persons with a name starting with an "E".</p>
+</li>
+<li>
+<p>Through whom/how many persons do Alice and Charlene know each other?</p>
+</li>
+<li>
+<p>Explore the database. What labels do exist? How many nodes/relationships are stored?</p>
+</li>
+</ol>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>1. Task: Departments of "GraphIT"</h3>
+    <br/>
+    <div>
+      <div class="imageblock" style="float: right">
+<div class="content">
+<a class="image" href="http://guides.neo4j.com/intro/img/domain-graph-model.svg"><img src="http://guides.neo4j.com/intro/img/domain-graph-model.svg" alt="domain graph model"></a>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>List all departments of "GraphIT" and their employees.</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable code runnable"><code class="cypher language-cypher">MATCH ...(complex pattern)...
+???? MATCH ...(pattern)...
+RETURN ...</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Remember the org-structure. Are there unusual departments.</p>
+</div>
+<div class="paragraph">
+<p><em>Solution on next slide.</em></p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>1. Solution: Departments of "GraphIT"</h3>
+    <br/>
+    <div>
+      <div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable code runnable"><code class="cypher language-cypher">MATCH (d:Dept)-[:IS_PART_OF*1..]-&gt;(o:Org {name:"GraphIT"})
+OPTIONAL MATCH (p:Person)-[:WORKS_AT]-&gt;(d)
+RETURN d.name, collect(p.name) as employees</code></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>2. Task: Who is working for at least two departments?</h3>
+    <br/>
+    <div>
+      <div class="imageblock" style="float: right">
+<div class="content">
+<a class="image" href="http://guides.neo4j.com/intro/img/domain-graph-model.svg"><img src="http://guides.neo4j.com/intro/img/domain-graph-model.svg" alt="domain graph model"></a>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>Spell out the work relationships of a person.</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable code runnable"><code class="cypher language-cypher">MATCH ...(complex pattern)...
+RETURN ...</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Let the graph structure guide you. Simplify results.</p>
+</div>
+<div class="paragraph">
+<p><em>Solution on next slide.</em></p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>2. Solution: Who is working for at least two departments?</h3>
+    <br/>
+    <div>
+      <div class="listingblock">
+<div class="title">Just express the pattern</div>
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable code runnable"><code class="cypher language-cypher">MATCH (p:Person)-[:WORKS_AT]-&gt;(:Dept),
+             (p)-[:WORKS_AT]-&gt;(:Dept)
+RETURN DISTINCT p.name</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Alternative Solution</div>
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable code runnable"><code class="cypher language-cypher">MATCH (p:Person)&lt;-[:EMPLOYEE]-(d:Dept)
+WITH p, count(distinct d) as cnt
+WHERE cnt &gt; 1
+RETURN p</code></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>3. Task: Persons with name starting with an "E"</h3>
+    <br/>
+    <div>
+      <div class="imageblock" style="float: right">
+<div class="content">
+<a class="image" href="http://guides.neo4j.com/intro/img/domain-graph-model.svg"><img src="http://guides.neo4j.com/intro/img/domain-graph-model.svg" alt="domain graph model"></a>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>Just a basic filter.</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable code runnable"><code class="cypher language-cypher">MATCH ...
+WHERE ...
+RETURN ...</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>What would help speeding this query up?</p>
+</div>
+<div class="paragraph">
+<p><em>Solution on next slide.</em></p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>3. Solution: Persons with name starting with an E</h3>
+    <br/>
+    <div>
+      <div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable code runnable"><code class="cypher language-cypher">MATCH (p:Person)
+WHERE p.name STARTS WITH "E"
+RETURN p.name</code></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>4. Task: Connection from "Alice" to "Charlene"</h3>
+    <br/>
+    <div>
+      <div class="imageblock" style="float: right">
+<div class="content">
+<a class="image" href="http://guides.neo4j.com/intro/img/domain-graph-model.svg"><img src="http://guides.neo4j.com/intro/img/domain-graph-model.svg" alt="domain graph model"></a>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>Find the two and the path between them. Which kinds of "people" connections can be between any two people?</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable code runnable"><code class="cypher language-cypher">MATCH ...
+WHERE ...
+RETURN ...</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Only return the people, how would you extract them from a path?</p>
+</div>
+<div class="paragraph">
+<p><em>Solution on next slide.</em></p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>4. Solution: Connection from Alice to Charlene (I)</h3>
+    <br/>
+    <div>
+      <div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable code runnable"><code class="cypher language-cypher">MATCH path=(a:Person)-[:WORKS_AT|LEAD_BY*0..]-(c:Person)
+WHERE a.name = "Alice" AND c.name = "Charlene"
+RETURN path</code></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>4. Solution: Connection from Alice to Charlene (II)</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p><code>WITH</code> allows you to transfer, project, limit and sort results between query parts</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable code runnable"><code class="cypher language-cypher">MATCH path=(a:Person)-[:WORKS_AT|:LEAD_BY*]-(c:Person)
+WHERE a.name = "Alice"
+  AND c.name = "Charlene"
+WITH
+  filter(n IN nodes(path) WHERE n:Person)
+  AS persons
+RETURN extract(n IN persons | n.name)</code></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>4. Solution: Connection from Alice to Charlene (III)</h3>
+    <br/>
+    <div>
+      <div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable code runnable"><code class="cypher language-cypher">MATCH path=(a:Person)-[:WORKS_AT|:LEAD_BY*]-(c:Person)
+WHERE a.name = "Alice"
+  AND c.name = "Charlene"
+RETURN [n IN nodes(path) WHERE n:Person | n.name]</code></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Congratulations</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>You made it through the Cypher Introduction.
+Now you&#8217;re well equipped to query and create data in your database.</p>
+</div>
+	</div>
+  </div>
+</slide>
+
+  </carousel>
+</article>

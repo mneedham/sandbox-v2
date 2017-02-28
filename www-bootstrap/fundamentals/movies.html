@@ -1,0 +1,13 @@
+<html>
+<body>
+<script>
+aucStr = localStorage.getItem("sandbox.additionalUc") || "[]";
+auc = JSON.parse(aucStr);
+if (! auc.includes("movies")) {
+  auc.push("movies");
+  newAucStr = JSON.stringify(auc);
+  localStorage.setItem("sandbox.additionalUc", newAucStr);
+}
+</script>
+</body>
+</html>

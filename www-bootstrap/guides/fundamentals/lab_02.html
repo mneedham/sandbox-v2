@@ -1,0 +1,436 @@
+<style type="text/css" media="screen">
+/*
+.nodes-image {
+	margin:-100;
+}
+*/	
+    .imageblock .content img {
+        max-width: 900px;
+        max-height: 300px;
+    }
+	.deck h3 {
+		display: block !important;
+		margin-bottom:8px;
+		margin-top:5px;
+	}
+	.deck h4 {
+		display: block !important;
+		margin-bottom:8px;
+		margin-top:20px;
+	}
+	.listingblock {
+		margin:8px;
+	}
+	.pull-bottom {
+		position:relative;
+		bottom:1em;
+	}
+</style>
+<style type="text/css" media="screen">
+#editor.maximize-editor .CodeMirror-code {
+ font-size:40px;
+ line-height:45px;
+}
+</style><article class="guide">
+  <carousel class="deck container-fluid">
+    <!--slide class="row-fluid">
+      <div class="col-sm-3">
+        <h3>Lab: Advanced</h3>
+        <p class="lead">Information</p>
+			<!dl>
+				
+				
+				
+				
+				
+			</dl>
+		</div>
+      <div class="col-sm-9">
+        <figure>
+          <img style="width:300px" src=""/>
+        </figure>
+      </div>
+    </slide-->
+    
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Lab: Advanced</h3>
+    <br/>
+    <div>
+      <div class="imageblock" style="float: right">
+<div class="content">
+<img src="http://guides.neo4j.com/intro/img/domain-graph-model.svg" alt="domain graph model">
+</div>
+</div>
+<div class="olist arabic small">
+<ol class="arabic">
+<li>
+<p>Who is working in "Project X" at "GraphIT"?</p>
+</li>
+<li>
+<p>Who is the lead of the "QA" department at "GraphIT"?</p>
+</li>
+<li>
+<p>How many hours per week does Daniel work?</p>
+</li>
+<li>
+<p>Find the three persons with the lowest hours per week.</p>
+</li>
+<li>
+<p>Who is having the same role in different projects?</p>
+</li>
+<li>
+<p>Is Alice a superior of Daniel?</p>
+</li>
+</ol>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>1. Task: Project members</h3>
+    <br/>
+    <div>
+      <div class="imageblock" style="float: right">
+<div class="content">
+<a class="image" href="http://guides.neo4j.com/intro/img/domain-graph-model.svg"><img src="http://guides.neo4j.com/intro/img/domain-graph-model.svg" alt="domain graph model"></a>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>Who is working in "Project X" at "GraphIT"?.
+  Find Project X and it&#8217;s members, also alongside the hierarchy of the "GraphIT" organization.</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable code runnable"><code class="cypher language-cypher">MATCH ...(complex pattern)...
+WHERE  ...
+RETURN ...</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Remember what you learned about variable height hierarchies.</p>
+</div>
+<div class="paragraph">
+<p><em>Solution on next slide.</em></p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>1. Solution: Project members</h3>
+    <br/>
+    <div>
+      <div class="listingblock">
+<div class="title">Who is working in "Project X" at "GraphIT"?</div>
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable code runnable"><code class="cypher language-cypher">MATCH (pr:Project)-[:HAS_MEMBER]-&gt;(p:Person),
+      (pr)-[:BELONGS_TO]-&gt;(:Dept)-[:IS_PART_OF*0..]-&gt;(o:Org)
+WHERE pr.name = "Project X" AND o.name = "GraphIT"
+RETURN p.name</code></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>2. Task: Department lead</h3>
+    <br/>
+    <div>
+      <div class="imageblock" style="float: right">
+<div class="content">
+<a class="image" href="http://guides.neo4j.com/intro/img/domain-graph-model.svg"><img src="http://guides.neo4j.com/intro/img/domain-graph-model.svg" alt="domain graph model"></a>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>Who is the lead of the "QA" department at "GraphIT"? Reuse part of your previous query.</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable code runnable"><code class="cypher language-cypher">MATCH ...(complex pattern)...
+WHERE  ...
+RETURN ...</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Remember what you learned about variable height hierarchies.</p>
+</div>
+<div class="paragraph">
+<p><em>Solution on next slide.</em></p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>2. Solution: Department lead</h3>
+    <br/>
+    <div>
+      <div class="listingblock">
+<div class="title">Who is the lead of the "QA" department at "GraphIT"?</div>
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable code runnable"><code class="cypher language-cypher">MATCH (d:Dept)-[:LEAD_BY]-&gt;(p:Person),
+      (d)-[:IS_PART_OF*0..]-&gt;(o:Org)
+WHERE d.name = "QA" AND o.name = "GraphIT"
+RETURN p.name</code></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>3. Task: Weekly work time</h3>
+    <br/>
+    <div>
+      <div class="imageblock" style="float: right">
+<div class="content">
+<a class="image" href="http://guides.neo4j.com/intro/img/domain-graph-model.svg"><img src="http://guides.neo4j.com/intro/img/domain-graph-model.svg" alt="domain graph model"></a>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>How many hours per week is "Daniel" working? Aggregate that amount for him.</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable code runnable"><code class="cypher language-cypher">MATCH ...(pattern)...
+WHERE  ...
+RETURN ...aggregate...</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Remember where the work-time is stored.</p>
+</div>
+<div class="paragraph">
+<p><em>Solution on next slide.</em></p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>3. Solution: Weekly work time</h3>
+    <br/>
+    <div>
+      <div class="listingblock">
+<div class="title">How many hours per week is Daniel working?</div>
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable code runnable"><code class="cypher language-cypher">MATCH (p:Person)-[e:WORKS_AT]-&gt;(d:Dept)
+WHERE p.name = "Daniel"
+RETURN sum(e.hoursPerWeek) as `hours per week`</code></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>4. Task: Least working people</h3>
+    <br/>
+    <div>
+      <div class="imageblock" style="float: right">
+<div class="content">
+<a class="image" href="http://guides.neo4j.com/intro/img/domain-graph-model.svg"><img src="http://guides.neo4j.com/intro/img/domain-graph-model.svg" alt="domain graph model"></a>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>Find the three persons with the lowest hours per week.</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable code runnable"><code class="cypher language-cypher">MATCH ...(pattern)...
+WHERE  ...
+RETURN ...aggregate...
+ORDER BY ...
+LIMIT ...</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Reuse your last query, remember to aggregate by person.</p>
+</div>
+<div class="paragraph">
+<p><em>Solution on next slide.</em></p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>4. Solution: Least working people</h3>
+    <br/>
+    <div>
+      <div class="listingblock">
+<div class="title">Find the three persons with the lowest hours per week.</div>
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable code runnable"><code class="cypher language-cypher">MATCH (p:Person)-[e:WORKS_AT]-&gt;(d:Dept)
+RETURN p.name AS name, sum(e.hoursPerWeek) as `hours per week`
+ORDER BY `hours per week`
+LIMIT 3</code></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>5. Task: Same project roles</h3>
+    <br/>
+    <div>
+      <div class="imageblock" style="float: right">
+<div class="content">
+<a class="image" href="http://guides.neo4j.com/intro/img/domain-graph-model.svg"><img src="http://guides.neo4j.com/intro/img/domain-graph-model.svg" alt="domain graph model"></a>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>Who is having the same role in projects? Return two projects and the people.</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable code runnable"><code class="cypher language-cypher">MATCH ...(pattern)...
+WHERE  ...
+RETURN ...</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Where can you get the <code>role</code> property from?</p>
+</div>
+<div class="paragraph">
+<p><em>Solution on next slide.</em></p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>5. Solution: Same project roles</h3>
+    <br/>
+    <div>
+      <div class="listingblock">
+<div class="title">Who is having the same role in projects?</div>
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable code runnable"><code class="cypher language-cypher">MATCH (pr1:Project)-[m1:HAS_MEMBER]-&gt;(p:Person),
+      (pr2:Project)-[m2:HAS_MEMBER]-&gt;(p)
+WHERE m1.role = m2.role
+RETURN p.name AS name, pr1.name, pr2.name, m1.role as role</code></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>6. Task: Superiors</h3>
+    <br/>
+    <div>
+      <div class="imageblock" style="float: right">
+<div class="content">
+<a class="image" href="http://guides.neo4j.com/intro/img/domain-graph-model.svg"><img src="http://guides.neo4j.com/intro/img/domain-graph-model.svg" alt="domain graph model"></a>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>Is "Alice" a superior of "Daniel"? What is a superior? How are they related?</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable code runnable"><code class="cypher language-cypher">MATCH ...(complex pattern)...
+WHERE  ...
+RETURN ...</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Remember the org-structure from the first task.</p>
+</div>
+<div class="paragraph">
+<p><em>Solution on next slide.</em></p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>6. Solution: Superiors</h3>
+    <br/>
+    <div>
+      <div class="listingblock">
+<div class="title">Is Alice a superior of Daniel?</div>
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable code runnable"><code class="cypher language-cypher">MATCH (d1:Dept)-[:LEAD_BY]-&gt;(a:Person),
+      (d:Person)-[:WORKS_AT]-&gt;(:Dept)-[:IS_PART_OF*0..]-&gt;(d1)
+WHERE a.name = "Alice"
+  AND d.name = "Daniel"
+RETURN a, d</code></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Graph Skills: +1 Advanced!</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p><a play-topic='http://guides.neo4j.com/fundamentals/expert.html'>Proceed to the next</a></p>
+</div>
+	</div>
+  </div>
+</slide>
+
+  </carousel>
+</article>

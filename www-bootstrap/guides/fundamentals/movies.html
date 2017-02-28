@@ -1,0 +1,598 @@
+<style type="text/css" media="screen">
+/*
+.nodes-image {
+	margin:-100;
+}
+*/	
+@import url("//maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css");
+
+.imageblock .content img, .image img {max-width: 900px;max-height: 300px;}
+.deck h3, .deck h4 {display: block !important;margin-bottom:8px;margin-top:5px;}
+.listingblock {margin:8px;}
+.pull-bottom {position:relative;bottom:1em;}
+.admonitionblock td.icon [class^="fa icon-"]{font-size:2.5em;text-shadow:1px 1px 2px rgba(0,0,0,.5);cursor:default}
+.admonitionblock td.icon .icon-note:before{content:"\f05a";color:#19407c}
+.admonitionblock td.icon .icon-tip:before{content:"\f0eb";text-shadow:1px 1px 2px rgba(155,155,0,.8);color:#111}
+.admonitionblock td.icon .icon-warning:before{content:"\f071";color:#bf6900}
+.admonitionblock td.icon .icon-caution:before{content:"\f06d";color:#bf3400}
+.admonitionblock td.icon .icon-important:before{content:"\f06a";color:#bf0000}
+.admonitionblock.note.speaker { display:none; }
+</style>
+<style type="text/css" media="screen">
+#editor.maximize-editor .CodeMirror-code { font-size:24px; line-height:26px; }
+</style>
+<article class="guide" ng-controller="AdLibDataController">
+  <carousel class="deck container-fluid">
+    <!--slide class="row-fluid">
+      <div class="col-sm-3">
+        <h3>My first movie app</h3>
+        <p class="lead">Information</p>
+			<!dl>
+				
+				
+				
+				
+				
+			</dl>
+		</div>
+      <div class="col-sm-9">
+        <figure>
+          <img style="width:300px" src=""/>
+        </figure>
+      </div>
+    </slide-->
+    
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>My first movie app</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>We&#8217;re going to build the queries for a little movie application using a built in dataset that comes with Neo4j.
+We&#8217;ll introduce Cypher constructs as our queries require them.</p>
+</div>
+<div class="paragraph">
+<p>Before we get started make sure you&#8217;ve imported the data:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->:play movies<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If you&#8217;ve already run it, don&#8217;t run it again or you&#8217;ll end up with all the data imported twice!</p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Exploring the dataset</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Let&#8217;s have a quick look at what we&#8217;ve imported.</p>
+</div>
+<div class="paragraph">
+<p>Click on the <span class="image"><img src="http://guides.neo4j.com/fundamentals/img/top_icon.png" alt="top icon"></span> icon on the left hand side.
+You should see 3 headings: <code>Node labels</code>, <code>Relationship types</code>, and <code>Property keys</code>.</p>
+</div>
+<div class="paragraph">
+<p>Try clicking on the different items under each of the headings.
+Each of them will execute a query and show the results in a query pane on the right hand side.</p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Finding an actor/actress</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Now we&#8217;re going to start building out the queries for our movies app.
+Let&#8217;s start with a user story and work from there.</p>
+</div>
+<div class="verseblock">
+<pre class="content">As a movie enthusiast
+I want to view the profile page for my favourite actor/actress
+So that I can learn everything there is to know about them</pre>
+</div>
+<div class="paragraph">
+<p>To meet this requirement we&#8217;ll first need to write a query to find a specific actor or actress in the database.</p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Finding an actor/actress</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Cypher is all about finding patterns in the graph and we use the <code>MATCH</code> clause to find these patterns.
+In this case the required pattern is relatively simple.</p>
+</div>
+<div class="paragraph">
+<p>Run the following query:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (person:Person)
+WHERE person.name = "Tom Hanks"
+RETURN person<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This query:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>scans through all nodes which have the label <code>Person</code></p>
+</li>
+<li>
+<p>filters those which have the value <code>Tom Hanks</code> for the <code>name</code> property</p>
+</li>
+<li>
+<p>returns any matching nodes</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Try changing the query to find someone else.</p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Exercise: Finding an actor/actress</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Can you work out the syntactic sugar for looking up a person without using a <code>WHERE</code> clause?</p>
+</div>
+<div class="paragraph">
+<p><em>Hint</em> The <a href="https://neo4j.com/docs/developer-manual/current/cypher/#query-read">Cypher query language section</a> of the developer manual may come in handy.</p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Answer: Finding an actor/actress (syntactic sugar version)</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>The following query is equivalent:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (person:Person {name: "Tom Hanks"})
+RETURN person<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Find the movies an actor/actress acted in</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>So far we&#8217;ve written a query that returns the name and year of birth of a particular actor/actress.
+To build out the profile page further it&#8217;d be good to show a list of movies that they acted in.</p>
+</div>
+<div class="paragraph">
+<p>We can write the following query to find the movies that Tom Hanks acted in:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (person:Person {name: "Tom Hanks"})-[:ACTED_IN]-&gt;(movie)
+RETURN movie<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The first bit of this query is the same as the previous one but once we&#8217;ve found the <code>Tom Hanks</code> node we traverse any outgoing <code>ACTED_IN</code> relationships to find the movies he acted in.</p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Exercise: Find the movies an actor/actress directed</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Can you write a query to find the movies that Tom Hanks directed?</p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Answer: Find the movies an actor/actress directed</h3>
+    <br/>
+    <div>
+      <div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (person:Person {name: "Tom Hanks"})-[:DIRECTED]-&gt;(movie)
+RETURN movie<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Find the movies and actor/actress has acted in or directed</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Hopefully that was easy enough.
+If want to find the movies that he&#8217;s acted in or directed we can tweak the query like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (person:Person {name: "Tom Hanks"})-[role:DIRECTED|:ACTED_IN]-&gt;(movie)
+RETURN movie, TYPE(role) AS type<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This query gets us the results we wanted, but we have multiple rows for movies that he&#8217;s acted in and directed.
+It&#8217;d be good to get one row per movie and have a list containing the <code>ACTED_IN</code> and <code>DIRECTED</code> relationships.</p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Grouping by movie</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Look at the slides for a quick explanation about how grouping works in Cypher.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="http://guides.neo4j.com/fundamentals/img/slides.jpg" alt="slides">
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Group by movie</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>We can write the following query to return one row per movie that Tom Hanks acted in or directed:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (person:Person {name: "Tom Hanks"})-[role:DIRECTED|:ACTED_IN]-&gt;(movie)
+RETURN movie, COLLECT(TYPE(role)) AS roles
+ORDER BY SIZE(roles) DESC<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We use the <code>SIZE</code> function to work out how many items are in a collection.
+In this case we&#8217;re using it so we show the movies that Tom Hanks acted in and directed first.</p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Exercise: Group by release year.</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>The next requirement for our movie app is to show the movies an actor/actress has acted in or directed in chronological order grouped by <code>releaseYear</code>.</p>
+</div>
+<div class="paragraph">
+<p>Can you write that query?</p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Answer: Group by release year.</h3>
+    <br/>
+    <div>
+      <div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (person:Person {name: "Tom Hanks"})-[role:DIRECTED|:ACTED_IN]-&gt;(movie)
+RETURN movie.releaseYear, COLLECT(movie.title) AS movies
+ORDER BY movie.releaseYear<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You may have noticed that we have some duplicate movies in 1996 and 2011.
+Those are the years that Tom Hanks acted in movies that he also directed.</p>
+</div>
+<div class="paragraph">
+<p>We can fix the duplicate issue by using the <code>DISTINCT</code> keyword:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (person:Person {name: "Tom Hanks"})-[role:DIRECTED|:ACTED_IN]-&gt;(movie)
+RETURN movie.releaseYear, COLLECT(DISTINCT movie.title) AS movies
+ORDER BY movie.releaseYear<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Filtering patterns</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>All the queries we&#8217;ve written have used the <code>MATCH</code> clause to find new bits of data, but sometimes we&#8217;ll want to filter things out.</p>
+</div>
+<div class="paragraph">
+<p>Our next requirement is to build a list of the recent movies that a person has acted in.</p>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s quickly introduce the <code>WHERE</code> clause:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="http://guides.neo4j.com/fundamentals/img/slides.jpg" alt="slides">
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Finding recent movies</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>The following query only returns movies released this century:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (person:Person {name: "Tom Hanks"})-[role:DIRECTED|:ACTED_IN]-&gt;(movie)
+WHERE movie.releaseYear &gt; 2000
+RETURN movie<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Try changing the query to find the movies released in the year 2000 or before the year 2000.</p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Paths, paths, are everywhere</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Our next requirement is to return the people that Tom Hanks has worked with in a format that we could feed into a visualisation library.
+To do this we&#8217;re going to write a query that returns a set of paths that could be reconstructed into a visualisation:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="http://guides.neo4j.com/fundamentals/img/slides.jpg" alt="slides">
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Finding co-actor paths</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>We can write the following query to find Tom Hanks' co-actors and the movies that they appeared in together:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH path = (person:Person {name: "Tom Hanks"})-[:DIRECTED|:ACTED_IN]-&gt;()&lt;-[:DIRECTED|:ACTED_IN]-()
+RETURN path<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This time we&#8217;re returning the full path rather than its components as we have in previous queries.</p>
+</div>
+<div class="paragraph">
+<p>If we wanted to find the <code>(Person)-&#8594;(Movie)&#8592;-(Person)</code> triples in each path we can use the <code>NODES</code> function:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH path = (person:Person {name: "Tom Hanks"})-[:DIRECTED|:ACTED_IN]-&gt;()&lt;-[:DIRECTED|:ACTED_IN]-()
+RETURN NODES(path) AS triples<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>There&#8217;s also a <code>RELS</code> function which you can use to extract the relationships from a path.</p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Exercise: Similar actors/actresses</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>We have some space on the side bar of the profile page to show 5 similar actors/actresses.
+We&#8217;ll take similar to mean that they&#8217;ve appeared in the most movies with the actor/actress in question.</p>
+</div>
+<div class="paragraph">
+<p>Can you write a query to find the most similar actors/actresses to <code>Halle Berry</code>?</p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Answer: Similar actors/actresses</h3>
+    <br/>
+    <div>
+      <div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (person:Person {name: "Halle Berry"})-[:DIRECTED|:ACTED_IN]-&gt;()&lt;-[:DIRECTED|:ACTED_IN]-(coactor)
+RETURN coactor, COUNT(*) AS times
+ORDER BY times DESC
+LIMIT 5<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>How are two people connected?</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Our product owner is happy with the profile page now but we&#8217;ve had requests to introduce a new page where the user can type in the names of two people and find out how they&#8217;re connected.
+Let&#8217;s quickly go over shortest path queries:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="http://guides.neo4j.com/fundamentals/img/slides.jpg" alt="slides">
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Exercise: Shortest path from &lt;x&gt; to &lt;y&gt;</h3>
+    <br/>
+    <div>
+      <div class="ulist">
+<ul>
+<li>
+<p>Can you write a query to find the shortest path between two other actors/actresses?</p>
+</li>
+<li>
+<p>Which actors/actresses are furthest apart?</p>
+</li>
+<li>
+<p>How many hops is it from <code>Halle Berry</code> to <code>Carrie-Anne Moss</code>?</p>
+</li>
+</ul>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Answer: Which actors/actresses are furthest apart?</h3>
+    <br/>
+    <div>
+      <div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (p1:Person)
+MATCH (p2:Person)
+MATCH path = shortestpath((p1)-[*]-(p2))
+RETURN path
+ORDER BY LENGTH(path) DESC
+LIMIT 1<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Answer: How many hops is it from <code>Halle Berry</code> to <code>Carrie-Anne Moss</code>?</h3>
+    <br/>
+    <div>
+      <div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (p1:Person {name: "Halle Berry"})
+MATCH (p2:Person {name: "Carrie-Anne Moss"})
+MATCH path = shortestpath((p1)-[*]-(p2))
+RETURN length(path)<!--/code--></pre>
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+  </carousel>
+</article>
