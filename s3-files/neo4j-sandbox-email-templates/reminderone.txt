@@ -2,7 +2,7 @@ ${greeting},
 
 We hope you've enjoyed learning Neo4j using the Neo4j Sandbox. 
 
-Your sandbox for "${usecase}" expires within 24 hours, but you extend it for another 7 days by providing some more information about yourself and your usecase for Neo4j.
+Your sandbox for "${usecase}" expires within 24 hours, but you can extend it for another 7 days by providing some more information about yourself and your usecase for Neo4j.
 
 This sandbox expires at:
 ${expires}
